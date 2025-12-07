@@ -1,19 +1,25 @@
-import { useContext } from "react";
+import { useContext } from "react"; 
 import { Navigate, Outlet } from "react-router-dom";
-import { AuthContext } from "../auth/AuthProvider";
+import { AuthContext } from "../auth/AuthContext";
 
 export default function GuestRoutes() {
+  // Use the hook instead of useContext(AuthContext)
   const { user, loading } = useContext(AuthContext);
 
-  if (loading) return <>LOADING...</>;
+  // 1. Wait for Auth Check to complete
+  // (Prevents the Login page from flashing before redirecting)
+  if (loading) {
+    return <div>Loading...</div>;
+  }
 
-  // 🔒 If logged in → block guest pages
+  // 2. 🔒 If logged in → Kick them out of guest pages
   if (user) {
-    // Optional role-based redirect
-    if (user.role === "Admin") return <Navigate to="/admin" replace />;
+    if (user.role === "admin") {
+      return <Navigate to="/admin/dashboard" replace />;
+    }
     return <Navigate to="/" replace />;
   }
 
-  // ✅ If NOT logged in → allow guest routes
+  // 3. ✅ If NOT logged in → Allow access to Login/Register
   return <Outlet />;
 }

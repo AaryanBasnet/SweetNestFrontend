@@ -1,1 +1,66 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500&family=DM+Sans:wght@400;500&display=swap');
 @import "tailwindcss";
+
+@theme {
+  /* ========== FONTS ========== */
+  --font-heading: "Playfair Display", serif;
+  --font-body: "DM Sans", sans-serif;
+
+  /* ========== TYPOGRAPHY SCALE ========== */
+  --text-h1: 36px;
+  --text-h2: 30px;
+  --text-h3: 24px;
+  --text-h4: 20px;
+  --text-h5: 18px;
+  --text-h6: 16px;
+
+  /* ========== COLORS ========== */
+  --color-cream: #FEF6EB;
+  --color-dark: #2C2420;
+  --color-accent: #EA580C;
+}
+
+
+@layer base {
+  h1 {
+    font-family: var(--font-heading);
+    font-size: var(--text-h1);
+    font-weight: 500;
+  }
+
+  h2 {
+    font-family: var(--font-heading);
+    font-size: var(--text-h2);
+    font-weight: 500;
+  }
+
+  h3 {
+    font-family: var(--font-heading);
+    font-size: var(--text-h3);
+    font-weight: 500;
+  }
+
+  h4 {
+    font-family: var(--font-body);
+    font-size: var(--text-h4);
+    font-weight: 500;
+  }
+
+  h5 {
+    font-family: var(--font-body);
+    font-size: var(--text-h5);
+    font-weight: 400;
+  }
+
+  h6 {
+    font-family: var(--font-body);
+    font-size: var(--text-h6);
+    font-weight: 400;
+  }
+
+  body {
+    font-family: var(--font-body);
+    background-color: var(--color-cream);
+    color: var(--color-dark);
+  }
+}
