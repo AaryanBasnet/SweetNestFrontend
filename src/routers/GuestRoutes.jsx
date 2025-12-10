@@ -1,10 +1,8 @@
-import { useContext } from "react"; 
 import { Navigate, Outlet } from "react-router-dom";
-import { AuthContext } from "../auth/AuthContext";
+import { useAuth } from "../hooks/user/useAuth";
 
 export default function GuestRoutes() {
-  // Use the hook instead of useContext(AuthContext)
-  const { user, loading } = useContext(AuthContext);
+  const { user, loading } = useAuth();
 
   // 1. Wait for Auth Check to complete
   // (Prevents the Login page from flashing before redirecting)

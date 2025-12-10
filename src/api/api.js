@@ -1,6 +1,7 @@
 import axios from "axios";
 
-const API_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api";
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+console.log("BASE URL:", API_URL);
 
 const instance = axios.create({
   baseURL: API_URL,
@@ -21,7 +22,7 @@ instance.interceptors.response.use(
       localStorage.removeItem("token");
       localStorage.removeItem("user");
       // Optional: Force redirect to login or update context
-      window.location.href = "/login"; 
+      window.location.href = "/login";
     }
     return Promise.reject(error);
   }
