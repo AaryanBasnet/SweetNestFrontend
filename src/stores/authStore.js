@@ -20,7 +20,7 @@ const useAuthStore = create(
           const normalizedUser = { ...userData, _id: userData._id || userData.id };
 
           set({ user: normalizedUser, token: data.token });
-          return { success: true };
+          return { success: true, user: normalizedUser };
         } catch (err) {
           return {
             success: false,
@@ -36,7 +36,7 @@ const useAuthStore = create(
           const normalizedUser = { ...user, _id: user._id || user.id };
 
           set({ user: normalizedUser, token: data.token });
-          return { success: true };
+          return { success: true, user: normalizedUser };
         } catch (err) {
           return {
             success: false,

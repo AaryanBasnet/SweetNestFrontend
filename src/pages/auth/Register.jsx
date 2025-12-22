@@ -29,7 +29,7 @@ export default function Register() {
 
         if (result.success) {
           toast.success("Account created successfully!");
-          navigate("/dashboard");
+          navigate("/");
         } else {
           toast.error(result.message || "Registration failed");
         }

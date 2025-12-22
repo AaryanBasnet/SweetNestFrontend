@@ -7,6 +7,5 @@ export const registerUser = async (userData) => {
 
 export const loginUser = async (credentials) => {
   const res = await authApi.loginUserApi(credentials);
-  console.log("Login response data:", res.data.data);
   return res.data;
 };

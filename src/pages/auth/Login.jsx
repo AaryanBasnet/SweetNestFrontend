@@ -19,13 +19,18 @@ export default function Login() {
     validationSchema: loginSchema,
     onSubmit: async (values, { setSubmitting }) => {
       try {
-        const decoded = await login(values);
-        toast.success("Login successful!");
+        const result = await login(values);
 
-        if (decoded?.role === "admin") {
-          navigate("/admin/dashboard");
+        if (result.success) {
+          toast.success("Login successful!");
+
+          if (result.user?.role === "admin") {
+            navigate("/admin");
+          } else {
+            navigate("/");
+          }
         } else {
-          navigate("/");
+          toast.error(result.message || "Login failed. Please check your credentials.");
         }
       } catch (error) {
         toast.error("Login failed. Please check your credentials.");
@@ -36,23 +41,23 @@ export default function Login() {
   });
 
   return (
-    <div className="w-screen h-screen bg-white overflow-hidden font-body relative flex">
+    <div className="w-screen min-h-screen bg-white overflow-x-hidden font-body relative flex">
 
       {/* Logo */}
-      <div className="absolute top-6 left-10 z-20">
-        <h1 className="font-heading text-h1 text-dark">
+      <div className="absolute top-4 left-4 sm:top-6 sm:left-6 md:left-10 z-20">
+        <h1 className="font-heading text-xl sm:text-2xl md:text-h1 text-dark">
           SweetNest<span className="text-accent"> .</span>
         </h1>
       </div>
 
       {/* Left Section */}
-      <div className="w-full md:w-[45%] h-full flex items-center justify-center px-8 relative z-10 ">
-        <div className="w-full max-w-lg">
-          <h1 className="font-heading text-h1 text-center text-dark mb-9">
+      <div className="w-full md:w-[45%] min-h-screen flex items-center justify-center px-4 sm:px-6 md:px-8 py-16 sm:py-20 relative z-10">
+        <div className="w-full max-w-md sm:max-w-lg">
+          <h1 className="font-heading text-3xl sm:text-4xl md:text-h1 text-center text-dark mb-6 sm:mb-9">
             Log in
           </h1>
 
-          <form onSubmit={formik.handleSubmit} className="space-y-6">
+          <form onSubmit={formik.handleSubmit} className="space-y-4 sm:space-y-6">
             <Input
               label="Email"
               type="email"
@@ -74,7 +79,7 @@ export default function Login() {
             <div className="text-right">
               <Link
                 to="/forgot-password"
-                className="text-[16px] text-gray-600 hover:text-gray-800 transition"
+                className="text-sm sm:text-base text-gray-600 hover:text-gray-800 transition"
               >
                 Forgot Password?
               </Link>
@@ -84,15 +89,15 @@ export default function Login() {
               <AuthButton
                 type="submit"
                 isLoading={formik.isSubmitting}
-                className="w-full h-[56px] bg-dark text-white rounded-lg text-[20px] font-medium hover:bg-[#1d1817] transition-all "
+                className="w-full h-12 sm:h-14 bg-dark text-white rounded-lg text-base sm:text-lg md:text-xl font-medium hover:bg-[#1d1817] transition-all"
               >
                 Login
               </AuthButton>
             </div>
           </form>
 
-          <p className="text-base text-center text-gray-700 mt-6">
-            Don’t have an account?{" "}
+          <p className="text-sm sm:text-base text-center text-gray-700 mt-4 sm:mt-6">
+            Don't have an account?{" "}
             <Link
               to="/register"
               className="text-accent hover:underline font-medium"
@@ -104,7 +109,7 @@ export default function Login() {
       </div>
 
       {/* Right Image */}
-      <div className="hidden md:flex w-[55%] h-full relative">
+      <div className="hidden md:flex w-[55%] h-screen fixed right-0 top-0">
         <img
           src={rightsideImage}
           alt="SweetNest Login"
