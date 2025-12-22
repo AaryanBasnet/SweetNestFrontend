@@ -1,7 +1,6 @@
 /**
  * ProductCard Component
- * Standalone cake product card
- * Receives all data via props (loosely coupled)
+ * Matches exact design from screenshot
  */
 
 import { Heart, ShoppingBag, Star } from 'lucide-react';
@@ -19,7 +18,6 @@ export default function ProductCard({
   onClick,
 }) {
   const imageUrl = images[0]?.url || 'https://via.placeholder.com/300x300?text=Cake';
-  const displayRating = ratingsAverage.toFixed(1);
 
   const handleAddToCart = (e) => {
     e.stopPropagation();
@@ -34,10 +32,11 @@ export default function ProductCard({
   return (
     <div
       onClick={onClick}
-      className="group cursor-pointer bg-white rounded-2xl sm:rounded-3xl overflow-hidden shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
+      className="group cursor-pointer bg-white rounded-2xl overflow-hidden hover:shadow-lg transition-shadow duration-300"
     >
       {/* Image */}
-      <div className="relative aspect-[4/3] overflow-hidden bg-cream">
+      <div className="relative aspect-[4/3] overflow-hidden bg-[#E8E4DD] rounded-t-2xl">
+
         <img
           src={imageUrl}
           alt={name}
@@ -46,56 +45,56 @@ export default function ProductCard({
       </div>
 
       {/* Content */}
-      <div className="p-4 sm:p-5">
-        {/* Name & Price - same row */}
-        <div className="flex justify-between items-start gap-2 mb-2">
-          <h3 className="font-serif text-base sm:text-lg text-dark group-hover:text-dark/80 transition-colors line-clamp-1 flex-1">
+      <div className="p-4">
+        {/* Name & Price */}
+        <div className="flex items-start justify-between gap-2 mb-2">
+          <h3 className="text-dark text-base font-medium leading-tight line-clamp-1">
             {name}
           </h3>
-          <span className="text-accent font-medium text-base sm:text-lg whitespace-nowrap">
+          <span className="text-accent font-medium text-base whitespace-nowrap">
             Rs. {basePrice}
           </span>
         </div>
 
         {/* Description */}
-        <p className="text-sm sm:text-base text-dark/60 line-clamp-2 mb-3 leading-relaxed">
+        <p className="text-dark/50 text-sm leading-relaxed line-clamp-2 mb-3">
           {description}
         </p>
 
         {/* Rating */}
         <div className="flex items-center gap-1.5 mb-4">
-          <div className="flex items-center">
+          <div className="flex items-center gap-0.5">
             {[1, 2, 3, 4, 5].map((star) => (
               <Star
                 key={star}
-                size={16}
-                className={`sm:w-[18px] sm:h-[18px] ${
+                size={14}
+                className={
                   star <= Math.round(ratingsAverage)
                     ? 'text-amber-400 fill-amber-400'
                     : 'text-dark/20'
-                }`}
+                }
               />
             ))}
           </div>
-          <span className="text-xs sm:text-sm text-dark/50 ml-1">
+          <span className="text-dark/40 text-sm">
             ({ratingsCount} Reviews)
           </span>
         </div>
 
-        {/* Buttons Row - Add to Cart + Wishlist */}
+        {/* Buttons */}
         <div className="flex items-center gap-3">
           <button
             onClick={handleAddToCart}
-            className="flex-1 flex items-center justify-center gap-2 py-3 sm:py-3.5 bg-dark text-white text-sm sm:text-base font-medium rounded-full hover:bg-dark/90 transition-colors"
+            className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-dark text-white text-sm font-medium rounded-full hover:bg-dark/90 transition-colors"
           >
             Add to Cart
-            <ShoppingBag size={18} className="sm:w-5 sm:h-5" />
+            <ShoppingBag size={16} />
           </button>
           <button
             onClick={handleWishlist}
-            className="w-12 h-12 sm:w-14 sm:h-14 flex items-center justify-center border border-dark/20 rounded-full hover:border-red-400 hover:text-red-500 transition-colors"
+            className="w-10 h-10 flex items-center justify-center border border-dark/15 rounded-full text-dark/40 hover:border-accent hover:text-accent transition-colors"
           >
-            <Heart size={20} className="sm:w-6 sm:h-6" />
+            <Heart size={18} />
           </button>
         </div>
       </div>

@@ -1,7 +1,7 @@
 /**
  * ProductGrid Component
  * Grid layout for product cards
- * Handles loading and empty states
+ * Responsive: 1 col mobile, 2 cols tablet, 3 cols desktop
  */
 
 import ProductCard from './ProductCard';
@@ -13,12 +13,12 @@ export default function ProductGrid({
   onProductClick,
   onAddToCart,
   onWishlist,
-  skeletonCount = 6,
+  skeletonCount = 8,
 }) {
   // Loading state
   if (isLoading && products.length === 0) {
     return (
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 lg:gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
         {Array.from({ length: skeletonCount }).map((_, i) => (
           <ProductCardSkeleton key={i} />
         ))}
@@ -29,12 +29,12 @@ export default function ProductGrid({
   // Empty state
   if (!isLoading && products.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-12 sm:py-16 text-center px-4">
-        <div className="w-20 h-20 sm:w-24 sm:h-24 mb-4 sm:mb-6 bg-dark/5 rounded-full flex items-center justify-center">
-          <span className="text-3xl sm:text-4xl">🎂</span>
+      <div className="flex flex-col items-center justify-center py-16 text-center px-4">
+        <div className="w-20 h-20 mb-5 bg-cream rounded-full flex items-center justify-center">
+          <span className="text-3xl">🎂</span>
         </div>
-        <h3 className="text-lg sm:text-xl font-serif text-dark mb-2">No cakes found</h3>
-        <p className="text-dark/50 text-xs sm:text-sm max-w-xs">
+        <h3 className="text-lg font-serif text-dark mb-2">No cakes found</h3>
+        <p className="text-dark/50 text-sm max-w-xs">
           Try adjusting your filters or search to find what you're looking for.
         </p>
       </div>
@@ -42,7 +42,7 @@ export default function ProductGrid({
   }
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 lg:gap-6">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
       {products.map((product) => (
         <ProductCard
           key={product._id}

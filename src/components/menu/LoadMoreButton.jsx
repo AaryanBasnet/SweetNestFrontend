@@ -10,32 +10,21 @@ export default function LoadMoreButton({
   onLoadMore,
   hasMore = true,
 }) {
-  const progress = totalCount > 0 ? (currentCount / totalCount) * 100 : 0;
-
   if (totalCount === 0) return null;
 
   return (
-    <div className="flex flex-col items-center py-8">
+    <div className="flex flex-col items-center py-10">
       {/* Progress text */}
-      <p className="text-sm text-dark/50 mb-3">
-        You've viewed <span className="font-medium text-dark">{currentCount}</span> of{' '}
-        <span className="font-medium text-dark">{totalCount}</span> items
+      <p className="text-sm text-dark/40 mb-4">
+        You've viewed {currentCount} of {totalCount} items
       </p>
-
-      {/* Progress bar */}
-      <div className="w-48 h-1 bg-dark/10 rounded-full mb-6 overflow-hidden">
-        <div
-          className="h-full bg-accent transition-all duration-300"
-          style={{ width: `${progress}%` }}
-        />
-      </div>
 
       {/* Load more button */}
       {hasMore && (
         <button
           onClick={onLoadMore}
           disabled={isLoading}
-          className="px-8 py-3 border-2 border-dark text-dark font-medium rounded-lg hover:bg-dark hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          className="px-8 py-3 border border-dark text-dark font-medium text-sm tracking-wide rounded-full hover:bg-dark hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isLoading ? (
             <span className="flex items-center gap-2">

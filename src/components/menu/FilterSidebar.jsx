@@ -1,8 +1,7 @@
 /**
  * FilterSidebar Component
  * Contains Collections, Flavor Notes, and Price Range filters
- * Receives data and handlers via props (loosely coupled)
- * Supports both desktop sidebar and mobile drawer modes
+ * Supports desktop sidebar, mobile drawer, and minimal embedded modes
  */
 
 import { X, RotateCcw } from 'lucide-react';
@@ -22,6 +21,8 @@ export default function FilterSidebar({
   isOpen = false,
   onClose,
   onReset,
+  // Minimal mode (no wrapper, for embedding in cards)
+  minimal = false,
 }) {
   // Static collections including "All Products"
   const collections = [
@@ -29,13 +30,15 @@ export default function FilterSidebar({
     ...categories,
   ];
 
-  // Filter content shared between desktop and mobile
-  const FilterContent = () => (
-    <>
+  // Filter content shared between all modes
+  const FilterContent = ({ compact = false }) => (
+    <div className={compact ? 'space-y-5' : 'space-y-6 lg:space-y-8'}>
       {/* Collections */}
       <div>
-        <h3 className="text-lg sm:text-xl font-serif text-dark mb-3 sm:mb-4">Collections</h3>
-        <ul className="space-y-1">
+        <h3 className={`font-medium text-dark ${compact ? 'text-sm mb-2' : 'text-lg sm:text-xl font-serif mb-3 sm:mb-4'}`}>
+          {compact ? 'Categories' : 'Collections'}
+        </h3>
+        <ul className="space-y-0.5">
           {collections.map((cat) => (
             <li key={cat._id || 'all'}>
               <button
@@ -43,16 +46,13 @@ export default function FilterSidebar({
                   onCategoryChange?.(cat._id);
                   if (isMobile) onClose?.();
                 }}
-                className={`w-full text-left px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg text-sm transition-colors ${
+                className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${
                   selectedCategory === cat._id
                     ? 'bg-dark text-white font-medium'
-                    : 'text-dark/70 hover:bg-dark/5'
+                    : 'text-dark/60 hover:bg-dark/5 hover:text-dark'
                 }`}
               >
                 {cat.name}
-                {selectedCategory === cat._id && (
-                  <span className="float-right text-accent">•</span>
-                )}
               </button>
             </li>
           ))}
@@ -61,16 +61,18 @@ export default function FilterSidebar({
 
       {/* Flavor Notes */}
       <div>
-        <h3 className="text-lg sm:text-xl font-serif text-dark mb-3 sm:mb-4">Flavor Notes</h3>
-        <div className="flex flex-wrap gap-2">
+        <h3 className={`font-medium text-dark ${compact ? 'text-sm mb-2' : 'text-lg sm:text-xl font-serif mb-3 sm:mb-4'}`}>
+          {compact ? 'Flavors' : 'Flavor Notes'}
+        </h3>
+        <div className="flex flex-wrap gap-1.5">
           {flavorTags.map((flavor) => (
             <button
               key={flavor}
               onClick={() => onFlavorToggle?.(flavor)}
-              className={`px-3 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm border transition-colors ${
+              className={`px-2.5 py-1 rounded-full text-xs border transition-colors ${
                 selectedFlavors.includes(flavor)
                   ? 'bg-dark text-white border-dark'
-                  : 'border-dark/20 text-dark/70 hover:border-dark/40'
+                  : 'border-dark/15 text-dark/60 hover:border-dark/30 hover:text-dark'
               }`}
             >
               {flavor}
@@ -80,8 +82,10 @@ export default function FilterSidebar({
       </div>
 
       {/* Price Range */}
-      <div className="bg-white rounded-xl p-4 border border-dark/10">
-        <h3 className="text-sm font-medium text-dark mb-4">Price Range</h3>
+      <div className={compact ? '' : 'bg-white rounded-xl p-4 border border-dark/10'}>
+        <h3 className={`font-medium text-dark ${compact ? 'text-sm mb-3' : 'text-sm mb-4'}`}>
+          Price Range
+        </h3>
         <PriceRangeSlider
           min={500}
           max={6000}
@@ -89,8 +93,13 @@ export default function FilterSidebar({
           onChange={onPriceChange}
         />
       </div>
-    </>
+    </div>
   );
+
+  // Minimal mode (embedded in a card)
+  if (minimal) {
+    return <FilterContent compact={true} />;
+  }
 
   // Mobile drawer mode
   if (isMobile) {
@@ -106,7 +115,7 @@ export default function FilterSidebar({
 
         {/* Drawer */}
         <aside
-          className={`lg:hidden fixed inset-y-0 left-0 w-[85%] max-w-[320px] bg-cream-100 z-50 transform transition-transform duration-300 ease-out ${
+          className={`lg:hidden fixed inset-y-0 left-0 w-[85%] max-w-[320px] bg-white z-50 transform transition-transform duration-300 ease-out ${
             isOpen ? 'translate-x-0' : '-translate-x-full'
           }`}
         >
@@ -135,15 +144,15 @@ export default function FilterSidebar({
           </div>
 
           {/* Scrollable content */}
-          <div className="p-4 sm:p-6 space-y-6 sm:space-y-8 overflow-y-auto h-[calc(100%-65px)]">
+          <div className="p-5 overflow-y-auto h-[calc(100%-130px)]">
             <FilterContent />
           </div>
 
           {/* Apply button - sticky at bottom */}
-          <div className="absolute bottom-0 left-0 right-0 p-4 bg-cream-100 border-t border-dark/10">
+          <div className="absolute bottom-0 left-0 right-0 p-4 bg-white border-t border-dark/10">
             <button
               onClick={onClose}
-              className="w-full py-3 bg-dark text-white rounded-full font-medium text-sm hover:bg-dark/90 transition-colors"
+              className="w-full py-3 bg-dark text-white rounded-xl font-medium text-sm hover:bg-dark/90 transition-colors"
             >
               Apply Filters
             </button>
@@ -155,7 +164,7 @@ export default function FilterSidebar({
 
   // Desktop sidebar mode
   return (
-    <aside className="w-[200px] lg:w-[220px] flex-shrink-0 space-y-6 lg:space-y-8">
+    <aside className="w-[200px] lg:w-[220px] flex-shrink-0">
       <FilterContent />
     </aside>
   );
