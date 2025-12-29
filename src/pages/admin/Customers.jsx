@@ -3,27 +3,31 @@
  * Customer management and overview
  */
 
-import { useState } from 'react';
-import { Search, Filter, Mail, Phone } from 'lucide-react';
-import { PageHeader, DataTable } from '../../components/admin/shared';
-
-// Mock customers data
-const MOCK_CUSTOMERS = [
-  { id: 1, name: 'Saugat Shahi', email: 'saugat@email.com', phone: '+977 9841234567', orders: 12, totalSpent: 15600, joinedAt: '2024-08-15' },
-  { id: 2, name: 'Akash Chaudhary', email: 'akash@email.com', phone: '+977 9851234567', orders: 8, totalSpent: 9800, joinedAt: '2024-09-01' },
-  { id: 3, name: 'Sabin Khadka', email: 'sabin@email.com', phone: '+977 9861234567', orders: 5, totalSpent: 6500, joinedAt: '2024-09-20' },
-  { id: 4, name: 'Krishna Bhandari', email: 'krishna@email.com', phone: '+977 9871234567', orders: 3, totalSpent: 3900, joinedAt: '2024-10-05' },
-  { id: 5, name: 'Aaryan Basnet', email: 'aaryan@email.com', phone: '+977 9881234567', orders: 15, totalSpent: 21500, joinedAt: '2024-07-10' },
-];
+import { useState } from "react";
+import { Search, Filter, Mail, Phone } from "lucide-react";
+import { PageHeader, DataTable } from "../../components/admin/shared";
+import { useCustomers } from "../../hooks/admin/useCustomers";
 
 export default function Customers() {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [customers] = useState(MOCK_CUSTOMERS);
+  const { data, isLoading, isError } = useCustomers();
+  const [searchQuery, setSearchQuery] = useState("");
+
+  // Map backend data to frontend expected shape with defaults for missing fields
+  const customers = data?.customers.map((c) => ({
+    id: c._id,
+    name: c.name ?? "",
+    email: c.email ?? "",
+    phone: c.phone ?? "N/A",
+    orders: c.orders ?? 0,
+    totalSpent: c.totalSpent ?? 0,
+    joinedAt: c.createdAt ?? new Date().toISOString(),
+    avatar: c.avatar ?? null,
+  })) ?? [];
 
   const columns = [
     {
-      key: 'name',
-      label: 'Customer',
+      key: "name",
+      label: "Customer",
       render: (value, row) => (
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-full bg-accent/10 flex items-center justify-center">
@@ -37,8 +41,8 @@ export default function Customers() {
       ),
     },
     {
-      key: 'phone',
-      label: 'Phone',
+      key: "phone",
+      label: "Phone",
       render: (value) => (
         <div className="flex items-center gap-2 text-dark/70">
           <Phone size={14} />
@@ -47,30 +51,37 @@ export default function Customers() {
       ),
     },
     {
-      key: 'orders',
-      label: 'Orders',
+      key: "orders",
+      label: "Orders",
       sortable: true,
       render: (value) => <span className="font-medium">{value}</span>,
     },
     {
-      key: 'totalSpent',
-      label: 'Total Spent',
+      key: "totalSpent",
+      label: "Total Spent",
       sortable: true,
-      render: (value) => <span className="font-medium text-green-600">Rs. {value.toLocaleString()}</span>,
+      render: (value) => (
+        <span className="font-medium text-green-600">
+          Rs. {value.toLocaleString()}
+        </span>
+      ),
     },
     {
-      key: 'joinedAt',
-      label: 'Joined',
+      key: "joinedAt",
+      label: "Joined",
       sortable: true,
-      render: (value) => new Date(value).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+      render: (value) =>
+        new Date(value).toLocaleDateString("en-US", {
+          month: "short",
+          day: "numeric",
+          year: "numeric",
+        }),
     },
     {
-      key: 'actions',
-      label: '',
+      key: "actions",
+      label: "",
       render: (_, row) => (
-        <button
-          className="flex items-center gap-2 px-3 py-1.5 text-sm text-accent border border-accent/20 rounded-lg hover:bg-accent/5 transition-colors"
-        >
+        <button className="flex items-center gap-2 px-3 py-1.5 text-sm text-accent border border-accent/20 rounded-lg hover:bg-accent/5 transition-colors">
           <Mail size={14} />
           Contact
         </button>
@@ -100,13 +111,20 @@ export default function Customers() {
         <div className="bg-white rounded-xl p-6 border border-dark/5">
           <p className="text-sm text-dark/50 mb-1">Total Revenue</p>
           <p className="text-3xl font-serif text-dark">
-            Rs. {customers.reduce((sum, c) => sum + c.totalSpent, 0).toLocaleString()}
+            Rs.{" "}
+            {customers.reduce((sum, c) => sum + c.totalSpent, 0).toLocaleString()}
           </p>
         </div>
         <div className="bg-white rounded-xl p-6 border border-dark/5">
           <p className="text-sm text-dark/50 mb-1">Avg. Order Value</p>
           <p className="text-3xl font-serif text-dark">
-            Rs. {Math.round(customers.reduce((sum, c) => sum + c.totalSpent, 0) / customers.reduce((sum, c) => sum + c.orders, 0))}
+            Rs.{" "}
+            {customers.reduce((sum, c) => sum + c.orders, 0) > 0
+              ? Math.round(
+                  customers.reduce((sum, c) => sum + c.totalSpent, 0) /
+                    customers.reduce((sum, c) => sum + c.orders, 0)
+                )
+              : 0}
           </p>
         </div>
       </div>
@@ -114,7 +132,10 @@ export default function Customers() {
       {/* Filters */}
       <div className="flex items-center gap-4 mb-6">
         <div className="relative flex-1 max-w-md">
-          <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-dark/40" />
+          <Search
+            size={18}
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-dark/40"
+          />
           <input
             type="text"
             placeholder="Search customers..."
@@ -134,7 +155,7 @@ export default function Customers() {
       <DataTable
         columns={columns}
         data={filteredCustomers}
-        emptyMessage="No customers found"
+        emptyMessage={isLoading ? "Loading..." : "No customers found"}
       />
     </div>
   );

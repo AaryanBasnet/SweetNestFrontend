@@ -67,13 +67,15 @@ export default function Checkout() {
       if (status === 'success' && orderNumber && orderId) {
         // Payment successful
         setOrderResult(orderId, orderNumber);
+        setCurrentStep(3); // <--- ADD THIS LINE (Safety net)
+        
         toast.success('Payment successful! Your order has been placed.');
-        // Clear cart
-        clearCart();
+        clearCart(); // Clear local UI cart
       } else if (status === 'failed' || status === 'error') {
         // Payment failed
         setCurrentStep(2); // Go back to payment step
         toast.error(message ? decodeURIComponent(message) : 'Payment failed. Please try again.');
+        // NOTE: We do NOT clear cart here. This is Correct.
       }
 
       // Clean up URL

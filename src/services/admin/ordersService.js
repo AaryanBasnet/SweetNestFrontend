@@ -13,11 +13,12 @@ export const fetchOrders = async (filters = {}) => {
   if (filters.status) params.status = filters.status;
   if (filters.page) params.page = filters.page;
   if (filters.limit) params.limit = filters.limit;
-  if (filters.startDate) params.startDate = filters.startDate;
-  if (filters.endDate) params.endDate = filters.endDate;
+  if (filters.startDate) params.startDate = filters.startDate; // optional, backend must support
+  if (filters.endDate) params.endDate = filters.endDate;       // optional, backend must support
   if (filters.search) params.search = filters.search;
 
   const response = await ordersApi.getOrdersApi(params);
+  console.log("Fetched orders with filters:", params, response.data);
   return response.data;
 };
 
@@ -39,6 +40,7 @@ export const updateOrderStatus = async (id, status) => {
 
 /**
  * Delete order
+ * Note: Backend route must exist
  */
 export const deleteOrder = async (id) => {
   const response = await ordersApi.deleteOrderApi(id);
@@ -47,6 +49,7 @@ export const deleteOrder = async (id) => {
 
 /**
  * Export orders report
+ * Note: Backend route must exist
  */
 export const exportOrders = async (filters = {}) => {
   const response = await ordersApi.exportOrdersApi(filters);
@@ -57,7 +60,7 @@ export const exportOrders = async (filters = {}) => {
 export const ORDER_STATUSES = [
   { value: 'pending', label: 'Pending', color: 'amber' },
   { value: 'processing', label: 'Processing', color: 'blue' },
-  { value: 'shipped', label: 'Shipped', color: 'purple' },
+  { value: 'out_for_delivery', label: 'Shipped', color: 'purple' },
   { value: 'delivered', label: 'Delivered', color: 'green' },
   { value: 'cancelled', label: 'Cancelled', color: 'red' },
 ];

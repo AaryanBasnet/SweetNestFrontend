@@ -3,32 +3,30 @@
  * Admin order management endpoints
  * Standalone - only depends on axios instance
  */
-
 import api from '../api';
 
 // Get all orders with filters
 export const getOrdersApi = (params = {}) => {
-  return api.get('/admin/orders', { params });
+  return api.get('/orders/admin/all', { params }); // ✅ matches backend
 };
-
 // Get single order by ID
 export const getOrderByIdApi = (id) => {
-  return api.get(`/admin/orders/${id}`);
+  return api.get(`/orders/${id}`);
 };
 
 // Update order status
 export const updateOrderStatusApi = (id, status) => {
-  return api.put(`/admin/orders/${id}/status`, { status });
+  return api.put(`/orders/${id}/status`, { status });
 };
 
-// Delete order
+// Delete order (needs backend implementation)
 export const deleteOrderApi = (id) => {
-  return api.delete(`/admin/orders/${id}`);
+  return api.delete(`/orders/${id}`);
 };
 
-// Export orders report
+// Export orders report (needs backend implementation)
 export const exportOrdersApi = (params = {}) => {
-  return api.get('/admin/orders/export', {
+  return api.get('/orders/admin/export', {
     params,
     responseType: 'blob',
   });
