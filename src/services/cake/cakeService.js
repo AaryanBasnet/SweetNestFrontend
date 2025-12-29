@@ -51,7 +51,8 @@ export const fetchCakesByCategory = async (categorySlug, filters = {}) => {
  */
 export const fetchCakeBySlug = async (slug) => {
   const response = await cakeApi.getCakeBySlugApi(slug);
-  return response.data;
+  // API returns { success, message, data: cake } - extract the cake object
+  return response.data?.data;
 };
 
 /**
