@@ -23,6 +23,10 @@ import {
   Analytics,
   Settings,
 } from "../pages/admin";
+import CakeDetail from "../pages/CakeDetail";
+import Wishlist from "../pages/Wishlist";
+import Cart from "../pages/Cart";
+import Profile from "../pages/Profile";
 
 export default function AppRouter() {
   return (
@@ -40,16 +44,16 @@ export default function AppRouter() {
           <Route path="/about" element={<About />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/locations" element={<div>Locations Page</div>} />
-          <Route path="/cart" element={<div>Cart Page</div>} />
-          <Route path="/profile" element={<div>Profile Page</div>} />
+          <Route path="/cart" element={<Cart />} />
+          <Route path="/profile" element={<Profile />} />
           <Route path="/settings" element={<div>Settings Page</div>} />
-          <Route path="/wishlist" element={<div>Wishlist Page</div>} />
+          <Route path="/wishlist" element={<Wishlist />} />
           <Route path="/orders" element={<div>Orders Page</div>} />
           <Route
             path="/notifications"
             element={<div>Notifications Page</div>}
           />
-          <Route path="/cake/:slug" element={<div>Cake Details Page</div>} />
+          <Route path="/cake/:slug" element={<CakeDetail />} />
         </Route>
 
         {/* Admin Layout - Protected routes */}

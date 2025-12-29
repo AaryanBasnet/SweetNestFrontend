@@ -1,34 +1,42 @@
 /**
  * Menu Page
- * Main page for browsing cakes
- * Composes atomic components with loose coupling
+ * Clean shop layout matching design
  */
 
-import { useEffect, useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { toast } from 'react-toastify';
-import { SlidersHorizontal } from 'lucide-react';
+import { useEffect, useMemo, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
+import {
+  Search,
+  ChevronDown,
+  ChevronRight,
+  SlidersHorizontal,
+  X,
+} from "lucide-react";
 
 // Hooks
-import { useInfiniteCakes, useCategories } from '../hooks/cake';
+import { useInfiniteCakes, useCategories } from "../hooks/cake";
 
 // Store
-import useMenuStore, { SORT_OPTIONS, FLAVOR_TAGS } from '../stores/menuStore';
+import useMenuStore, { SORT_OPTIONS, FLAVOR_TAGS } from "../stores/menuStore";
+import useCartStore from "../stores/cartStore";
+import useWishlistStore from "../stores/wishlistStore";
+import useAuthStore from "../stores/authStore";
 
 // Components
-import {
-  SearchBar,
-  SortDropdown,
-  FilterSidebar,
-  ProductGrid,
-  LoadMoreButton,
-} from '../components/menu';
+import { ProductGrid, LoadMoreButton } from "../components/menu";
+import PriceRangeSlider from "../components/menu/PriceRangeSlider";
 
 export default function Menu() {
   const navigate = useNavigate();
-  const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
 
-  // Store state and actions
+  // Auth & stores
+  const { isAuthenticated } = useAuthStore();
+  const isLoggedIn = isAuthenticated();
+  const { addToCart } = useCartStore();
+  const { toggleWishlist } = useWishlistStore();
+
+  // Menu store state and actions
   const {
     filters,
     setCategory,
@@ -36,7 +44,6 @@ export default function Menu() {
     setSort,
     setPriceRange,
     toggleFlavorTag,
-    resetFilters,
   } = useMenuStore();
 
   // Fetch categories
@@ -52,8 +59,10 @@ export default function Menu() {
 
     if (filters.category) params.category = filters.category;
     if (filters.search) params.search = filters.search;
-    if (filters.minPrice > 500) params.minPrice = filters.minPrice;
+    if (filters.minPrice > 300) params.minPrice = filters.minPrice;
     if (filters.maxPrice < 6000) params.maxPrice = filters.maxPrice;
+    if (filters.flavorTags.length > 0)
+      params.flavorTags = filters.flavorTags.join(",");
 
     return params;
   }, [filters]);
@@ -73,22 +82,52 @@ export default function Menu() {
     return cakesData.pages.flatMap((page) => page.data || []);
   }, [cakesData]);
 
-  // Total count from last page
+  // Total count
   const totalCount = cakesData?.pages?.[0]?.pagination?.totalItems || 0;
+
+  // Collections list
+  const collections = [
+    { _id: null, name: "All Products", slug: null },
+    ...categories,
+  ];
 
   // Handlers
   const handleProductClick = (product) => {
     navigate(`/cake/${product.slug}`);
   };
 
-  const handleAddToCart = (product) => {
-    // TODO: Implement cart functionality
-    toast.success(`${product.name} added to cart!`);
+  const handleAddToCart = async (product) => {
+    const defaultWeight =
+      product.weightOptions?.find((w) => w.isDefault) ||
+      product.weightOptions?.[0];
+
+    if (!defaultWeight) {
+      navigate(`/cake/${product.slug}`);
+      return;
+    }
+
+    const result = await addToCart(
+      {
+        cakeId: product._id,
+        cake: product,
+        quantity: 1,
+        selectedWeight: defaultWeight,
+      },
+      isLoggedIn
+    );
+
+    if (result.success) {
+      toast.success(`${product.name} added to cart!`);
+    } else {
+      toast.error(result.message || "Failed to add to cart");
+    }
   };
 
-  const handleWishlist = (product) => {
-    // TODO: Implement wishlist functionality
-    toast.info(`${product.name} added to wishlist!`);
+  const handleWishlist = async (product) => {
+    const result = await toggleWishlist(product._id, isLoggedIn);
+    if (result.success) {
+      toast.success("Wishlist updated!");
+    }
   };
 
   const handleLoadMore = () => {
@@ -97,118 +136,300 @@ export default function Menu() {
     }
   };
 
+  // Sort dropdown state
+  const [isSortOpen, setIsSortOpen] = useState(false);
+  const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
+  const currentSortLabel =
+    SORT_OPTIONS.find((opt) => opt.value === filters.sort)?.label || "Featured";
+
   // Lock body scroll when mobile filter is open
   useEffect(() => {
     if (isMobileFilterOpen) {
-      document.body.style.overflow = 'hidden';
+      document.body.style.overflow = "hidden";
     } else {
-      document.body.style.overflow = '';
+      document.body.style.overflow = "";
     }
     return () => {
-      document.body.style.overflow = '';
+      document.body.style.overflow = "";
     };
   }, [isMobileFilterOpen]);
 
-  // Reset filters on unmount (optional)
-  useEffect(() => {
-    return () => {
-      // Uncomment to reset on page leave
-      // resetFilters();
-    };
-  }, []);
-
   return (
-    <div className="min-h-screen py-6 sm:py-8 px-4 sm:px-6 md:px-12 lg:px-20 bg-[#FDFCF8]">
-      {/* Header: Search & Sort */}
-      <div className="flex flex-col gap-4 mb-6 sm:mb-8">
-        {/* Search Bar - Full width on mobile */}
-        <div className="w-full">
-          <SearchBar
-            value={filters.search}
-            onChange={setSearch}
-            placeholder="Search flavor, name..."
-          />
+    <div className="min-h-screen bg-[#FDFBF7]">
+      <div className="mx-5 sm:mx-10 lg:mx-20 py-6">
+        {/* Top Row: Breadcrumb on left, Search & Sort on right */}
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
+          {/* Breadcrumb */}
+          <nav className="flex items-center gap-2 text-sm">
+            <Link
+              to="/"
+              className="text-dark/40 hover:text-dark transition-colors"
+            >
+              Home
+            </Link>
+            <ChevronRight size={14} className="text-dark/30" />
+            <span className="text-dark">Menu</span>
+          </nav>
+
+          {/* Search & Sort */}
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+            {/* Search */}
+            <div className="relative">
+              <Search
+                size={18}
+                className="absolute left-4 top-1/2 -translate-y-1/2 text-dark/30"
+              />
+              <input
+                type="text"
+                value={filters.search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search flavor, name..."
+                className="w-full sm:w-64 pl-11 pr-4 py-2.5 bg-white border border-dark/10 rounded-full text-sm placeholder:text-dark/40 focus:outline-none focus:border-dark/30 transition-colors"
+              />
+            </div>
+
+            {/* Sort Dropdown */}
+            <div className="relative">
+              <button
+                onClick={() => setIsSortOpen(!isSortOpen)}
+                className="flex items-center gap-2 px-4 py-2.5 bg-white border border-dark/10 rounded-full text-sm hover:border-dark/30 transition-colors"
+              >
+                <span className="text-dark/50">Sort by:</span>
+                <span className="font-medium text-dark">
+                  {currentSortLabel}
+                </span>
+                <ChevronDown
+                  size={16}
+                  className={`text-dark/40 transition-transform ${
+                    isSortOpen ? "rotate-180" : ""
+                  }`}
+                />
+              </button>
+
+              {isSortOpen && (
+                <>
+                  <div
+                    className="fixed inset-0 z-10"
+                    onClick={() => setIsSortOpen(false)}
+                  />
+                  <div className="absolute right-0 top-full mt-2 w-48 bg-white rounded-xl shadow-lg border border-dark/10 py-2 z-20">
+                    {SORT_OPTIONS.map((option) => (
+                      <button
+                        key={option.value}
+                        onClick={() => {
+                          setSort(option.value);
+                          setIsSortOpen(false);
+                        }}
+                        className={`w-full text-left px-4 py-2 text-sm hover:bg-dark/5 transition-colors ${
+                          filters.sort === option.value
+                            ? "text-accent font-medium"
+                            : "text-dark/70"
+                        }`}
+                      >
+                        {option.label}
+                      </button>
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
         </div>
 
-        {/* Filter button, results count, and sort */}
-        <div className="flex items-center justify-between gap-3">
-          {/* Mobile Filter Button */}
+        {/* Results Count & Mobile Filter */}
+        <div className="flex items-center justify-between mb-4">
+          <p className="text-sm text-dark/40">Showing {cakes.length} results</p>
           <button
             onClick={() => setIsMobileFilterOpen(true)}
-            className="lg:hidden flex items-center gap-2 px-4 py-2.5 bg-dark text-white rounded-full text-sm font-medium"
+            className="lg:hidden flex items-center gap-2 px-4 py-2 border border-dark/20 rounded-full text-sm text-dark/70 hover:border-dark/40 transition-colors"
           >
             <SlidersHorizontal size={16} />
             Filters
           </button>
+        </div>
 
-          <div className="flex items-center gap-3 sm:gap-4 ml-auto">
-            <span className="text-xs sm:text-sm text-dark/50 hidden sm:inline">
-              Showing {cakes.length} results
-            </span>
-            <span className="text-xs text-dark/50 sm:hidden">
-              {cakes.length} items
-            </span>
-            <SortDropdown
-              value={filters.sort}
-              options={SORT_OPTIONS}
-              onChange={setSort}
+        {/* Main Layout */}
+        <div className="flex gap-6 lg:gap-8">
+          {/* Sidebar */}
+          <aside className="hidden lg:block w-44 shrink-0">
+            {/* Collections */}
+            <div className="mb-8">
+              <h3 className="text-xl font-serif text-dark mb-4">Collections</h3>
+              <ul className="space-y-1">
+                {collections.map((cat) => (
+                  <li key={cat._id || "all"}>
+                    <button
+                      onClick={() => setCategory(cat.slug)}
+                      className={`w-full text-left px-4 py-2 rounded-lg text-sm transition-colors ${
+                        filters.category === cat.slug
+                          ? "bg-dark text-white"
+                          : "text-dark/70 hover:bg-dark/5"
+                      }`}
+                    >
+                      {cat.name}
+                      {filters.category === cat.slug && (
+                        <span className="float-right">•</span>
+                      )}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Flavor Tags */}
+            <div className="mb-8">
+              <h3 className="text-xl font-serif text-dark mb-4">Flavors</h3>
+              <div className="flex flex-wrap gap-2">
+                {FLAVOR_TAGS.map((flavor) => (
+                  <button
+                    key={flavor}
+                    onClick={() => toggleFlavorTag(flavor)}
+                    className={`px-3 py-1.5 rounded-full text-xs border transition-colors ${
+                      filters.flavorTags.includes(flavor)
+                        ? "bg-dark text-white border-dark"
+                        : "border-dark/20 text-dark/60 hover:border-dark/40"
+                    }`}
+                  >
+                    {flavor}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Price Range */}
+            <div className="border border-dark/10 rounded-xl p-4">
+              <h3 className="text-sm font-medium text-dark mb-4">
+                Price Range
+              </h3>
+              <PriceRangeSlider
+                min={300}
+                max={6000}
+                value={[filters.minPrice, filters.maxPrice]}
+                onChange={setPriceRange}
+              />
+            </div>
+          </aside>
+
+          {/* Product Grid */}
+          <main className="flex-1 min-w-0">
+            <ProductGrid
+              products={cakes}
+              isLoading={isLoading}
+              onProductClick={handleProductClick}
+              onAddToCart={handleAddToCart}
+              onWishlist={handleWishlist}
             />
-          </div>
+
+            {/* Load More */}
+            <LoadMoreButton
+              currentCount={cakes.length}
+              totalCount={totalCount}
+              isLoading={isFetchingNextPage}
+              hasMore={hasNextPage}
+              onLoadMore={handleLoadMore}
+            />
+          </main>
         </div>
       </div>
 
-      {/* Main Content */}
-      <div className="flex gap-6 lg:gap-10">
-        {/* Sidebar Filters - Desktop */}
-        <div className="hidden lg:block">
-          <FilterSidebar
-            categories={categories}
-            selectedCategory={filters.category}
-            onCategoryChange={setCategory}
-            flavorTags={FLAVOR_TAGS}
-            selectedFlavors={filters.flavorTags}
-            onFlavorToggle={toggleFlavorTag}
-            priceRange={[filters.minPrice, filters.maxPrice]}
-            onPriceChange={setPriceRange}
-          />
-        </div>
-
-        {/* Mobile Filter Drawer */}
-        <FilterSidebar
-          categories={categories}
-          selectedCategory={filters.category}
-          onCategoryChange={setCategory}
-          flavorTags={FLAVOR_TAGS}
-          selectedFlavors={filters.flavorTags}
-          onFlavorToggle={toggleFlavorTag}
-          priceRange={[filters.minPrice, filters.maxPrice]}
-          onPriceChange={setPriceRange}
-          isMobile={true}
-          isOpen={isMobileFilterOpen}
-          onClose={() => setIsMobileFilterOpen(false)}
-          onReset={resetFilters}
+      {/* Mobile Filter Drawer */}
+      <>
+        {/* Overlay */}
+        <div
+          className={`lg:hidden fixed inset-0 bg-black/50 z-40 transition-opacity duration-300 ${
+            isMobileFilterOpen ? "opacity-100" : "opacity-0 pointer-events-none"
+          }`}
+          onClick={() => setIsMobileFilterOpen(false)}
         />
 
-        {/* Product Grid */}
-        <div className="flex-1 min-w-0">
-          <ProductGrid
-            products={cakes}
-            isLoading={isLoading}
-            onProductClick={handleProductClick}
-            onAddToCart={handleAddToCart}
-            onWishlist={handleWishlist}
-          />
+        {/* Drawer */}
+        <aside
+          className={`lg:hidden fixed inset-y-0 left-0 w-[85%] max-w-[320px] bg-white z-50 transform transition-transform duration-300 ease-out ${
+            isMobileFilterOpen ? "translate-x-0" : "-translate-x-full"
+          }`}
+        >
+          {/* Header */}
+          <div className="flex items-center justify-between p-4 border-b border-dark/10">
+            <h2 className="text-xl font-serif text-dark">Filters</h2>
+            <button
+              onClick={() => setIsMobileFilterOpen(false)}
+              className="p-2 text-dark/60 hover:text-dark transition-colors"
+            >
+              <X size={20} />
+            </button>
+          </div>
 
-          {/* Load More */}
-          <LoadMoreButton
-            currentCount={cakes.length}
-            totalCount={totalCount}
-            isLoading={isFetchingNextPage}
-            hasMore={hasNextPage}
-            onLoadMore={handleLoadMore}
-          />
-        </div>
-      </div>
+          {/* Content */}
+          <div className="p-5 overflow-y-auto h-[calc(100%-130px)]">
+            {/* Collections */}
+            <div className="mb-8">
+              <h3 className="text-lg font-serif text-dark mb-4">Collections</h3>
+              <ul className="space-y-1">
+                {collections.map((cat) => (
+                  <li key={cat._id || "all"}>
+                    <button
+                      onClick={() => {
+                        setCategory(cat.slug);
+                        setIsMobileFilterOpen(false);
+                      }}
+                      className={`w-full text-left px-4 py-2.5 rounded-lg text-sm transition-colors ${
+                        filters.category === cat.slug
+                          ? "bg-dark text-white"
+                          : "text-dark/70 hover:bg-dark/5"
+                      }`}
+                    >
+                      {cat.name}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Flavor Tags */}
+            <div className="mb-8">
+              <h3 className="text-lg font-serif text-dark mb-4">Flavors</h3>
+              <div className="flex flex-wrap gap-2">
+                {FLAVOR_TAGS.map((flavor) => (
+                  <button
+                    key={flavor}
+                    onClick={() => toggleFlavorTag(flavor)}
+                    className={`px-3 py-1.5 rounded-full text-xs border transition-colors ${
+                      filters.flavorTags.includes(flavor)
+                        ? "bg-dark text-white border-dark"
+                        : "border-dark/20 text-dark/60 hover:border-dark/40"
+                    }`}
+                  >
+                    {flavor}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Price Range */}
+            <div className="border border-dark/10 rounded-xl p-4">
+              <h3 className="text-sm font-medium text-dark mb-4">
+                Price Range
+              </h3>
+              <PriceRangeSlider
+                min={300}
+                max={6000}
+                value={[filters.minPrice, filters.maxPrice]}
+                onChange={setPriceRange}
+              />
+            </div>
+          </div>
+
+          {/* Apply Button */}
+          <div className="absolute bottom-0 left-0 right-0 p-4 bg-white border-t border-dark/10">
+            <button
+              onClick={() => setIsMobileFilterOpen(false)}
+              className="w-full py-3 bg-dark text-white rounded-full font-medium text-sm hover:bg-dark/90 transition-colors"
+            >
+              Apply Filters
+            </button>
+          </div>
+        </aside>
+      </>
     </div>
   );
 }
