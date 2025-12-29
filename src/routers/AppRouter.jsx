@@ -1,4 +1,4 @@
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import GuestRoutes from "./GuestRoutes";
 import Login from "../pages/auth/LOgin";
 import Register from "../pages/auth/Register";
@@ -27,6 +27,8 @@ import CakeDetail from "../pages/CakeDetail";
 import Wishlist from "../pages/Wishlist";
 import Cart from "../pages/Cart";
 import Profile from "../pages/Profile";
+import Checkout from "../pages/Checkout";
+import TrackOrder from "../pages/TrackOrder";
 
 export default function AppRouter() {
   return (
@@ -45,10 +47,15 @@ export default function AppRouter() {
           <Route path="/contact" element={<Contact />} />
           <Route path="/locations" element={<div>Locations Page</div>} />
           <Route path="/cart" element={<Cart />} />
+          <Route path="/checkout" element={<Checkout />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/settings" element={<div>Settings Page</div>} />
           <Route path="/wishlist" element={<Wishlist />} />
-          <Route path="/orders" element={<div>Orders Page</div>} />
+          <Route
+            path="/orders"
+            element={<Navigate to="/profile?tab=orders" replace />}
+          />
+          <Route path="/track-order/:orderId" element={<TrackOrder />} />
           <Route
             path="/notifications"
             element={<div>Notifications Page</div>}

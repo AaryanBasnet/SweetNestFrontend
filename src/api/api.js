@@ -4,8 +4,9 @@ const API_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api"
 
 const instance = axios.create({
   baseURL: API_URL,
-  headers: { "Content-Type": "application/json" },
-});
+  withCredentials: false, // Set to false for localhost - different ports are cross-origin
+  timeout: 30000, // 30 second timeout
+});;
 
 // Helper to get token from Zustand persisted store
 const getToken = () => {
