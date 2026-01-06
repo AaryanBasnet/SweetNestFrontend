@@ -1,7 +1,6 @@
 /**
  * Products API (Admin)
  * Admin product management endpoints
- * Standalone - only depends on axios instance
  */
 
 import api from '../api';
@@ -13,16 +12,14 @@ export const getProductsApi = (params = {}) => {
 
 // Create product
 export const createProductApi = (formData) => {
-  return api.post('/cakes', formData, {
-    headers: { 'Content-Type': 'multipart/form-data' },
-  });
+  // ✅ FIX: Let axios set the Content-Type automatically
+  return api.post('/cakes', formData);
 };
 
 // Update product
 export const updateProductApi = (id, formData) => {
-  return api.put(`/cakes/${id}`, formData, {
-    headers: { 'Content-Type': 'multipart/form-data' },
-  });
+  // ✅ FIX: Let axios set the Content-Type automatically
+  return api.put(`/cakes/${id}`, formData);
 };
 
 // Delete product

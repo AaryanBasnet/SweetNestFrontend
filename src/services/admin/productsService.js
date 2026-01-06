@@ -1,7 +1,6 @@
 /**
  * Products Service (Admin)
  * Business logic for product management
- * Products are configurable, made-to-order services with predefined price slabs
  */
 
 import * as productsApi from '../../api/admin/productsApi';
@@ -25,7 +24,13 @@ export const fetchProducts = async (filters = {}) => {
  * Create new product
  */
 export const createProduct = async (productData) => {
-  const formData = buildProductFormData(productData);
+  // ✅ FIX: Check if productData is already FormData
+  // If your Component created the FormData, use it directly.
+  // If you passed a plain object, convert it.
+  const formData = productData instanceof FormData 
+    ? productData 
+    : buildProductFormData(productData);
+
   const response = await productsApi.createProductApi(formData);
   return response.data;
 };
@@ -34,7 +39,11 @@ export const createProduct = async (productData) => {
  * Update existing product
  */
 export const updateProduct = async (id, productData) => {
-  const formData = buildProductFormData(productData);
+  // ✅ FIX: Check if productData is already FormData
+  const formData = productData instanceof FormData 
+    ? productData 
+    : buildProductFormData(productData);
+
   const response = await productsApi.updateProductApi(id, formData);
   return response.data;
 };
@@ -57,7 +66,7 @@ export const toggleProductStatus = async (id, isActive) => {
 
 /**
  * Build FormData for product (handles file uploads)
- * Note: stock and basePrice are NOT sent - basePrice is a virtual, stock is removed
+ * ONLY used if a plain object is passed to the service
  */
 const buildProductFormData = (data) => {
   const formData = new FormData();
@@ -71,22 +80,12 @@ const buildProductFormData = (data) => {
   if (data.isCustomizable !== undefined) formData.append('isCustomizable', data.isCustomizable);
   if (data.storageAndCare) formData.append('storageAndCare', data.storageAndCare);
 
-  // JSON fields - weightOptions with new structure (weightInKg, label, price, isDefault)
-  if (data.weightOptions) {
-    formData.append('weightOptions', JSON.stringify(data.weightOptions));
-  }
-  if (data.ingredients) {
-    formData.append('ingredients', JSON.stringify(data.ingredients));
-  }
-  if (data.badges) {
-    formData.append('badges', JSON.stringify(data.badges));
-  }
-  if (data.deliveryInfo) {
-    formData.append('deliveryInfo', JSON.stringify(data.deliveryInfo));
-  }
-  if (data.customizationOptions) {
-    formData.append('customizationOptions', JSON.stringify(data.customizationOptions));
-  }
+  // JSON fields
+  if (data.weightOptions) formData.append('weightOptions', JSON.stringify(data.weightOptions));
+  if (data.ingredients) formData.append('ingredients', JSON.stringify(data.ingredients));
+  if (data.badges) formData.append('badges', JSON.stringify(data.badges));
+  if (data.deliveryInfo) formData.append('deliveryInfo', JSON.stringify(data.deliveryInfo));
+  if (data.customizationOptions) formData.append('customizationOptions', JSON.stringify(data.customizationOptions));
 
   // Images (File objects)
   if (data.images && data.images.length > 0) {

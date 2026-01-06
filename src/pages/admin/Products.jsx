@@ -5,21 +5,44 @@
 
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, Plus, Filter, MoreVertical, Edit, Trash2, Eye } from 'lucide-react';
-import { useAdminProducts, useDeleteProduct, useToggleProductStatus, useCreateProduct } from '../../hooks/admin';
+import { Search, Plus, Edit, Trash2, Eye } from 'lucide-react';
+// IMPORT HOOKS
+import {
+  useAdminProducts,
+  useDeleteProduct,
+  useToggleProductStatus,
+  useCreateProduct,
+  useUpdateProduct,
+} from '../../hooks/admin';
 import useAdminStore from '../../stores/adminStore';
-import { PageHeader, DataTable, StatusBadge, ConfirmModal, AddProductModal } from '../../components/admin/shared';
+import {
+  PageHeader,
+  DataTable,
+  StatusBadge,
+  ConfirmModal,
+  AddProductModal,
+} from '../../components/admin/shared';
 import { toast } from 'react-toastify';
 
 export default function Products() {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
+  
+  // States for Modals
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [addModalOpen, setAddModalOpen] = useState(false);
-  const [selectedProduct, setSelectedProduct] = useState(null);
+  
+  // Selection States
+  const [selectedProduct, setSelectedProduct] = useState(null); // For delete
+  const [editingProduct, setEditingProduct] = useState(null);   // For edit
 
-  const { productsFilters, setProductsFilter, selectedProducts, toggleProductSelection, setSelectedProducts } =
-    useAdminStore();
+  const {
+    productsFilters,
+    setProductsFilter,
+    selectedProducts,
+    toggleProductSelection,
+    setSelectedProducts,
+  } = useAdminStore();
 
   // Fetch products
   const { data: productsData, isLoading } = useAdminProducts(productsFilters);
@@ -30,8 +53,98 @@ export default function Products() {
   const deleteProduct = useDeleteProduct();
   const toggleStatus = useToggleProductStatus();
   const createProduct = useCreateProduct();
+  const updateProduct = useUpdateProduct();
 
-  // Table columns
+  // --- ACTIONS ---
+
+  const handleDeleteClick = (product) => {
+    setSelectedProduct(product);
+    setDeleteModalOpen(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!selectedProduct) return;
+    try {
+      await deleteProduct.mutateAsync(selectedProduct._id);
+      toast.success('Product deleted successfully');
+      setDeleteModalOpen(false);
+      setSelectedProduct(null);
+    } catch (error) {
+      toast.error('Failed to delete product');
+    }
+  };
+
+  // Click handler for Adding (resets edit state)
+  const handleAddClick = () => {
+    setEditingProduct(null);
+    setAddModalOpen(true);
+  };
+
+  // Click handler for Editing (sets edit state)
+  const handleEditClick = (product) => {
+    setEditingProduct(product);
+    setAddModalOpen(true);
+  };
+
+  // --- FORM DATA LOGIC ---
+  const prepareFormData = (data) => {
+    const formData = new FormData();
+
+    // 1. Basic Fields
+    formData.append('name', data.name);
+    formData.append('description', data.description);
+    formData.append('category', data.category);
+    formData.append('isActive', data.isActive);
+    formData.append('isFeatured', data.isFeatured);
+    formData.append('storageAndCare', data.storageAndCare);
+
+    // 2. Complex Fields (Arrays) - Stringify for Backend Parsing
+    formData.append('weightOptions', JSON.stringify(data.weightOptions));
+    formData.append('ingredients', JSON.stringify(data.ingredients));
+
+    // 3. Removed Images
+    if (data.removedImageIds && data.removedImageIds.length > 0) {
+      formData.append('removeImages', JSON.stringify(data.removedImageIds));
+    }
+
+    // 4. New Image Files
+    if (data.images && data.images.length > 0) {
+      data.images.forEach((img) => {
+        // Only append raw File objects (new uploads)
+        if (img instanceof File) {
+          formData.append('images', img);
+        }
+      });
+    }
+
+    return formData;
+  };
+
+  const handleModalSubmit = async (productData) => {
+    // Determine mode based on editingProduct state
+    const isEdit = !!editingProduct;
+    const mutation = isEdit ? updateProduct : createProduct;
+    
+    // Convert JS object to FormData
+    const formData = prepareFormData(productData);
+
+    try {
+      if (isEdit) {
+        await mutation.mutateAsync({ id: editingProduct._id, data: formData });
+        toast.success('Product updated successfully');
+      } else {
+        await mutation.mutateAsync(formData);
+        toast.success('Product added successfully');
+      }
+      setAddModalOpen(false);
+      setEditingProduct(null);
+    } catch (error) {
+      console.error(error);
+      toast.error(error.response?.data?.message || `Failed to ${isEdit ? 'update' : 'add'} product`);
+    }
+  };
+
+  // --- COLUMNS ---
   const columns = [
     {
       key: 'image',
@@ -96,13 +209,16 @@ export default function Products() {
           >
             <Eye size={16} className="text-dark/40" />
           </button>
+          
+          {/* Edit Button */}
           <button
-            onClick={() => navigate(`/admin/products/${row._id}/edit`)}
+            onClick={() => handleEditClick(row)}
             className="p-2 hover:bg-dark/5 rounded-lg transition-colors"
             title="Edit"
           >
             <Edit size={16} className="text-dark/40" />
           </button>
+          
           <button
             onClick={() => handleDeleteClick(row)}
             className="p-2 hover:bg-red-50 rounded-lg transition-colors"
@@ -115,34 +231,6 @@ export default function Products() {
     },
   ];
 
-  const handleDeleteClick = (product) => {
-    setSelectedProduct(product);
-    setDeleteModalOpen(true);
-  };
-
-  const handleDeleteConfirm = async () => {
-    if (!selectedProduct) return;
-
-    try {
-      await deleteProduct.mutateAsync(selectedProduct._id);
-      toast.success('Product deleted successfully');
-      setDeleteModalOpen(false);
-      setSelectedProduct(null);
-    } catch (error) {
-      toast.error('Failed to delete product');
-    }
-  };
-
-  const handleAddProduct = async (productData) => {
-    try {
-      await createProduct.mutateAsync(productData);
-      toast.success('Product added successfully');
-      setAddModalOpen(false);
-    } catch (error) {
-      toast.error(error.response?.data?.message || 'Failed to add product');
-    }
-  };
-
   return (
     <div>
       <PageHeader
@@ -150,7 +238,7 @@ export default function Products() {
         description="Manage your cake products"
         actions={
           <button
-            onClick={() => setAddModalOpen(true)}
+            onClick={handleAddClick}
             className="flex items-center gap-2 px-4 py-2 bg-accent text-white rounded-lg text-sm font-medium hover:bg-accent/90 transition-colors"
           >
             <Plus size={18} />
@@ -161,9 +249,8 @@ export default function Products() {
 
       {/* Filters */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
-        {/* Search */}
         <div className="relative flex-1 sm:max-w-md">
-          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-dark/40 sm:w-[18px] sm:h-[18px]" />
+          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-dark/40" />
           <input
             type="text"
             placeholder="Search products..."
@@ -239,12 +326,16 @@ export default function Products() {
         isLoading={deleteProduct.isPending}
       />
 
-      {/* Add Product Modal */}
+      {/* Add/Edit Product Modal */}
       <AddProductModal
         isOpen={addModalOpen}
-        onClose={() => setAddModalOpen(false)}
-        onSubmit={handleAddProduct}
-        isLoading={createProduct.isPending}
+        onClose={() => {
+          setAddModalOpen(false);
+          setEditingProduct(null);
+        }}
+        onSubmit={handleModalSubmit}
+        isLoading={createProduct.isPending || updateProduct.isPending}
+        initialData={editingProduct} // Pass the product data for editing
       />
     </div>
   );

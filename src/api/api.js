@@ -6,7 +6,8 @@ const API_URL =
 const instance = axios.create({
   baseURL: API_URL,
   withCredentials: false, // Set to false for localhost - different ports are cross-origin
-  timeout: 30000, // 30 second timeout
+  timeout: 30000, // 30 second timeout,
+  
 });
 
 // Helper to get token from Zustand persisted store
