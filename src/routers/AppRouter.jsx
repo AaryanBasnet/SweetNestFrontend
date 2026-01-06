@@ -29,6 +29,7 @@ import Cart from "../pages/Cart";
 import Profile from "../pages/Profile";
 import Checkout from "../pages/Checkout";
 import TrackOrder from "../pages/TrackOrder";
+import Notifications from "../pages/Notifications";
 
 export default function AppRouter() {
   return (
@@ -56,10 +57,7 @@ export default function AppRouter() {
             element={<Navigate to="/profile?tab=orders" replace />}
           />
           <Route path="/track-order/:orderId" element={<TrackOrder />} />
-          <Route
-            path="/notifications"
-            element={<div>Notifications Page</div>}
-          />
+          <Route path="/notifications" element={<Notifications />} />
           <Route path="/cake/:slug" element={<CakeDetail />} />
         </Route>
 
