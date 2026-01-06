@@ -1,123 +1,126 @@
 /**
  * Address Book Tab Component
- * Manages user addresses for delivery
+ * Full CRUD address management for user profile
+ * Refactored from stub to production-ready implementation
  */
 
-import { memo } from 'react';
-import PropTypes from 'prop-types';
-import { MapPin, Pencil } from 'lucide-react';
+import { useState } from 'react';
+import { Plus } from 'lucide-react';
+import { AddressList, AddressModal } from '../address';
+import {
+  useAddresses,
+  useDeleteAddress,
+  useSetDefaultAddress,
+} from '../../hooks/address';
+import { toast } from 'react-toastify';
 
-/**
- * Address Card Component
- */
-function AddressCard({ address, isDefault, onEdit }) {
-  return (
-    <div className="bg-white rounded-2xl p-5 border border-dark/5">
-      <div className="flex items-start justify-between">
-        <div>
-          <div className="flex items-center gap-2 mb-1">
-            <p className="text-dark font-medium">
-              {isDefault ? 'Default Address' : 'Address'}
-            </p>
-            {isDefault && (
-              <span className="px-2 py-0.5 bg-accent/10 text-accent text-xs rounded-full">
-                Default
-              </span>
-            )}
-          </div>
-          <p className="text-dark/60 text-sm">{address}</p>
-        </div>
-        <button
-          onClick={onEdit}
-          aria-label="Edit address"
-          className="p-2 text-dark/40 hover:text-dark transition-colors"
-        >
-          <Pencil size={16} />
-        </button>
-      </div>
-    </div>
-  );
-}
+export default function AddressBookTab() {
+  const [modalOpen, setModalOpen] = useState(false);
+  const [editingAddress, setEditingAddress] = useState(null);
 
-AddressCard.propTypes = {
-  address: PropTypes.string.isRequired,
-  isDefault: PropTypes.bool,
-  onEdit: PropTypes.func,
-};
+  // React Query hooks
+  const { data: addresses, isLoading, error } = useAddresses();
+  const deleteMutation = useDeleteAddress();
+  const setDefaultMutation = useSetDefaultAddress();
 
-/**
- * Empty State Component
- */
-function EmptyState({ onAddAddress }) {
-  return (
-    <div className="bg-white rounded-2xl p-12 text-center border border-dark/5">
-      <MapPin size={48} className="text-dark/20 mx-auto mb-4" aria-hidden="true" />
-      <h3 className="text-lg font-medium text-dark mb-2">No addresses saved</h3>
-      <p className="text-dark/50 text-sm mb-4">
-        Add an address for faster checkout.
-      </p>
-      <button
-        onClick={onAddAddress}
-        className="px-6 py-3 bg-accent text-white rounded-full hover:bg-accent/90 transition-colors"
-      >
-        Add Your First Address
-      </button>
-    </div>
-  );
-}
-
-EmptyState.propTypes = {
-  onAddAddress: PropTypes.func,
-};
-
-/**
- * Address Book Tab Main Component
- */
-function AddressBookTab({ user, onAddAddress, onEditAddress }) {
-  const handleAddAddress = () => {
-    // TODO: Implement address modal
-    onAddAddress?.();
+  // Handlers
+  const handleAddNew = () => {
+    setEditingAddress(null);
+    setModalOpen(true);
   };
 
-  const handleEditAddress = () => {
-    // TODO: Implement edit address modal
-    onEditAddress?.();
+  const handleEdit = (address) => {
+    setEditingAddress(address);
+    setModalOpen(true);
   };
+
+  const handleDelete = async (addressId) => {
+    if (!window.confirm('Are you sure you want to delete this address?')) {
+      return;
+    }
+
+    try {
+      await deleteMutation.mutateAsync(addressId);
+      toast.success('Address deleted successfully');
+    } catch (error) {
+      toast.error(
+        error.response?.data?.message || 'Failed to delete address'
+      );
+    }
+  };
+
+  const handleSetDefault = async (addressId) => {
+    try {
+      await setDefaultMutation.mutateAsync(addressId);
+      toast.success('Default address updated');
+    } catch (error) {
+      toast.error(
+        error.response?.data?.message || 'Failed to update default address'
+      );
+    }
+  };
+
+  // Check if user has reached address limit
+  const hasReachedLimit = addresses && addresses.length >= 5;
 
   return (
     <div>
+      {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl sm:text-3xl font-serif text-dark">
           Address Book
         </h1>
         <button
-          onClick={handleAddAddress}
-          className="px-4 py-2 bg-dark text-white text-sm font-medium rounded-full hover:bg-dark/90 transition-colors"
+          onClick={handleAddNew}
+          disabled={hasReachedLimit}
+          className="flex items-center gap-2 px-4 py-2 bg-dark text-white text-sm font-medium rounded-full hover:bg-dark/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          title={hasReachedLimit ? 'Maximum 5 addresses allowed' : 'Add new address'}
         >
+          <Plus size={18} />
           Add Address
         </button>
       </div>
 
-      {user.address ? (
-        <AddressCard
-          address={user.address}
-          isDefault={true}
-          onEdit={handleEditAddress}
-        />
-      ) : (
-        <EmptyState onAddAddress={handleAddAddress} />
+      {/* Address limit warning */}
+      {hasReachedLimit && (
+        <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+          <p className="text-sm text-amber-800">
+            You've reached the maximum limit of 5 addresses. Delete an address to add a new one.
+          </p>
+        </div>
       )}
+
+      {/* Error state */}
+      {error && (
+        <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+          <p className="text-sm text-red-800">
+            {error.message || 'Failed to load addresses'}
+          </p>
+        </div>
+      )}
+
+      {/* Address List */}
+      <AddressList
+        addresses={addresses}
+        isLoading={isLoading}
+        onEdit={handleEdit}
+        onDelete={handleDelete}
+        onSetDefault={handleSetDefault}
+        isActionLoading={deleteMutation.isPending || setDefaultMutation.isPending}
+      />
+
+      {/* Address Modal */}
+      <AddressModal
+        isOpen={modalOpen}
+        onClose={() => {
+          setModalOpen(false);
+          setEditingAddress(null);
+        }}
+        existingAddress={editingAddress}
+        onSuccess={() => {
+          // Modal handles success toast and closing
+        }}
+      />
     </div>
   );
 }
-
-AddressBookTab.propTypes = {
-  user: PropTypes.shape({
-    address: PropTypes.string,
-  }).isRequired,
-  onAddAddress: PropTypes.func,
-  onEditAddress: PropTypes.func,
-};
-
-export default memo(AddressBookTab);
-
