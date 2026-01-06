@@ -22,6 +22,8 @@ import { toast } from "react-toastify";
 import useWishlistStore from "../stores/wishlistStore";
 import useCartStore from "../stores/cartStore";
 import useAuthStore from "../stores/authStore";
+import { ReviewStats, ReviewList, ReviewModal } from "../components/review";
+import { useDeleteReview, useMarkHelpful } from "../hooks/review";
 
 // Badge display mapping
 const BADGE_LABELS = {
@@ -61,33 +63,6 @@ function AccordionItem({ title, children, defaultOpen = false }) {
   );
 }
 
-// Review Card Component
-function ReviewCard({ rating, comment, author, date }) {
-  return (
-    <div className="bg-cream/50 rounded-xl p-5">
-      {/* Stars */}
-      <div className="flex gap-0.5 mb-3">
-        {[1, 2, 3, 4, 5].map((star) => (
-          <Star
-            key={star}
-            size={14}
-            className={
-              star <= rating ? "fill-amber-400 text-amber-400" : "text-dark/20"
-            }
-          />
-        ))}
-      </div>
-      {/* Comment */}
-      <p className="text-sm text-dark/70 mb-4 leading-relaxed">"{comment}"</p>
-      {/* Author & Date */}
-      <div className="flex items-center justify-between">
-        <span className="text-sm font-medium text-dark">{author}</span>
-        <span className="text-xs text-dark/40">{date}</span>
-      </div>
-    </div>
-  );
-}
-
 export default function CakeDetail() {
   const { slug } = useParams();
   const navigate = useNavigate();
@@ -117,6 +92,12 @@ export default function CakeDetail() {
   const [selectedWeight, setSelectedWeight] = useState(null);
   const [quantity, setQuantity] = useState(1);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+  const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
+  const [editingReview, setEditingReview] = useState(null);
+
+  // Review mutations
+  const deleteReview = useDeleteReview(cake?._id);
+  const markHelpful = useMarkHelpful();
 
   // Check if current cake is in wishlist
   const isWishlisted = cake ? isInWishlist(cake._id) : false;
@@ -529,34 +510,62 @@ export default function CakeDetail() {
 
       {/* Customer Reviews Section */}
       <section className="mt-16 pt-10 border-t border-dark/10">
-        <div className="flex items-center justify-between mb-8">
-          <h2 className="text-2xl font-serif text-dark">Customer Reviews</h2>
-          <button className="px-5 py-2.5 border border-dark/20 rounded-lg text-sm font-medium text-dark hover:bg-dark/5 transition-colors">
-            Write a Review
-          </button>
-        </div>
+        <ReviewStats
+          averageRating={cake.ratingsAverage || 0}
+          totalReviews={cake.ratingsCount || 0}
+          onWriteReview={() => {
+            if (!isLoggedIn) {
+              toast.error('Please login to write a review');
+              navigate('/login');
+              return;
+            }
+            setEditingReview(null);
+            setIsReviewModalOpen(true);
+          }}
+        />
 
-        {/* Reviews Grid - Placeholder reviews for now */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          <ReviewCard
-            rating={5}
-            comment="The most delicate sponge I've ever tasted. Not too sweet, perfect for my parents."
-            author="Sabin Khadka."
-            date="Oct 12, 2024"
-          />
-          <ReviewCard
-            rating={5}
-            comment="Ordered for a birthday. The packaging was stunning and the cake survived a 30min drive perfectly."
-            author="Akash Chaudhary."
-            date="Sep 28, 2024"
-          />
-          <ReviewCard
-            rating={5}
-            comment="The tiramisu royal layer is so unique! Will definitely be ordering again next time."
-            author="Krishna Bhandari."
-            date="Sep 15, 2024"
-          />
-        </div>
+        <ReviewList
+          cakeId={cake._id}
+          onEditReview={(review) => {
+            setEditingReview(review);
+            setIsReviewModalOpen(true);
+          }}
+          onDeleteReview={async (reviewId) => {
+            if (window.confirm('Are you sure you want to delete this review?')) {
+              try {
+                await deleteReview.mutateAsync(reviewId);
+                toast.success('Review deleted successfully');
+              } catch (error) {
+                toast.error(
+                  error.response?.data?.message || 'Failed to delete review'
+                );
+              }
+            }
+          }}
+          onMarkHelpful={async (reviewId) => {
+            try {
+              await markHelpful.mutateAsync(reviewId);
+            } catch (error) {
+              toast.error(
+                error.response?.data?.message || 'Failed to mark as helpful'
+              );
+            }
+          }}
+        />
+
+        {/* Review Modal */}
+        <ReviewModal
+          isOpen={isReviewModalOpen}
+          onClose={() => {
+            setIsReviewModalOpen(false);
+            setEditingReview(null);
+          }}
+          cakeId={cake._id}
+          existingReview={editingReview}
+          onSuccess={() => {
+            // Modal handles success toast and closing
+          }}
+        />
       </section>
 
       {/* Related Products */}

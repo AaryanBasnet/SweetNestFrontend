@@ -1,142 +1,59 @@
-/**
- * Wishlist Page
- * Displays user's saved/favorite items
- * Hybrid: localStorage for guests, server-synced for logged-in users
- */
-
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import {
-  Trash2,
-  Bell,
-  ShoppingCart,
-  Plus,
-  Minus,
-  Gift,
-  Heart,
-  ChevronRight,
-} from "lucide-react";
+import { Trash2, Bell, ShoppingCart, Plus, Minus, Gift, Heart, ChevronRight } from "lucide-react";
 import { toast } from "react-toastify";
 import useWishlistStore from "../stores/wishlistStore";
 import useCartStore from "../stores/cartStore";
 import useAuthStore from "../stores/authStore";
+import ReminderModal from "../components/wishlist/ReminderModal"; // Import the modal
 
-// Wishlist Item Card Component
-function WishlistItemCard({ item, onRemove, onAddToCart, isLoading }) {
+// --- 1. Updated Item Card ---
+function WishlistItemCard({ item, onRemove, onAddToCart, isLoading, onSetReminder }) {
   const [quantity, setQuantity] = useState(1);
-
-  // Get cake data - item could be an ID (guest) or object with cake data (logged in)
   const cakeData = typeof item === "string" ? null : item.cake;
-  const cakeId = typeof item === "string" ? item : item.cake?._id || item.cake;
+  const cakeId = typeof item === "string" ? item : item.cake?._id;
 
-  // Get default weight
-  const defaultWeight =
-    cakeData?.weightOptions?.find((w) => w.isDefault) ||
-    cakeData?.weightOptions?.[0];
+  // Schema check: item.reminder is an object
+  const hasReminder = item.reminder?.enabled && item.reminder?.date;
 
-  // If we don't have cake data yet (guest mode loading)
-  if (!cakeData) {
-    return (
-      <div className="bg-white rounded-2xl overflow-hidden animate-pulse">
-        <div className="aspect-4/3 bg-dark/10" />
-        <div className="p-4 space-y-3">
-          <div className="h-5 bg-dark/10 rounded w-3/4" />
-          <div className="h-4 bg-dark/10 rounded w-1/2" />
-          <div className="h-10 bg-dark/10 rounded" />
-        </div>
-      </div>
-    );
-  }
-
-  const imageUrl =
-    cakeData.images?.[0]?.url ||
-    "https://via.placeholder.com/400x300?text=Cake";
-  const price = defaultWeight?.price || cakeData.basePrice || 0;
-  const weightLabel = defaultWeight?.label || "1 Pound";
-
-  const handleAddToCart = () => {
-    onAddToCart({
-      cakeId,
-      cake: cakeData,
-      quantity,
-      selectedWeight: defaultWeight,
-    });
-  };
+  if (!cakeData) return <div className="bg-white rounded-2xl h-48 animate-pulse bg-dark/5" />;
 
   return (
-    <div className="bg-white rounded-2xl overflow-hidden shadow-sm">
-      {/* Product Image */}
+    <div className="bg-white rounded-2xl overflow-hidden shadow-sm border border-dark/5">
+      {/* ... Image Section (Same as before) ... */}
       <div className="relative">
-        <Link to={`/cake/${cakeData.slug}`}>
-          <img
-            src={imageUrl}
-            alt={cakeData.name}
-            className="w-full aspect-4/3 object-cover"
-          />
-        </Link>
-        {/* Delete Button */}
-        <button
-          onClick={() => onRemove(cakeId)}
-          disabled={isLoading}
-          className="absolute top-3 right-3 w-8 h-8 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center text-dark/40 hover:text-red-500 hover:bg-white transition-colors shadow-sm"
-        >
+        <img src={cakeData.images?.[0]?.url} alt={cakeData.name} className="w-full aspect-4/3 object-cover" />
+        <button onClick={() => onRemove(cakeId)} className="absolute top-3 right-3 w-8 h-8 bg-white/90 rounded-full flex items-center justify-center text-red-500 hover:bg-white shadow-sm">
           <Trash2 size={16} />
         </button>
       </div>
 
-      {/* Product Info */}
       <div className="p-4">
-        {/* Name & Price Row */}
-        <div className="flex items-start justify-between gap-2 mb-3">
-          <Link to={`/cake/${cakeData.slug}`}>
-            <h3 className="font-medium text-dark hover:text-accent transition-colors">
-              {cakeData.name}
-            </h3>
-          </Link>
-          <span className="text-accent font-medium whitespace-nowrap">
-            Rs. {price}
-          </span>
+        <div className="flex justify-between mb-2">
+          <h3 className="font-medium text-dark">{cakeData.name}</h3>
+          <span className="text-accent font-medium">Rs. {cakeData.basePrice}</span>
         </div>
-
-        {/* Quantity & Weight Row */}
-        <div className="flex items-center gap-2 mb-4">
-          {/* Quantity Selector */}
-          <div className="flex items-center">
-            <button
-              onClick={() => setQuantity(Math.max(1, quantity - 1))}
-              className="w-7 h-7 flex items-center justify-center text-dark/60 hover:text-dark transition-colors"
-            >
-              <Minus size={14} />
-            </button>
-            <span className="w-6 text-center text-sm font-medium text-dark">
-              {quantity}
-            </span>
-            <button
-              onClick={() => setQuantity(Math.min(10, quantity + 1))}
-              className="w-7 h-7 flex items-center justify-center text-dark/60 hover:text-dark transition-colors"
-            >
-              <Plus size={14} />
-            </button>
-          </div>
-          <span className="text-dark/30">·</span>
-          <span className="text-sm text-dark/60">{weightLabel}</span>
-        </div>
-
-        {/* Add to Cart & Bell Row */}
-        <div className="flex items-center gap-2">
-          <button
-            onClick={handleAddToCart}
-            disabled={isLoading}
-            className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-dark text-white text-sm font-medium rounded-lg hover:bg-dark/90 disabled:opacity-50 transition-colors"
+        
+        {/* Actions Row */}
+        <div className="flex items-center gap-2 mt-4">
+          <button 
+            onClick={() => onAddToCart({ cakeId, quantity })}
+            className="flex-1 flex items-center justify-center gap-2 py-2 bg-dark text-white text-sm rounded-lg hover:bg-dark/90"
           >
-            <ShoppingCart size={16} />
-            Add to Cart
+            <ShoppingCart size={16} /> Add
           </button>
+          
+          {/* UPDATED BELL BUTTON */}
           <button
-            className="w-10 h-10 flex items-center justify-center border border-dark/15 rounded-lg text-dark/40 hover:text-accent hover:border-accent transition-colors"
-            title="Set reminder"
+            onClick={() => onSetReminder(item)}
+            className={`w-10 h-10 flex items-center justify-center border rounded-lg transition-colors ${
+              hasReminder
+                ? "border-accent text-accent bg-accent/5" 
+                : "border-dark/15 text-dark/40 hover:text-accent hover:border-accent"
+            }`}
+            title={hasReminder ? `Reminder: ${new Date(item.reminder.date).toLocaleDateString()}` : "Set reminder"}
           >
-            <Bell size={16} />
+            <Bell size={18} fill={hasReminder ? "currentColor" : "none"} />
           </button>
         </div>
       </div>
@@ -144,180 +61,112 @@ function WishlistItemCard({ item, onRemove, onAddToCart, isLoading }) {
   );
 }
 
-// Upcoming Celebrations Sidebar Component
-function UpcomingCelebrations() {
+// --- 2. Updated Sidebar Logic ---
+function UpcomingCelebrations({ items }) {
+  // Filter and Sort based on Schema
+  const reminders = items
+    .filter((item) => item.reminder?.enabled && item.reminder?.date)
+    .map((item) => {
+        const date = new Date(item.reminder.date);
+        const today = new Date();
+        // Calculate days difference
+        const diffTime = date - today;
+        const daysLeft = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
+        return { ...item, dateObj: date, daysLeft };
+    })
+    .filter((item) => item.daysLeft >= 0) // Only future dates
+    .sort((a, b) => a.dateObj - b.dateObj); // Nearest first
+
   return (
-    <div className="bg-white rounded-2xl p-5 shadow-sm">
-      {/* Header */}
-      <div className="flex items-center gap-2 mb-6">
+    <div className="bg-white rounded-2xl p-5 shadow-sm sticky top-24 border border-dark/5">
+      <div className="flex items-center gap-2 mb-4">
         <Gift size={18} className="text-accent" />
         <h3 className="font-medium text-dark">Upcoming Celebrations</h3>
       </div>
 
-      {/* Empty State */}
-      <div className="text-center py-4">
-        <p className="text-accent text-sm mb-2">No reminders set.</p>
-        <p className="text-dark/40 text-xs leading-relaxed">
-          Click the bell icon on a cake to get
-          <br />
-          notified for special dates.
-        </p>
-      </div>
+      {reminders.length === 0 ? (
+        <div className="text-center py-6 text-dark/40 text-sm">
+          <p>No reminders set.</p>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {reminders.map((item) => (
+            <div key={item.cake._id} className="flex gap-3 p-3 rounded-lg hover:bg-dark/5 transition-colors">
+              <div className="flex flex-col items-center justify-center w-12 h-12 bg-accent/10 rounded-lg text-accent">
+                <span className="text-[10px] font-bold uppercase">{item.dateObj.toLocaleString('default', { month: 'short' })}</span>
+                <span className="text-lg font-bold leading-none">{item.dateObj.getDate()}</span>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-dark">{item.reminder.note || "Celebration"}</p>
+                <p className="text-xs text-dark/50">{item.cake?.name}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
 
+// --- 3. Updated Main Component ---
 export default function Wishlist() {
-  const navigate = useNavigate();
-
-  // Stores
+  const { items, fetchWishlist, removeFromWishlist, setReminder } = useWishlistStore();
   const { isAuthenticated } = useAuthStore();
-  const isLoggedIn = isAuthenticated();
+  
+  // Modal State
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [activeItem, setActiveItem] = useState(null);
 
-  const {
-    items: wishlistItems,
-    isLoading: wishlistLoading,
-    removeFromWishlist,
-    fetchWishlist,
-  } = useWishlistStore();
-
-  const { addToCart, isLoading: cartLoading } = useCartStore();
-
-  // Fetch wishlist from server on mount if logged in
   useEffect(() => {
-    if (isLoggedIn) {
-      fetchWishlist();
-    }
-  }, [isLoggedIn, fetchWishlist]);
+    if (isAuthenticated()) fetchWishlist();
+  }, [fetchWishlist, isAuthenticated]);
 
-  // Process items for display
-  const displayItems = wishlistItems.filter((item) => {
-    // Filter out items that are just IDs without cake data loaded
-    if (typeof item === "string") return false;
-    return item.cake != null;
-  });
-
-  const itemCount = displayItems.length;
-
-  // Handle remove from wishlist
-  const handleRemove = async (cakeId) => {
-    const result = await removeFromWishlist(cakeId, isLoggedIn);
-    if (result.success) {
-      toast.success("Removed from wishlist");
-    } else {
-      toast.error(result.message || "Failed to remove");
-    }
+  const handleOpenReminder = (item) => {
+    setActiveItem(item);
+    setIsModalOpen(true);
   };
 
-  // Handle add to cart
-  const handleAddToCart = async (cartItem) => {
-    const result = await addToCart(cartItem, isLoggedIn);
+  const handleSaveReminder = async (cakeId, date, note) => {
+    const result = await setReminder(cakeId, date, note);
     if (result.success) {
-      toast.success(`Added ${cartItem.cake?.name || "item"} to cart!`);
+      toast.success("Reminder set successfully!");
     } else {
-      toast.error(result.message || "Failed to add to cart");
+      toast.error(result.message);
     }
   };
-
-  // Empty state
-  if (!wishlistLoading && itemCount === 0) {
-    return (
-      <div className="min-h-[70vh] bg-white">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-          {/* Header */}
-          <h1 className="text-3xl sm:text-4xl text-center mb-12">
-            <span className="font-serif text-dark">MY </span>
-            <span className="font-serif italic text-accent">Wishlist</span>
-          </h1>
-
-          {/* Empty State */}
-          <div className="flex flex-col items-center justify-center py-16">
-            <div className="w-20 h-20 bg-cream rounded-full flex items-center justify-center mb-6">
-              <Heart size={32} className="text-dark/30" />
-            </div>
-            <h2 className="text-xl font-serif text-dark mb-2">
-              Your wishlist is empty
-            </h2>
-            <p className="text-dark/50 text-center max-w-sm mb-6">
-              Start adding your favorite cakes to keep them handy for later!
-            </p>
-            <Link
-              to="/menu"
-              className="inline-flex items-center gap-2 px-6 py-3 bg-dark text-white font-medium rounded-lg hover:bg-dark/90 transition-colors"
-            >
-              Explore Menu
-              <ChevronRight size={18} />
-            </Link>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   return (
-    <div className="min-h-[70vh] bg-white">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-        {/* Header */}
-        <h1 className="text-3xl sm:text-4xl text-center mb-12">
-          <span className="font-serif text-dark">MY </span>
-          <span className="font-serif italic text-accent">Wishlist</span>
-        </h1>
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Main Content - 2 columns */}
-          <div className="lg:col-span-2">
-            {/* Section Header */}
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-serif text-dark">Saved Delights</h2>
-              <span className="text-sm text-dark/50">
-                {itemCount} {itemCount === 1 ? "Item" : "Items"}
-              </span>
-            </div>
-
-            {/* Loading State */}
-            {wishlistLoading ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                {[1, 2, 3].map((i) => (
-                  <div
-                    key={i}
-                    className="bg-white rounded-2xl overflow-hidden animate-pulse"
-                  >
-                    <div className="aspect-4/3 bg-dark/10" />
-                    <div className="p-4 space-y-3">
-                      <div className="h-5 bg-dark/10 rounded w-3/4" />
-                      <div className="h-4 bg-dark/10 rounded w-1/2" />
-                      <div className="h-10 bg-dark/10 rounded" />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                {displayItems.map((item, index) => {
-                  const itemId =
-                    typeof item === "string"
-                      ? item
-                      : item.cake?._id || item._id;
-                  return (
-                    <WishlistItemCard
-                      key={itemId || index}
-                      item={item}
-                      onRemove={handleRemove}
-                      onAddToCart={handleAddToCart}
-                      isLoading={wishlistLoading || cartLoading}
-                    />
-                  );
-                })}
-              </div>
-            )}
-          </div>
-
-          {/* Sidebar */}
-          <div>
-            <UpcomingCelebrations />
+    <div className="min-h-[70vh] bg-white py-10 px-4">
+      <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8">
+        
+        {/* Main List */}
+        <div className="lg:col-span-2 space-y-4">
+          <h2 className="text-2xl font-serif mb-6">My Wishlist</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {items.map((item) => (
+              <WishlistItemCard 
+                key={item._id || item.cake?._id} 
+                item={item} 
+                onRemove={removeFromWishlist} 
+                onSetReminder={handleOpenReminder} 
+              />
+            ))}
           </div>
         </div>
+
+        {/* Sidebar */}
+        <div>
+          <UpcomingCelebrations items={items} />
+        </div>
       </div>
+
+      {/* Modal */}
+      <ReminderModal 
+        isOpen={isModalOpen} 
+        onClose={() => setIsModalOpen(false)} 
+        onSave={handleSaveReminder} 
+        item={activeItem} 
+      />
     </div>
   );
 }
