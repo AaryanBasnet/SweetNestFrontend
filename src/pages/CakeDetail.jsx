@@ -22,6 +22,8 @@ import { toast } from "react-toastify";
 import useWishlistStore from "../stores/wishlistStore";
 import useCartStore from "../stores/cartStore";
 import useAuthStore from "../stores/authStore";
+import { ReviewStats, ReviewList, ReviewModal } from "../components/review";
+import { useDeleteReview, useMarkHelpful } from "../hooks/review";
 
 // Badge display mapping
 const BADGE_LABELS = {
@@ -61,33 +63,6 @@ function AccordionItem({ title, children, defaultOpen = false }) {
   );
 }
 
-// Review Card Component
-function ReviewCard({ rating, comment, author, date }) {
-  return (
-    <div className="bg-cream/50 rounded-xl p-5">
-      {/* Stars */}
-      <div className="flex gap-0.5 mb-3">
-        {[1, 2, 3, 4, 5].map((star) => (
-          <Star
-            key={star}
-            size={14}
-            className={
-              star <= rating ? "fill-amber-400 text-amber-400" : "text-dark/20"
-            }
-          />
-        ))}
-      </div>
-      {/* Comment */}
-      <p className="text-sm text-dark/70 mb-4 leading-relaxed">"{comment}"</p>
-      {/* Author & Date */}
-      <div className="flex items-center justify-between">
-        <span className="text-sm font-medium text-dark">{author}</span>
-        <span className="text-xs text-dark/40">{date}</span>
-      </div>
-    </div>
-  );
-}
-
 export default function CakeDetail() {
   const { slug } = useParams();
   const navigate = useNavigate();
@@ -117,6 +92,12 @@ export default function CakeDetail() {
   const [selectedWeight, setSelectedWeight] = useState(null);
   const [quantity, setQuantity] = useState(1);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+  const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
+  const [editingReview, setEditingReview] = useState(null);
+
+  // Review mutations
+  const deleteReview = useDeleteReview(cake?._id);
+  const markHelpful = useMarkHelpful();
 
   // Check if current cake is in wishlist
   const isWishlisted = cake ? isInWishlist(cake._id) : false;
