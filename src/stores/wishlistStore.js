@@ -164,6 +164,49 @@ const useWishlistStore = create(
         }
       },
 
+      // ... existing actions ...
+
+      // Set reminder for a wishlist item (Logged-in users only)
+      setReminder: async (cakeId, date, note) => {
+        const { items } = get();
+
+        // 1. Optimistic Update: Update UI immediately before server responds
+        const previousItems = [...items]; // Keep copy in case we need to revert
+        
+        set({
+          items: items.map((item) => {
+             // Handle if item is just an ID string (guest/unhydrated) or object
+             const currentId = typeof item === 'string' ? item : item.cake?._id || item.cake;
+             
+             if (currentId === cakeId && typeof item !== 'string') {
+               return {
+                 ...item,
+                 reminder: {
+                   enabled: true,
+                   date: date,
+                   note: note
+                 }
+               };
+             }
+             return item;
+          })
+        });
+
+        try {
+          // 2. Call Server API
+          await wishlistApi.setReminderApi(cakeId, { date, note });
+          return { success: true };
+        } catch (error) {
+          // 3. Revert on failure
+          set({ items: previousItems, error: error.message });
+          return { 
+            success: false, 
+            message: error.response?.data?.message || 'Failed to set reminder' 
+          };
+        }
+      },
+
+
       // Reset store (on logout)
       reset: () => {
         set({ items: [], isLoading: false, error: null, isSynced: false });

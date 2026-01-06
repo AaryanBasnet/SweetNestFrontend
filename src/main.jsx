@@ -28,7 +28,7 @@ function App() {
     <>
       <AppRouter />
       <ToastContainer
-        position="top-center"
+        position="top-right"
         autoClose={2000}
         hideProgressBar={false}
         theme="dark"
