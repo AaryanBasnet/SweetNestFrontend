@@ -30,6 +30,8 @@ import Profile from "../pages/Profile";
 import Checkout from "../pages/Checkout";
 import TrackOrder from "../pages/TrackOrder";
 import Notifications from "../pages/Notifications";
+import AdminNotifications from "../pages/admin/Notifications";
+import CreateNotification from "../pages/admin/CreateNotification";
 
 export default function AppRouter() {
   return (
@@ -80,6 +82,11 @@ export default function AppRouter() {
           />
           <Route path="/admin/categories" element={<Categories />} />
           <Route path="/admin/customers" element={<Customers />} />
+          <Route path="/admin/notifications" element={<AdminNotifications />} />
+          <Route
+            path="/admin/notifications/create"
+            element={<CreateNotification />}
+          />
           <Route path="/admin/analytics" element={<Analytics />} />
           <Route path="/admin/settings" element={<Settings />} />
         </Route>

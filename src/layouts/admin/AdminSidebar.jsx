@@ -17,6 +17,7 @@ import {
   FolderOpen,
   LogOut,
   X,
+  Bell
 } from 'lucide-react';
 import useAuthStore from '../../stores/authStore';
 
@@ -26,6 +27,7 @@ const NAV_ITEMS = [
   { path: '/admin/products', icon: Cake, label: 'Products' },
   { path: '/admin/categories', icon: FolderOpen, label: 'Categories' },
   { path: '/admin/customers', icon: Users, label: 'Customers' },
+  { path: '/admin/notifications', icon: Bell, label: 'Notifications' },
   { path: '/admin/analytics', icon: BarChart3, label: 'Analytics' },
   { path: '/admin/settings', icon: Settings, label: 'Settings' },
 ];

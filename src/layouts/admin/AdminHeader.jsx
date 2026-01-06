@@ -4,13 +4,15 @@
  * Receives title via props
  */
 
-import { useState } from 'react';
-import { Search, Bell, Plus, Menu, X } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useState } from "react";
+import { Search, Bell, Plus, Menu, X } from "lucide-react";
+import { useNavigate, Link } from "react-router-dom";
+import { useAdminUnreadCount } from "../../hooks/notification/useNotifications";
 
-export default function AdminHeader({ title = 'Overview', onMenuClick }) {
+export default function AdminHeader({ title = "Overview", onMenuClick }) {
   const navigate = useNavigate();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const { data: unreadCount } = useAdminUnreadCount();
 
   return (
     <header className="h-14 sm:h-16 bg-white border-b border-dark/10 flex items-center justify-between px-4 sm:px-6 lg:px-8 sticky top-0 z-20">
@@ -32,7 +34,10 @@ export default function AdminHeader({ title = 'Overview', onMenuClick }) {
       <div className="flex items-center gap-2 sm:gap-4">
         {/* Search - Desktop */}
         <div className="hidden md:block relative">
-          <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-dark/40" />
+          <Search
+            size={18}
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-dark/40"
+          />
           <input
             type="text"
             placeholder="Search..."
@@ -49,14 +54,21 @@ export default function AdminHeader({ title = 'Overview', onMenuClick }) {
         </button>
 
         {/* Notifications */}
-        <button className="relative w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center rounded-lg hover:bg-dark/5 transition-colors">
+        <Link
+          to="/admin/notifications"
+          className="relative w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center rounded-lg hover:bg-dark/5 transition-colors"
+        >
           <Bell size={18} className="sm:w-5 sm:h-5 text-dark/60" />
-          <span className="absolute top-1.5 right-1.5 sm:top-2 sm:right-2 w-2 h-2 bg-accent rounded-full" />
-        </button>
+          {unreadCount > 0 && (
+            <span className="absolute -top-1 -right-1 w-5 h-5 bg-accent text-white text-[10px] font-bold rounded-full flex items-center justify-center ring-2 ring-white">
+              {unreadCount > 9 ? "9+" : unreadCount}
+            </span>
+          )}
+        </Link>
 
         {/* Add Product Button - Desktop */}
         <button
-          onClick={() => navigate('/admin/products/new')}
+          onClick={() => navigate("/admin/products/new")}
           className="hidden sm:flex items-center gap-2 px-3 sm:px-4 py-2 bg-accent text-white text-sm font-medium rounded-lg hover:bg-accent/90 transition-colors"
         >
           <Plus size={18} />
@@ -66,7 +78,7 @@ export default function AdminHeader({ title = 'Overview', onMenuClick }) {
 
         {/* Add Product Button - Mobile (icon only) */}
         <button
-          onClick={() => navigate('/admin/products/new')}
+          onClick={() => navigate("/admin/products/new")}
           className="sm:hidden w-9 h-9 flex items-center justify-center bg-accent text-white rounded-lg hover:bg-accent/90 transition-colors"
         >
           <Plus size={18} />
@@ -77,7 +89,10 @@ export default function AdminHeader({ title = 'Overview', onMenuClick }) {
       {isSearchOpen && (
         <div className="md:hidden absolute top-full left-0 right-0 bg-white border-b border-dark/10 p-3">
           <div className="relative">
-            <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-dark/40" />
+            <Search
+              size={18}
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-dark/40"
+            />
             <input
               type="text"
               placeholder="Search..."
