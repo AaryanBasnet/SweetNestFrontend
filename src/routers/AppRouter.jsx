@@ -32,6 +32,7 @@ import TrackOrder from "../pages/TrackOrder";
 import Notifications from "../pages/Notifications";
 import AdminNotifications from "../pages/admin/Notifications";
 import CreateNotification from "../pages/admin/CreateNotification";
+import Rewards from "../pages/Rewards";
 
 export default function AppRouter() {
   return (
@@ -54,6 +55,8 @@ export default function AppRouter() {
           <Route path="/profile" element={<Profile />} />
           <Route path="/settings" element={<div>Settings Page</div>} />
           <Route path="/wishlist" element={<Wishlist />} />
+          <Route path="/rewards" element={<Rewards />} />
+
           <Route
             path="/orders"
             element={<Navigate to="/profile?tab=orders" replace />}

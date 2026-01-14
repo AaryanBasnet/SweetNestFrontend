@@ -1,7 +1,6 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
-  Search,
   ShoppingBag,
   User,
   LogOut,
@@ -9,6 +8,7 @@ import {
   Bell,
   Heart,
   Package,
+  Gift,
   Menu as MenuIcon,
   X,
   ChevronRight,
@@ -16,16 +16,14 @@ import {
 import { useAuth } from "../hooks/user/useAuth";
 import useCartStore from "../stores/cartStore";
 import ProfileDropdown from "../components/common/ProfileDropdown";
+import { useUnreadCount } from "../hooks/notification/useNotifications";
 
 export default function Header({ wide = false }) {
   const { user, isAuthenticated, logout } = useAuth();
   const cartItemCount = useCartStore((state) => state.getItemCount());
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const { data: unreadCount } = useUnreadCount();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
 
-  const searchRef = useRef(null);
-  const inputRef = useRef(null);
   const navigate = useNavigate();
 
   // Prevent body scroll when mobile menu is open
@@ -40,49 +38,22 @@ export default function Header({ wide = false }) {
     };
   }, [isMobileMenuOpen]);
 
-  // Handle clicks outside to close dropdowns
+  // Handle ESC key to close mobile menu
   useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (
-        searchRef.current &&
-        !searchRef.current.contains(event.target) &&
-        searchQuery === ""
-      ) {
-        setIsSearchOpen(false);
-      }
-    };
-
     const handleEscKey = (event) => {
       if (event.key === "Escape") {
-        setIsSearchOpen(false);
         setIsMobileMenuOpen(false);
-        inputRef.current?.blur();
       }
     };
 
-    document.addEventListener("mousedown", handleClickOutside);
     document.addEventListener("keydown", handleEscKey);
     return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
       document.removeEventListener("keydown", handleEscKey);
     };
-  }, [searchQuery]);
-
-  const toggleSearch = () => {
-    setIsSearchOpen(!isSearchOpen);
-    if (!isSearchOpen) {
-      setTimeout(() => inputRef.current?.focus(), 100);
-    }
-  };
-
-  const handleClearSearch = () => {
-    setSearchQuery("");
-    inputRef.current?.focus();
-  };
+  }, []);
 
   const handleLogout = () => {
     logout();
-    setIsProfileOpen(false);
     setIsMobileMenuOpen(false);
     navigate("/");
   };
@@ -129,46 +100,25 @@ export default function Header({ wide = false }) {
 
           {/* Right: Actions */}
           <div className="flex items-center gap-2 sm:gap-3 md:gap-4">
-            {/* Expandable Search - Hidden on small mobile */}
-            <div
-              ref={searchRef}
-              className={`hidden sm:flex items-center transition-all duration-300 ease-out ${
-                isSearchOpen
-                  ? "w-48 md:w-64 bg-dark/5 rounded-full px-3 md:px-4"
-                  : "w-10 bg-transparent"
-              }`}
-            >
-              {isSearchOpen ? (
-                <div className="flex items-center w-full">
-                  <Search className="w-4 h-4 text-dark/40 shrink-0" />
-                  <input
-                    ref={inputRef}
-                    type="text"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="Search..."
-                    className="w-full bg-transparent border-none focus:ring-0 focus:outline-none text-sm font-body px-2 text-dark placeholder:text-dark/40 h-10"
-                  />
-                  {searchQuery && (
-                    <button onClick={handleClearSearch}>
-                      <X className="w-4 h-4 text-dark/40 hover:text-dark" />
-                    </button>
-                  )}
-                </div>
-              ) : (
-                <button
-                  onClick={toggleSearch}
-                  className="p-2.5 hover:bg-dark/5 rounded-full text-dark transition-colors"
-                >
-                  <Search className="w-5 h-5" />
-                </button>
-              )}
-            </div>
-
             {/* Profile Dropdown - Desktop */}
             <div className="hidden sm:block">
               <ProfileDropdown />
             </div>
+
+            {/* Notification Bell - Desktop (only for authenticated users) */}
+            {isAuthenticated && (
+              <Link
+                to="/notifications"
+                className="hidden sm:block p-2.5 hover:bg-dark/5 rounded-full text-dark transition-colors relative"
+              >
+                <Bell className="w-5 h-5" />
+                {unreadCount > 0 && (
+                  <span className="absolute -top-1 -right-1 w-5 h-5 bg-orange-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center ring-2 ring-white">
+                    {unreadCount > 9 ? "9+" : unreadCount}
+                  </span>
+                )}
+              </Link>
+            )}
 
             {/* Cart Button */}
             <Link
@@ -220,18 +170,6 @@ export default function Header({ wide = false }) {
             >
               <X className="w-6 h-6 text-dark" />
             </button>
-          </div>
-
-          {/* Search - Mobile */}
-          <div className="p-4 border-b border-gray-100">
-            <div className="flex items-center bg-dark/5 rounded-full px-4">
-              <Search className="w-4 h-4 text-dark/40 shrink-0" />
-              <input
-                type="text"
-                placeholder="Search products..."
-                className="w-full bg-transparent border-none focus:ring-0 focus:outline-none text-sm font-body px-3 py-3 text-dark placeholder:text-dark/40"
-              />
-            </div>
           </div>
 
           {/* User Info - Mobile */}
@@ -296,11 +234,24 @@ export default function Header({ wide = false }) {
                       <User size={18} /> My Profile
                     </Link>
                     <Link
-                      to="/notifications"
+                      to="/rewards"
                       onClick={closeMobileMenu}
                       className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-cream text-dark transition-colors"
                     >
-                      <Bell size={18} /> Notifications
+                      <Gift size={18} /> SweetRewards
+                    </Link>
+                    <Link
+                      to="/notifications"
+                      onClick={closeMobileMenu}
+                      className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-cream text-dark transition-colors relative"
+                    >
+                      <Bell size={18} />
+                      <span className="flex-1">Notifications</span>
+                      {unreadCount > 0 && (
+                        <span className="w-5 h-5 bg-orange-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+                          {unreadCount > 9 ? "9+" : unreadCount}
+                        </span>
+                      )}
                     </Link>
                     <Link
                       to="/wishlist"

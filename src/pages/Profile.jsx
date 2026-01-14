@@ -105,36 +105,62 @@ export default function Profile() {
 
           {/* Main Content */}
           <main className="flex-1 min-w-0">
-            {activeTab === "overview" && (
-              <OverviewTab
-                firstName={firstName}
-                ordersCount={ordersCount}
-                wishlistCount={wishlistCount}
-                recentOrders={recentOrders}
-                isLoadingOrders={isLoadingOrders}
-                user={user}
-                formData={formData}
-                isEditing={isEditing}
-                isSaving={isSaving}
-                onInputChange={handleInputChange}
-                onEdit={startEditing}
-                onSave={saveProfile}
-                onCancel={cancelEditing}
-              />
-            )}
+            <div className="relative">
+              <div
+                className={`transition-opacity duration-200 ${
+                  activeTab === "overview" ? "opacity-100" : "opacity-0 absolute inset-0 pointer-events-none"
+                }`}
+              >
+                {activeTab === "overview" && (
+                  <OverviewTab
+                    firstName={firstName}
+                    ordersCount={ordersCount}
+                    wishlistCount={wishlistCount}
+                    recentOrders={recentOrders}
+                    isLoadingOrders={isLoadingOrders}
+                    user={user}
+                    formData={formData}
+                    isEditing={isEditing}
+                    isSaving={isSaving}
+                    onInputChange={handleInputChange}
+                    onEdit={startEditing}
+                    onSave={saveProfile}
+                    onCancel={cancelEditing}
+                  />
+                )}
+              </div>
 
-            {activeTab === "orders" && (
-              <OrderHistoryTab
-                orders={orders}
-                isLoading={isLoadingOrders}
-                error={ordersError}
-                onRetry={refetchOrders}
-              />
-            )}
+              <div
+                className={`transition-opacity duration-200 ${
+                  activeTab === "orders" ? "opacity-100" : "opacity-0 absolute inset-0 pointer-events-none"
+                }`}
+              >
+                {activeTab === "orders" && (
+                  <OrderHistoryTab
+                    orders={orders}
+                    isLoading={isLoadingOrders}
+                    error={ordersError}
+                    onRetry={refetchOrders}
+                  />
+                )}
+              </div>
 
-            {activeTab === "address" && <AddressBookTab user={user} />}
+              <div
+                className={`transition-opacity duration-200 ${
+                  activeTab === "address" ? "opacity-100" : "opacity-0 absolute inset-0 pointer-events-none"
+                }`}
+              >
+                {activeTab === "address" && <AddressBookTab user={user} />}
+              </div>
 
-            {activeTab === "settings" && <SettingsTab />}
+              <div
+                className={`transition-opacity duration-200 ${
+                  activeTab === "settings" ? "opacity-100" : "opacity-0 absolute inset-0 pointer-events-none"
+                }`}
+              >
+                {activeTab === "settings" && <SettingsTab />}
+              </div>
+            </div>
           </main>
         </div>
       </div>
