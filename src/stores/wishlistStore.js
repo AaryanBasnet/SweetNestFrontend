@@ -6,6 +6,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import * as wishlistApi from '../api/wishlistApi';
+import useAuthStore from "./authStore";
 
 const STORAGE_KEY = 'sweetnest-wishlist';
 
@@ -28,9 +29,11 @@ const useWishlistStore = create(
         });
       },
 
-      // Add to wishlist (works for both guest and logged-in)
-      addToWishlist: async (cakeId, isLoggedIn = false) => {
+      // Add to wishlist
+      addToWishlist: async (cakeId) => {
         const { items, isInWishlist } = get();
+        // AUTO-DETECT AUTH STATUS
+        const isLoggedIn = useAuthStore.getState().isAuthenticated();
 
         if (isInWishlist(cakeId)) {
           return { success: false, message: 'Already in wishlist' };
@@ -45,7 +48,8 @@ const useWishlistStore = create(
               isLoading: false,
               isSynced: true,
             });
-            return { success: true };
+            // FIXED: Return action type
+            return { success: true, action: 'added' };
           } catch (error) {
             set({ isLoading: false, error: error.message });
             return { success: false, message: error.response?.data?.message || 'Failed to add' };
@@ -53,13 +57,16 @@ const useWishlistStore = create(
         } else {
           // Guest: store just the ID
           set({ items: [...items, cakeId] });
-          return { success: true };
+          // FIXED: Return action type
+          return { success: true, action: 'added' };
         }
       },
 
       // Remove from wishlist
-      removeFromWishlist: async (cakeId, isLoggedIn = false) => {
+      removeFromWishlist: async (cakeId) => {
         const { items } = get();
+        // AUTO-DETECT AUTH STATUS
+        const isLoggedIn = useAuthStore.getState().isAuthenticated();
 
         if (isLoggedIn) {
           try {
@@ -72,7 +79,8 @@ const useWishlistStore = create(
               }),
               isLoading: false,
             });
-            return { success: true };
+            // FIXED: Return action type
+            return { success: true, action: 'removed' };
           } catch (error) {
             set({ isLoading: false, error: error.message });
             return { success: false, message: error.response?.data?.message || 'Failed to remove' };
@@ -85,18 +93,20 @@ const useWishlistStore = create(
               return id !== cakeId;
             }),
           });
-          return { success: true };
+          // FIXED: Return action type
+          return { success: true, action: 'removed' };
         }
       },
 
       // Toggle wishlist item
-      toggleWishlist: async (cakeId, isLoggedIn = false) => {
+      toggleWishlist: async (cakeId) => {
         const { isInWishlist, addToWishlist, removeFromWishlist } = get();
 
+        // No need to pass isLoggedIn here, the sub-functions handle it
         if (isInWishlist(cakeId)) {
-          return removeFromWishlist(cakeId, isLoggedIn);
+          return removeFromWishlist(cakeId);
         } else {
-          return addToWishlist(cakeId, isLoggedIn);
+          return addToWishlist(cakeId);
         }
       },
 
@@ -147,7 +157,9 @@ const useWishlistStore = create(
       },
 
       // Clear wishlist
-      clearWishlist: async (isLoggedIn = false) => {
+      clearWishlist: async () => {
+        const isLoggedIn = useAuthStore.getState().isAuthenticated();
+
         if (isLoggedIn) {
           try {
             set({ isLoading: true, error: null });
@@ -164,18 +176,15 @@ const useWishlistStore = create(
         }
       },
 
-      // ... existing actions ...
-
-      // Set reminder for a wishlist item (Logged-in users only)
+      // Set reminder (Logged-in users only)
       setReminder: async (cakeId, date, note) => {
         const { items } = get();
 
-        // 1. Optimistic Update: Update UI immediately before server responds
-        const previousItems = [...items]; // Keep copy in case we need to revert
+        // 1. Optimistic Update
+        const previousItems = [...items]; 
         
         set({
           items: items.map((item) => {
-             // Handle if item is just an ID string (guest/unhydrated) or object
              const currentId = typeof item === 'string' ? item : item.cake?._id || item.cake;
              
              if (currentId === cakeId && typeof item !== 'string') {
@@ -205,7 +214,6 @@ const useWishlistStore = create(
           };
         }
       },
-
 
       // Reset store (on logout)
       reset: () => {

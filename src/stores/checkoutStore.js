@@ -30,6 +30,9 @@ const useCheckoutStore = create(
       // Shipping form data
       shippingData: { ...initialShippingData },
 
+      // Selected saved address ID (null = manual entry)
+      selectedAddressId: null,
+
       // Payment method ('esewa' or 'cod')
       paymentMethod: 'esewa',
 
@@ -50,6 +53,28 @@ const useCheckoutStore = create(
         set((state) => ({
           shippingData: { ...state.shippingData, ...data },
         })),
+
+      // Select saved address and populate form
+      selectSavedAddress: (address) =>
+        set((state) => ({
+          selectedAddressId: address._id,
+          shippingData: {
+            ...state.shippingData,
+            firstName: address.firstName,
+            lastName: address.lastName,
+            address: address.address,
+            apartment: address.apartment || '',
+            city: address.city,
+            postalCode: address.postalCode || '',
+            phone: address.phone,
+          },
+        })),
+
+      // Switch to manual entry mode
+      useManualEntry: () =>
+        set({
+          selectedAddressId: null,
+        }),
 
       setPaymentMethod: (method) => set({ paymentMethod: method }),
 
@@ -87,6 +112,7 @@ const useCheckoutStore = create(
         set({
           currentStep: 1,
           shippingData: { ...initialShippingData },
+          selectedAddressId: null,
           paymentMethod: 'esewa',
           orderId: null,
           orderNumber: null,
@@ -165,8 +191,12 @@ const useCheckoutStore = create(
       name: 'checkout-storage',
       partialize: (state) => ({
         shippingData: state.shippingData,
+        selectedAddressId: state.selectedAddressId,
         paymentMethod: state.paymentMethod,
         currentStep: state.currentStep,
+        orderId: state.orderId,
+        orderNumber: state.orderNumber,
+        orderData: state.orderData,
       }),
     }
   )

@@ -9,7 +9,7 @@ import useCheckoutStore from '../../stores/checkoutStore';
 
 export default function OrderConfirmation() {
   const navigate = useNavigate();
-  const { orderNumber, shippingData, resetCheckout } = useCheckoutStore();
+  const { orderId, orderNumber, shippingData, resetCheckout } = useCheckoutStore();
 
   // Format delivery date
   const formatDeliveryDate = (dateStr) => {
@@ -30,11 +30,18 @@ export default function OrderConfirmation() {
   };
 
   const handleTrackOrder = () => {
-    navigate('/profile?tab=orders');
-    resetCheckout();
+    // Navigate to track order page with orderId
+    if (orderId) {
+      navigate(`/track-order/${orderId}`);
+      // Don't reset checkout here - user might want to view order details
+    } else {
+      // Fallback to profile orders tab if orderId is not available
+      navigate('/profile?tab=orders');
+    }
   };
 
   const handleBackToHome = () => {
+    // Reset checkout when user goes back home
     resetCheckout();
     navigate('/');
   };

@@ -7,6 +7,7 @@ import { useState, useEffect } from 'react';
 import { Mail, Calendar, MessageSquare, MapPin, ChevronLeft, ChevronRight, ArrowRight } from 'lucide-react';
 import useCheckoutStore from '../../stores/checkoutStore';
 import useAuthStore from '../../stores/authStore';
+import { AddressSelector } from '../address';
 
 // Time slots
 const TIME_SLOTS = [
@@ -157,8 +158,16 @@ function DeliveryCalendar({ selectedDate, onSelectDate }) {
 }
 
 export default function ShippingStep({ onNext, errors = {} }) {
-  const { shippingData, setShippingData, prefillFromUser } = useCheckoutStore();
+  const {
+    shippingData,
+    setShippingData,
+    prefillFromUser,
+    selectedAddressId,
+    selectSavedAddress,
+    useManualEntry,
+  } = useCheckoutStore();
   const user = useAuthStore((state) => state.user);
+  const [saveAddress, setSaveAddress] = useState(false);
 
   // Pre-fill from user on mount
   useEffect(() => {
@@ -178,6 +187,14 @@ export default function ShippingStep({ onNext, errors = {} }) {
 
   const handleTimeSelect = (time) => {
     setShippingData({ deliveryTime: time });
+  };
+
+  const handleSelectAddress = (address) => {
+    selectSavedAddress(address);
+  };
+
+  const handleUseManualEntry = () => {
+    useManualEntry();
   };
 
   return (
@@ -302,7 +319,37 @@ export default function ShippingStep({ onNext, errors = {} }) {
           <h3 className="font-medium text-dark">Shipping Address</h3>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        {/* Address Selector - Only show if user is authenticated */}
+        {user && (
+          <div className="mb-5">
+            <AddressSelector
+              selectedAddressId={selectedAddressId}
+              onSelectAddress={handleSelectAddress}
+              onUseManualEntry={handleUseManualEntry}
+            />
+          </div>
+        )}
+
+        {/* Manual Entry Form - Show when no address selected or user not authenticated */}
+        {(selectedAddressId === null || !user) && (
+          <>
+            {user && (
+              <div className="mb-4 pb-4 border-b border-dark/10">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={saveAddress}
+                    onChange={(e) => setSaveAddress(e.target.checked)}
+                    className="w-4 h-4 rounded border-dark/20 text-accent focus:ring-accent/20"
+                  />
+                  <span className="text-sm text-dark/70">
+                    Save this address for future orders
+                  </span>
+                </label>
+              </div>
+            )}
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
             <input
               type="text"
@@ -405,6 +452,8 @@ export default function ShippingStep({ onNext, errors = {} }) {
             )}
           </div>
         </div>
+          </>
+        )}
       </div>
 
       {/* Continue Button */}

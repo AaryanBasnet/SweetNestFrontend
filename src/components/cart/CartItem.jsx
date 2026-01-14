@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { Minus, Plus, Trash2 } from "lucide-react";
+import { Minus, Plus, Trash2, Loader2 } from "lucide-react"; // 1. Import Loader2
 
 export default function CartItem({ item, onUpdateQuantity, onRemove, isLoading }) {
   const cakeData = item.cake || {};
@@ -16,19 +16,18 @@ export default function CartItem({ item, onUpdateQuantity, onRemove, isLoading }
   // Format details string
   let detailsText = "";
   if (isCustomCake && item.customization) {
-    // For custom cakes, show customization details
     const { tiers, size, flavor, color, topper } = item.customization;
     const details = [tiers, size, flavor, color].filter(Boolean);
     detailsText = details.join(" • ");
   } else {
-    // For regular cakes, show weight and category
     const weightLabel = item.selectedWeight?.label || "";
     const category = cakeData.category?.name || "";
     detailsText = [weightLabel, category].filter(Boolean).join(" • ");
   }
 
   return (
-    <div className="group relative flex items-start sm:items-center gap-4 sm:gap-5 p-4 sm:p-5 bg-cream/30 rounded-2xl hover:bg-cream/50 transition-colors">
+    <div className={`group relative flex items-start sm:items-center gap-4 sm:gap-5 p-4 sm:p-5 rounded-2xl transition-all duration-200 ${isLoading ? 'bg-gray-50 opacity-90' : 'bg-cream/30 hover:bg-cream/50'}`}>
+      
       {/* Product Image */}
       {isCustomCake ? (
         <div className="shrink-0">
@@ -46,7 +45,7 @@ export default function CartItem({ item, onUpdateQuantity, onRemove, isLoading }
             <img
               src={imageUrl}
               alt={cakeData.name}
-              className="w-20 h-20 sm:w-24 sm:h-24 object-cover transition-transform duration-300 group-hover:scale-105"
+              className={`w-20 h-20 sm:w-24 sm:h-24 object-cover transition-transform duration-300 ${isLoading ? '' : 'group-hover:scale-105'}`}
             />
           </div>
         </Link>
@@ -83,33 +82,42 @@ export default function CartItem({ item, onUpdateQuantity, onRemove, isLoading }
           </p>
         </div>
 
-        {/* Quantity Selector */}
-        <div className="flex items-center bg-white border border-dark/10 rounded-full shadow-sm">
+        {/* -------------------------------------------------- */}
+        {/* Quantity Selector (UPDATED SECTION)                */}
+        {/* -------------------------------------------------- */}
+        <div className={`flex items-center bg-white border border-dark/10 rounded-full shadow-sm transition-opacity ${isLoading ? 'border-dark/5' : ''}`}>
+          
           <button
-            onClick={() =>
-              onUpdateQuantity(item._id, Math.max(1, item.quantity - 1))
-            }
+            onClick={() => onUpdateQuantity(item._id, Math.max(1, item.quantity - 1))}
             disabled={isLoading || item.quantity <= 1}
-            className="w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center text-dark/40 hover:text-dark disabled:opacity-30 transition-colors rounded-full hover:bg-cream/50"
+            className="w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center text-dark/40 hover:text-dark disabled:opacity-30 disabled:cursor-not-allowed transition-colors rounded-full hover:bg-cream/50"
           >
             <Minus size={14} />
           </button>
-          <span className="w-8 sm:w-10 text-center text-sm font-semibold text-dark">
-            {item.quantity || 1}
+          
+          {/* Middle part: Shows Number OR Spinner */}
+          <span className="w-8 sm:w-10 h-full flex items-center justify-center">
+             {isLoading ? (
+                <Loader2 size={14} className="animate-spin text-accent" />
+             ) : (
+                <span className="text-sm font-semibold text-dark">
+                  {item.quantity || 1}
+                </span>
+             )}
           </span>
+
           <button
-            onClick={() =>
-              onUpdateQuantity(item._id, Math.min(10, item.quantity + 1))
-            }
+            onClick={() => onUpdateQuantity(item._id, Math.min(10, item.quantity + 1))}
             disabled={isLoading || item.quantity >= 10}
-            className="w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center text-dark/40 hover:text-dark disabled:opacity-30 transition-colors rounded-full hover:bg-cream/50"
+            className="w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center text-dark/40 hover:text-dark disabled:opacity-30 disabled:cursor-not-allowed transition-colors rounded-full hover:bg-cream/50"
           >
             <Plus size={14} />
           </button>
         </div>
+        {/* -------------------------------------------------- */}
 
         {/* Desktop Price */}
-        <p className="hidden sm:block text-accent font-semibold text-lg min-w-[90px] text-right">
+        <p className={`hidden sm:block text-accent font-semibold text-lg min-w-[90px] text-right transition-opacity ${isLoading ? 'opacity-50' : ''}`}>
           Rs. {totalPrice}
         </p>
 
@@ -117,7 +125,7 @@ export default function CartItem({ item, onUpdateQuantity, onRemove, isLoading }
         <button
           onClick={() => onRemove(item._id)}
           disabled={isLoading}
-          className="absolute top-3 right-3 sm:relative sm:top-auto sm:right-auto w-8 h-8 flex items-center justify-center text-dark/25 hover:text-red-500 hover:bg-red-50 rounded-full transition-all"
+          className="absolute top-3 right-3 sm:relative sm:top-auto sm:right-auto w-8 h-8 flex items-center justify-center text-dark/25 hover:text-red-500 hover:bg-red-50 rounded-full transition-all disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-dark/25"
         >
           <Trash2 size={16} />
         </button>

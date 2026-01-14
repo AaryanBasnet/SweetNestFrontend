@@ -115,13 +115,22 @@ export default function CakeDetail() {
   };
 
   const handleWishlistToggle = async () => {
+    // 1. Capture the intended state BEFORE the toggle
+    // If it was wishlisted, we are removing. If not, we are adding.
+    const wasWishlisted = isWishlisted; 
+
     const result = await toggleWishlist(cake._id, isLoggedIn);
+
     if (result.success) {
-      toast.success(
-        result.action === "added"
-          ? "Added to wishlist"
-          : "Removed from wishlist"
-      );
+      // 2. Use the result action if available, otherwise fallback to our calculated state
+      let message = "";
+      if (result.action) {
+        message = result.action === "added" ? "Added to wishlist" : "Removed from wishlist";
+      } else {
+        // Fallback if store doesn't return 'action'
+        message = !wasWishlisted ? "Added to wishlist" : "Removed from wishlist";
+      }
+      toast.success(message);
     } else {
       toast.error(result.message || "Failed to update wishlist");
     }

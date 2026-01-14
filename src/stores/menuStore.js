@@ -30,7 +30,7 @@ const defaultFilters = {
   category: null,
   search: '',
   sort: '-createdAt',
-  minPrice: 500,
+  minPrice: 0,
   maxPrice: 6000,
   flavorTags: [],
   page: 1,

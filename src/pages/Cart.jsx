@@ -1,9 +1,4 @@
-/**
- * Cart Page
- * Shopping cart with order summary
- */
-
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ChevronRight } from "lucide-react";
 import { toast } from "react-toastify";
@@ -19,11 +14,10 @@ import {
   CartEmpty,
   CartSkeleton,
 } from "../components/cart";
+import DeleteConfirmationModal from "../components/common/DeleteModal"; // Import the modal
 
 export default function Cart() {
   const navigate = useNavigate();
-
-  // Stores
   const { isAuthenticated } = useAuthStore();
   const isLoggedIn = isAuthenticated();
 
@@ -31,7 +25,7 @@ export default function Cart() {
     items,
     deliveryType,
     promoCode,
-    isLoading,
+    isLoading: isGlobalLoading, // Rename to distinguish usage
     getSubtotal,
     getShipping,
     getTotal,
@@ -44,48 +38,69 @@ export default function Cart() {
     fetchCart,
   } = useCartStore();
 
-  // Fetch cart from server on mount if logged in
+  // --- Local States ---
+  // Track which specific item is updating (to avoid global skeleton)
+  const [updatingItemId, setUpdatingItemId] = useState(null);
+  
+  // Delete Modal States
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState(null);
+  const [isRemoving, setIsRemoving] = useState(false);
+
+  // Fetch cart on mount
   useEffect(() => {
     if (isLoggedIn) {
       fetchCart();
     }
   }, [isLoggedIn, fetchCart]);
 
-  // Handlers
+  // --- Handlers ---
+
+  // 1. Fixed Quantity Handler (Removes Skeleton flash)
   const handleUpdateQuantity = async (itemId, quantity) => {
+    setUpdatingItemId(itemId); // Set local loading
+    
+    // We pass 'false' to updateQuantity if your store supports a "silent" mode, 
+    // otherwise the store might trigger global loading. 
+    // But since we changed the JSX logic below, even if store triggers loading, it won't flash.
     const result = await updateQuantity(itemId, quantity, isLoggedIn);
+    
+    setUpdatingItemId(null); // Clear local loading
+
     if (!result.success) {
       toast.error(result.message || "Failed to update quantity");
     }
   };
 
-  const handleRemove = async (itemId) => {
-    const result = await removeFromCart(itemId, isLoggedIn);
+  // 2. Delete Handlers (Modal)
+  const initiateDelete = (itemId) => {
+    setItemToDelete(itemId);
+    setIsDeleteOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!itemToDelete) return;
+
+    setIsRemoving(true);
+    const result = await removeFromCart(itemToDelete, isLoggedIn);
+    setIsRemoving(false);
+
     if (result.success) {
-      toast.success("Item removed from cart");
+      setIsDeleteOpen(false);
+      setItemToDelete(null);
+      toast.success("Item removed from cart", { icon: "🗑️" });
     } else {
       toast.error(result.message || "Failed to remove item");
     }
   };
 
-  const handleDeliveryChange = (type) => {
-    setDeliveryType(type, isLoggedIn);
-  };
-
+  // Other handlers
+  const handleDeliveryChange = (type) => setDeliveryType(type, isLoggedIn);
+  const handleRemovePromo = () => { removePromo(isLoggedIn); toast.success("Promo code removed"); };
   const handleApplyPromo = async (code) => {
     const result = await applyPromo(code, isLoggedIn);
-    if (result.success) {
-      toast.success("Promo code applied!");
-    } else {
-      toast.error(result.message || "Invalid promo code");
-    }
+    result.success ? toast.success("Promo code applied!") : toast.error(result.message || "Invalid promo code");
   };
-
-  const handleRemovePromo = () => {
-    removePromo(isLoggedIn);
-    toast.success("Promo code removed");
-  };
-
   const handleCheckout = () => {
     if (!isLoggedIn) {
       toast.info("Please login to proceed to checkout");
@@ -97,8 +112,19 @@ export default function Cart() {
 
   const itemCount = getItemCount();
 
-  // Empty cart state
-  if (!isLoading && items.length === 0) {
+  // --- Render Logic ---
+
+  // 1. Initial Loading State (Only show skeleton if we have NO data yet)
+  if (isGlobalLoading && items.length === 0) {
+    return (
+      <div className="min-h-[70vh] bg-white mx-auto px-4 sm:px-6 lg:px-20 py-4">
+        <CartSkeleton />
+      </div>
+    );
+  }
+
+  // 2. Empty State
+  if (!isGlobalLoading && items.length === 0) {
     return <CartEmpty />;
   }
 
@@ -126,21 +152,22 @@ export default function Cart() {
 
             {/* Items List */}
             <div className="bg-white rounded-3xl p-3 sm:p-4 shadow-sm">
-              {isLoading ? (
-                <CartSkeleton />
-              ) : (
-                <div className="space-y-3">
-                  {items.map((item) => (
-                    <CartItem
-                      key={item._id}
-                      item={item}
-                      onUpdateQuantity={handleUpdateQuantity}
-                      onRemove={handleRemove}
-                      isLoading={isLoading}
-                    />
-                  ))}
-                </div>
-              )}
+              <div className="space-y-3">
+                {items.map((item) => (
+                  <CartItem
+                    key={item._id}
+                    item={item}
+                    onUpdateQuantity={handleUpdateQuantity}
+                    onRemove={initiateDelete} // Use the modal initiator
+                    
+                    // Pass specific loading state to the item
+                    isLoading={updatingItemId === item._id} 
+                    
+                    // Disable interactions if *any* item is updating to prevent conflicts
+                    disabled={updatingItemId !== null}
+                  />
+                ))}
+              </div>
             </div>
           </div>
 
@@ -156,12 +183,20 @@ export default function Cart() {
               onApplyPromo={handleApplyPromo}
               onRemovePromo={handleRemovePromo}
               onCheckout={handleCheckout}
-              isLoading={isLoading}
+              isLoading={isGlobalLoading} // Keep summary loading if needed
               itemCount={itemCount}
             />
           </div>
         </div>
       </div>
+
+      {/* Delete Confirmation Modal */}
+      <DeleteConfirmationModal 
+        isOpen={isDeleteOpen}
+        onClose={() => setIsDeleteOpen(false)}
+        onConfirm={confirmDelete}
+        isLoading={isRemoving}
+      />
     </div>
   );
 }
