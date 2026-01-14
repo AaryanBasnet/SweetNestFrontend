@@ -1,35 +1,15 @@
-/**
- * ProductCardSkeleton Component
- * Loading placeholder matching ProductCard design
- */
+import React from "react";
 
 export default function ProductCardSkeleton() {
   return (
-    <div className="bg-white rounded-2xl overflow-hidden animate-pulse">
-      {/* Image skeleton */}
-      <div className="aspect-square bg-[#E8E4DD]/50 rounded-t-2xl" />
-
-      {/* Content skeleton */}
-      <div className="p-4">
-        {/* Title & price */}
-        <div className="flex justify-between gap-2 mb-2">
-          <div className="h-5 bg-dark/10 rounded w-2/3" />
-          <div className="h-5 bg-dark/10 rounded w-16" />
-        </div>
-
-        {/* Description */}
-        <div className="space-y-1.5 mb-3">
-          <div className="h-4 bg-dark/10 rounded w-full" />
-          <div className="h-4 bg-dark/10 rounded w-4/5" />
-        </div>
-
-        {/* Rating */}
-        <div className="h-4 bg-dark/10 rounded w-28 mb-4" />
-
-        {/* Buttons */}
-        <div className="flex items-center gap-3">
-          <div className="flex-1 h-10 bg-dark/10 rounded-full" />
-          <div className="w-10 h-10 bg-dark/10 rounded-full" />
+    <div className="bg-white rounded-xl overflow-hidden border border-dark/5">
+      <div className="aspect-square bg-dark/5 animate-pulse" />
+      <div className="p-4 space-y-3">
+        <div className="h-4 bg-dark/5 rounded w-3/4 animate-pulse" />
+        <div className="h-3 bg-dark/5 rounded w-1/2 animate-pulse" />
+        <div className="pt-2 flex justify-between items-center">
+          <div className="h-4 bg-dark/5 rounded w-1/3 animate-pulse" />
+          <div className="h-8 w-8 bg-dark/5 rounded-full animate-pulse" />
         </div>
       </div>
     </div>

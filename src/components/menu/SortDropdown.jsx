@@ -1,62 +1,57 @@
-/**
- * SortDropdown Component
- * Standalone sort selector for menu page
- */
+import React from "react";
+import { ChevronDown } from "lucide-react";
+import { SORT_OPTIONS } from "../../stores/menuStore";
 
-import { useState, useRef, useEffect } from 'react';
-import { ChevronDown } from 'lucide-react';
-
-export default function SortDropdown({ value, options = [], onChange }) {
-  const [isOpen, setIsOpen] = useState(false);
-  const dropdownRef = useRef(null);
-
-  const selectedOption = options.find((opt) => opt.value === value) || options[0];
-
-  // Close on outside click
-  useEffect(() => {
-    const handleClickOutside = (e) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
-        setIsOpen(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
-
-  const handleSelect = (option) => {
-    onChange?.(option.value);
-    setIsOpen(false);
-  };
+export default function SortDropdown({
+  currentSort,
+  isOpen,
+  setIsOpen,
+  onSelect,
+}) {
+  const currentSortLabel =
+    SORT_OPTIONS.find((opt) => opt.value === currentSort)?.label || "Featured";
 
   return (
-    <div ref={dropdownRef} className="relative">
+    <div className="relative">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-1 sm:gap-2 px-3 sm:px-4 py-2 sm:py-2.5 bg-white border border-dark/10 rounded-lg text-xs sm:text-sm hover:border-dark/20 transition-colors min-w-0 sm:min-w-[180px] justify-between"
+        className="flex items-center gap-2 px-4 py-2.5 bg-white border border-dark/10 rounded-full text-sm hover:border-dark/30 transition-colors"
       >
-        <span className="text-dark/60 hidden sm:inline">Sort by:</span>
-        <span className="font-medium truncate max-w-[80px] sm:max-w-none">{selectedOption?.label}</span>
+        <span className="text-dark/50">Sort by:</span>
+        <span className="font-medium text-dark">{currentSortLabel}</span>
         <ChevronDown
-          size={14}
-          className={`text-dark/40 transition-transform flex-shrink-0 sm:w-4 sm:h-4 ${isOpen ? 'rotate-180' : ''}`}
+          size={16}
+          className={`text-dark/40 transition-transform ${
+            isOpen ? "rotate-180" : ""
+          }`}
         />
       </button>
 
       {isOpen && (
-        <div className="absolute top-full right-0 mt-2 min-w-full sm:w-full bg-white border border-dark/10 rounded-lg shadow-lg py-1 z-20">
-          {options.map((option) => (
-            <button
-              key={option.value}
-              onClick={() => handleSelect(option)}
-              className={`w-full px-3 sm:px-4 py-2 text-left text-xs sm:text-sm hover:bg-cream transition-colors whitespace-nowrap ${
-                option.value === value ? 'text-accent font-medium' : 'text-dark'
-              }`}
-            >
-              {option.label}
-            </button>
-          ))}
-        </div>
+        <>
+          <div
+            className="fixed inset-0 z-10"
+            onClick={() => setIsOpen(false)}
+          />
+          <div className="absolute right-0 top-full mt-2 w-48 bg-white rounded-xl shadow-lg border border-dark/10 py-2 z-20">
+            {SORT_OPTIONS.map((option) => (
+              <button
+                key={option.value}
+                onClick={() => {
+                  onSelect(option.value);
+                  setIsOpen(false);
+                }}
+                className={`w-full text-left px-4 py-2 text-sm hover:bg-dark/5 transition-colors ${
+                  currentSort === option.value
+                    ? "text-accent font-medium"
+                    : "text-dark/70"
+                }`}
+              >
+                {option.label}
+              </button>
+            ))}
+          </div>
+        </>
       )}
     </div>
   );

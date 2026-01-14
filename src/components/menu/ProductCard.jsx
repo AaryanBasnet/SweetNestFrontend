@@ -16,6 +16,7 @@ export default function ProductCard({
   onAddToCart,
   onWishlist,
   onClick,
+  isWishlisted = false, // Checks if this card is in the wishlist
 }) {
   const imageUrl = images[0]?.url || 'https://via.placeholder.com/300x300?text=Cake';
 
@@ -32,11 +33,10 @@ export default function ProductCard({
   return (
     <div
       onClick={onClick}
-      className="group cursor-pointer bg-white rounded-2xl overflow-hidden hover:shadow-lg transition-shadow duration-300"
+      className="group cursor-pointer bg-white rounded-2xl overflow-hidden hover:shadow-lg transition-shadow duration-300 border border-transparent hover:border-dark/5"
     >
-      {/* Image */}
+      {/* Image Section */}
       <div className="relative aspect-[4/3] overflow-hidden bg-[#E8E4DD] rounded-t-2xl">
-
         <img
           src={imageUrl}
           alt={name}
@@ -44,7 +44,7 @@ export default function ProductCard({
         />
       </div>
 
-      {/* Content */}
+      {/* Content Section */}
       <div className="p-4">
         {/* Name & Price */}
         <div className="flex items-start justify-between gap-2 mb-2">
@@ -90,11 +90,19 @@ export default function ProductCard({
             Add to Cart
             <ShoppingBag size={16} />
           </button>
+          
           <button
             onClick={handleWishlist}
-            className="w-10 h-10 flex items-center justify-center border border-dark/15 rounded-full text-dark/40 hover:border-accent hover:text-accent transition-colors"
+            className={`w-10 h-10 flex items-center justify-center border rounded-full transition-all duration-300 ${
+              isWishlisted
+                ? "border-red-500 bg-red-50 text-red-500" // Active (Favorited)
+                : "border-dark/15 text-dark/40 hover:border-accent hover:text-accent" // Inactive
+            }`}
           >
-            <Heart size={18} />
+            <Heart 
+              size={18} 
+              className={isWishlisted ? "fill-current" : ""} 
+            />
           </button>
         </div>
       </div>

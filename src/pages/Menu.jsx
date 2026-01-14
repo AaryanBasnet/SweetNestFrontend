@@ -6,26 +6,25 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import {
-  Search,
-  ChevronDown,
-  ChevronRight,
-  SlidersHorizontal,
-  X,
-} from "lucide-react";
+import { ChevronRight, SlidersHorizontal, X } from "lucide-react";
 
 // Hooks
 import { useInfiniteCakes, useCategories } from "../hooks/cake";
 
 // Store
-import useMenuStore, { SORT_OPTIONS, FLAVOR_TAGS } from "../stores/menuStore";
+import useMenuStore, { SORT_OPTIONS } from "../stores/menuStore";
 import useCartStore from "../stores/cartStore";
 import useWishlistStore from "../stores/wishlistStore";
 import useAuthStore from "../stores/authStore";
 
 // Components
-import { ProductGrid, LoadMoreButton } from "../components/menu";
-import PriceRangeSlider from "../components/menu/PriceRangeSlider";
+import {
+  FilterSidebar,
+  LoadMoreButton,
+  ProductGrid,
+  SearchBar,
+  SortDropdown,
+} from "../components/menu";
 
 export default function Menu() {
   const navigate = useNavigate();
@@ -34,7 +33,8 @@ export default function Menu() {
   const { isAuthenticated } = useAuthStore();
   const isLoggedIn = isAuthenticated();
   const { addToCart } = useCartStore();
-  const { toggleWishlist } = useWishlistStore();
+  // Get isInWishlist from store
+  const { toggleWishlist, isInWishlist } = useWishlistStore();
 
   // Menu store state and actions
   const {
@@ -59,7 +59,7 @@ export default function Menu() {
 
     if (filters.category) params.category = filters.category;
     if (filters.search) params.search = filters.search;
-    if (filters.minPrice > 300) params.minPrice = filters.minPrice;
+    if (filters.minPrice > 0) params.minPrice = filters.minPrice;
     if (filters.maxPrice < 6000) params.maxPrice = filters.maxPrice;
     if (filters.flavorTags.length > 0)
       params.flavorTags = filters.flavorTags.join(",");
@@ -125,8 +125,14 @@ export default function Menu() {
 
   const handleWishlist = async (product) => {
     const result = await toggleWishlist(product._id, isLoggedIn);
+    
     if (result.success) {
-      toast.success("Wishlist updated!");
+      // Show specific message based on the action returned
+      if (result.action === 'added') {
+        toast.success(`${product.name} added to wishlist!`);
+      } else {
+        toast.info(`${product.name} removed from wishlist.`);
+      }
     }
   };
 
@@ -139,8 +145,6 @@ export default function Menu() {
   // Sort dropdown state
   const [isSortOpen, setIsSortOpen] = useState(false);
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
-  const currentSortLabel =
-    SORT_OPTIONS.find((opt) => opt.value === filters.sort)?.label || "Featured";
 
   // Lock body scroll when mobile filter is open
   useEffect(() => {
@@ -172,66 +176,16 @@ export default function Menu() {
           </nav>
 
           {/* Search & Sort */}
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-            {/* Search */}
-            <div className="relative">
-              <Search
-                size={18}
-                className="absolute left-4 top-1/2 -translate-y-1/2 text-dark/30"
-              />
-              <input
-                type="text"
-                value={filters.search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search flavor, name..."
-                className="w-full sm:w-64 pl-11 pr-4 py-2.5 bg-white border border-dark/10 rounded-full text-sm placeholder:text-dark/40 focus:outline-none focus:border-dark/30 transition-colors"
-              />
-            </div>
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 flex-1 lg:justify-end">
+            <SearchBar value={filters.search} onChange={setSearch} />
 
-            {/* Sort Dropdown */}
-            <div className="relative">
-              <button
-                onClick={() => setIsSortOpen(!isSortOpen)}
-                className="flex items-center gap-2 px-4 py-2.5 bg-white border border-dark/10 rounded-full text-sm hover:border-dark/30 transition-colors"
-              >
-                <span className="text-dark/50">Sort by:</span>
-                <span className="font-medium text-dark">
-                  {currentSortLabel}
-                </span>
-                <ChevronDown
-                  size={16}
-                  className={`text-dark/40 transition-transform ${
-                    isSortOpen ? "rotate-180" : ""
-                  }`}
-                />
-              </button>
-
-              {isSortOpen && (
-                <>
-                  <div
-                    className="fixed inset-0 z-10"
-                    onClick={() => setIsSortOpen(false)}
-                  />
-                  <div className="absolute right-0 top-full mt-2 w-48 bg-white rounded-xl shadow-lg border border-dark/10 py-2 z-20">
-                    {SORT_OPTIONS.map((option) => (
-                      <button
-                        key={option.value}
-                        onClick={() => {
-                          setSort(option.value);
-                          setIsSortOpen(false);
-                        }}
-                        className={`w-full text-left px-4 py-2 text-sm hover:bg-dark/5 transition-colors ${
-                          filters.sort === option.value
-                            ? "text-accent font-medium"
-                            : "text-dark/70"
-                        }`}
-                      >
-                        {option.label}
-                      </button>
-                    ))}
-                  </div>
-                </>
-              )}
+            <div className="shrink-0">
+              <SortDropdown
+                currentSort={filters.sort}
+                isOpen={isSortOpen}
+                setIsOpen={setIsSortOpen}
+                onSelect={setSort}
+              />
             </div>
           </div>
         </div>
@@ -252,62 +206,15 @@ export default function Menu() {
         <div className="flex gap-6 lg:gap-8">
           {/* Sidebar */}
           <aside className="hidden lg:block w-44 shrink-0">
-            {/* Collections */}
-            <div className="mb-8">
-              <h3 className="text-xl font-serif text-dark mb-4">Collections</h3>
-              <ul className="space-y-1">
-                {collections.map((cat) => (
-                  <li key={cat._id || "all"}>
-                    <button
-                      onClick={() => setCategory(cat.slug)}
-                      className={`w-full text-left px-4 py-2 rounded-lg text-sm transition-colors ${
-                        filters.category === cat.slug
-                          ? "bg-dark text-white"
-                          : "text-dark/70 hover:bg-dark/5"
-                      }`}
-                    >
-                      {cat.name}
-                      {filters.category === cat.slug && (
-                        <span className="float-right">•</span>
-                      )}
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            {/* Flavor Tags */}
-            <div className="mb-8">
-              <h3 className="text-xl font-serif text-dark mb-4">Flavors</h3>
-              <div className="flex flex-wrap gap-2">
-                {FLAVOR_TAGS.map((flavor) => (
-                  <button
-                    key={flavor}
-                    onClick={() => toggleFlavorTag(flavor)}
-                    className={`px-3 py-1.5 rounded-full text-xs border transition-colors ${
-                      filters.flavorTags.includes(flavor)
-                        ? "bg-dark text-white border-dark"
-                        : "border-dark/20 text-dark/60 hover:border-dark/40"
-                    }`}
-                  >
-                    {flavor}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Price Range */}
-            <div className="border border-dark/10 rounded-xl p-4">
-              <h3 className="text-sm font-medium text-dark mb-4">
-                Price Range
-              </h3>
-              <PriceRangeSlider
-                min={300}
-                max={6000}
-                value={[filters.minPrice, filters.maxPrice]}
-                onChange={setPriceRange}
-              />
-            </div>
+            <FilterSidebar
+              collections={collections}
+              activeCategory={filters.category}
+              onCategoryChange={setCategory}
+              activeFlavors={filters.flavorTags}
+              onFlavorToggle={toggleFlavorTag}
+              priceRange={[filters.minPrice, filters.maxPrice]}
+              onPriceChange={setPriceRange}
+            />
           </aside>
 
           {/* Product Grid */}
@@ -315,12 +222,13 @@ export default function Menu() {
             <ProductGrid
               products={cakes}
               isLoading={isLoading}
+              isFetching={isFetchingNextPage || (isLoading && cakes.length > 0)}
               onProductClick={handleProductClick}
               onAddToCart={handleAddToCart}
               onWishlist={handleWishlist}
+              wishlistChecker={isInWishlist} // Pass the checker here
             />
 
-            {/* Load More */}
             <LoadMoreButton
               currentCount={cakes.length}
               totalCount={totalCount}
@@ -361,62 +269,16 @@ export default function Menu() {
 
           {/* Content */}
           <div className="p-5 overflow-y-auto h-[calc(100%-130px)]">
-            {/* Collections */}
-            <div className="mb-8">
-              <h3 className="text-lg font-serif text-dark mb-4">Collections</h3>
-              <ul className="space-y-1">
-                {collections.map((cat) => (
-                  <li key={cat._id || "all"}>
-                    <button
-                      onClick={() => {
-                        setCategory(cat.slug);
-                        setIsMobileFilterOpen(false);
-                      }}
-                      className={`w-full text-left px-4 py-2.5 rounded-lg text-sm transition-colors ${
-                        filters.category === cat.slug
-                          ? "bg-dark text-white"
-                          : "text-dark/70 hover:bg-dark/5"
-                      }`}
-                    >
-                      {cat.name}
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            {/* Flavor Tags */}
-            <div className="mb-8">
-              <h3 className="text-lg font-serif text-dark mb-4">Flavors</h3>
-              <div className="flex flex-wrap gap-2">
-                {FLAVOR_TAGS.map((flavor) => (
-                  <button
-                    key={flavor}
-                    onClick={() => toggleFlavorTag(flavor)}
-                    className={`px-3 py-1.5 rounded-full text-xs border transition-colors ${
-                      filters.flavorTags.includes(flavor)
-                        ? "bg-dark text-white border-dark"
-                        : "border-dark/20 text-dark/60 hover:border-dark/40"
-                    }`}
-                  >
-                    {flavor}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Price Range */}
-            <div className="border border-dark/10 rounded-xl p-4">
-              <h3 className="text-sm font-medium text-dark mb-4">
-                Price Range
-              </h3>
-              <PriceRangeSlider
-                min={300}
-                max={6000}
-                value={[filters.minPrice, filters.maxPrice]}
-                onChange={setPriceRange}
-              />
-            </div>
+            <FilterSidebar
+              collections={collections}
+              activeCategory={filters.category}
+              onCategoryChange={setCategory}
+              activeFlavors={filters.flavorTags}
+              onFlavorToggle={toggleFlavorTag}
+              priceRange={[filters.minPrice, filters.maxPrice]}
+              onPriceChange={setPriceRange}
+              onCloseMobile={() => setIsMobileFilterOpen(false)}
+            />
           </div>
 
           {/* Apply Button */}
