@@ -24,6 +24,21 @@ export default function RecentOrdersTable({
     }
   };
 
+  // Format currency
+  const formatCurrency = (amount) => {
+    return Math.round(amount).toLocaleString();
+  };
+
+  // Format date
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+    });
+  };
+
   return (
     <div className="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-dark/5">
       {/* Header */}
@@ -79,33 +94,48 @@ export default function RecentOrdersTable({
             </tr>
           </thead>
           <tbody>
-            {orders.map((order) => (
-              <tr key={order.id} className="border-b border-dark/5 hover:bg-cream/50">
-                <td className="py-4 px-4">
-                  <span className="text-sm font-medium text-accent">#{order.id}</span>
-                </td>
-                <td className="py-4 px-4">
-                  <div>
-                    <p className="text-sm font-medium text-dark">{order.customer}</p>
-                    <p className="text-xs text-dark/50">{order.items} items</p>
-                  </div>
-                </td>
-                <td className="py-4 px-4">
-                  <span className="text-sm text-dark/70">{order.date}</span>
-                </td>
-                <td className="py-4 px-4">
-                  <span className="text-sm font-medium text-dark">Rs. {order.total}</span>
-                </td>
-                <td className="py-4 px-4">
-                  <StatusBadge status={order.status} />
-                </td>
-                <td className="py-4 px-4 text-right">
-                  <button className="p-2 hover:bg-dark/5 rounded-lg transition-colors">
-                    <MoreHorizontal size={18} className="text-dark/40" />
-                  </button>
+            {orders.length === 0 ? (
+              <tr>
+                <td colSpan="6" className="py-8 text-center text-dark/50 text-sm">
+                  No recent orders
                 </td>
               </tr>
-            ))}
+            ) : (
+              orders.map((order) => (
+                <tr key={order._id} className="border-b border-dark/5 hover:bg-cream/50">
+                  <td className="py-4 px-4">
+                    <span className="text-sm font-medium text-accent">{order.orderNumber}</span>
+                  </td>
+                  <td className="py-4 px-4">
+                    <div>
+                      <p className="text-sm font-medium text-dark">
+                        {order.user?.name || 'Unknown'}
+                      </p>
+                      <p className="text-xs text-dark/50">{order.user?.email || '-'}</p>
+                    </div>
+                  </td>
+                  <td className="py-4 px-4">
+                    <span className="text-sm text-dark/70">{formatDate(order.createdAt)}</span>
+                  </td>
+                  <td className="py-4 px-4">
+                    <span className="text-sm font-medium text-dark">
+                      Rs. {formatCurrency(order.total)}
+                    </span>
+                  </td>
+                  <td className="py-4 px-4">
+                    <StatusBadge status={order.orderStatus} />
+                  </td>
+                  <td className="py-4 px-4 text-right">
+                    <button
+                      onClick={() => navigate(`/admin/orders`)}
+                      className="p-2 hover:bg-dark/5 rounded-lg transition-colors"
+                    >
+                      <MoreHorizontal size={18} className="text-dark/40" />
+                    </button>
+                  </td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>
