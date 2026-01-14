@@ -48,6 +48,14 @@ export const deleteOrder = async (id) => {
 };
 
 /**
+ * Process refund for an order
+ */
+export const processRefund = async (id, refundData = {}) => {
+  const response = await ordersApi.processRefundApi(id, refundData);
+  return response.data;
+};
+
+/**
  * Export orders report
  * Note: Backend route must exist
  */
@@ -59,13 +67,27 @@ export const exportOrders = async (filters = {}) => {
 // Order status options
 export const ORDER_STATUSES = [
   { value: 'pending', label: 'Pending', color: 'amber' },
+  { value: 'confirmed', label: 'Confirmed', color: 'blue' },
   { value: 'processing', label: 'Processing', color: 'blue' },
   { value: 'out_for_delivery', label: 'Shipped', color: 'purple' },
   { value: 'delivered', label: 'Delivered', color: 'green' },
   { value: 'cancelled', label: 'Cancelled', color: 'red' },
 ];
 
+// Payment status options
+export const PAYMENT_STATUSES = [
+  { value: 'pending', label: 'Pending', color: 'amber' },
+  { value: 'paid', label: 'Paid', color: 'green' },
+  { value: 'failed', label: 'Failed', color: 'red' },
+  { value: 'refunded', label: 'Refunded', color: 'purple' },
+];
+
 export const getStatusColor = (status) => {
   const statusObj = ORDER_STATUSES.find((s) => s.value === status);
+  return statusObj?.color || 'gray';
+};
+
+export const getPaymentStatusColor = (status) => {
+  const statusObj = PAYMENT_STATUSES.find((s) => s.value === status);
   return statusObj?.color || 'gray';
 };

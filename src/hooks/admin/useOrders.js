@@ -66,3 +66,18 @@ export const useDeleteOrder = () => {
     },
   });
 };
+
+/**
+ * Hook to process refund
+ */
+export const useProcessRefund = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, refundData }) => ordersService.processRefund(id, refundData),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: orderKeys.all });
+    },
+  });
+};
+

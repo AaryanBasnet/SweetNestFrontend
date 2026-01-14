@@ -19,6 +19,11 @@ export const updateOrderStatusApi = (id, status) => {
   return api.put(`/orders/${id}/status`, { status });
 };
 
+// Process refund for an order
+export const processRefundApi = (id, refundData = {}) => {
+  return api.put(`/orders/${id}/refund`, refundData);
+};
+
 // Delete order (needs backend implementation)
 export const deleteOrderApi = (id) => {
   return api.delete(`/orders/${id}`);
