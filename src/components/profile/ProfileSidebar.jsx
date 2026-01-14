@@ -3,15 +3,73 @@
  * Displays user avatar, info, sweet points, and navigation tabs
  */
 
-import { memo } from 'react';
+import { memo, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
-import { Camera, Gift } from 'lucide-react';
+import { Camera, Gift, Loader2 } from 'lucide-react';
+import { toast } from 'react-toastify';
 import { PROFILE_TABS } from './profileConstants';
+import { updateUserProfileApi } from '../../api/user/userApi';
+import useAuthStore from '../../stores/authStore';
 
 /**
  * Profile Card with avatar and user info
  */
 function ProfileCard({ user, sweetPoints = 0 }) {
+  const fileInputRef = useRef(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const updateUser = useAuthStore((state) => state.updateUser);
+
+  // Handle file selection
+  const handleFileChange = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please select an image file');
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('Image size should be less than 5MB');
+      return;
+    }
+
+    try {
+      setIsUploading(true);
+
+      // Create FormData to send file
+      const formData = new FormData();
+      formData.append('avatar', file);
+
+      // Update profile with new avatar
+      const response = await updateUserProfileApi(formData);
+
+      if (response.data?.success) {
+        // Update auth store with new user data
+        updateUser(response.data.userData);
+        toast.success('Profile picture updated successfully!');
+      } else {
+        throw new Error('Failed to update profile picture');
+      }
+    } catch (error) {
+      console.error('Error uploading profile picture:', error);
+      toast.error(error.response?.data?.message || 'Failed to update profile picture');
+    } finally {
+      setIsUploading(false);
+      // Reset file input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  };
+
+  // Trigger file input
+  const handleCameraClick = () => {
+    fileInputRef.current?.click();
+  };
+
   return (
     <div className="bg-[#FDF6EE] rounded-2xl p-6 mb-4">
       {/* Avatar */}
@@ -31,13 +89,29 @@ function ProfileCard({ user, sweetPoints = 0 }) {
                 </span>
               </div>
             )}
+            {isUploading && (
+              <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                <Loader2 size={24} className="text-white animate-spin" />
+              </div>
+            )}
           </div>
           <button
+            onClick={handleCameraClick}
+            disabled={isUploading}
             aria-label="Change profile photo"
-            className="absolute bottom-0 right-0 w-7 h-7 bg-dark text-white rounded-full flex items-center justify-center shadow-lg hover:bg-dark/90 transition-colors"
+            className="absolute bottom-0 right-0 w-7 h-7 bg-dark text-white rounded-full flex items-center justify-center shadow-lg hover:bg-dark/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <Camera size={14} />
           </button>
+          {/* Hidden file input */}
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            onChange={handleFileChange}
+            className="hidden"
+            aria-label="Upload profile picture"
+          />
         </div>
       </div>
 
@@ -132,3 +206,4 @@ ProfileSidebar.propTypes = {
 
 export default memo(ProfileSidebar);
 
+1
