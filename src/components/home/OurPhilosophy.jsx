@@ -15,16 +15,17 @@ export default function OurPhilosophy() {
           {/* Left: Image Collage */}
           <div className="relative">
             <div className="aspect-[3/4] rounded-[3rem] overflow-hidden shadow-2xl relative z-10 w-4/5 mx-auto lg:ml-0 lg:mr-auto">
+              {/* Updated Image to a cake */}
               <img
-                src="https://images.unsplash.com/photo-1589476993333-f55b84301219?q=80&w=1000&auto=format&fit=crop"
+                src="https://images.unsplash.com/photo-1621303837174-89787a7d4729?q=80&w=736&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
                 className="w-full h-full object-cover"
-                alt="Baker hands"
+                alt="Artisan chocolate cake with berries"
               />
             </div>
             {/* Secondary overlapping image */}
-            <div className="absolute -bottom-12 -right-4 lg:-right-12 w-2/3 aspect-square rounded-[2.5rem] overflow-hidden shadow-xl border-8 border-cream-100 z-20 hidden md:block">
+            <div className="absolute -bottom-12 -right-4 lg:-right-12 w-2/3 aspect-square rounded-[2.5rem] overflow-hidden shadow-xl border-4 border-cream-100 z-20 hidden md:block">
               <img
-                src="/src/assets/coffee_and_chocolate.jpg"
+                src="https://images.unsplash.com/photo-1618426703623-c1b335803e07?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
                 className="w-full h-full object-cover"
                 alt="Detail"
               />
