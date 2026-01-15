@@ -1,6 +1,13 @@
- import { X, AlertTriangle } from "lucide-react"; // Add these to imports
+import { X, AlertTriangle } from "lucide-react";
 
-export default function DeleteConfirmationModal({ isOpen, onClose, onConfirm, isLoading }) {
+export default function DeleteConfirmationModal({
+  isOpen,
+  onClose,
+  onConfirm,
+  isLoading,
+  title = "Remove Item?",
+  message = "Are you sure you want to remove this item?"
+}) {
   if (!isOpen) return null;
 
   return (
@@ -18,11 +25,11 @@ export default function DeleteConfirmationModal({ isOpen, onClose, onConfirm, is
           </div>
           
           <h3 className="text-xl font-serif font-medium text-gray-900 mb-2">
-            Remove Item?
+            {title}
           </h3>
-          
+
           <p className="text-gray-500 text-sm mb-6">
-            Are you sure you want to remove this cake from your wishlist?
+            {message}
           </p>
 
           <div className="flex gap-3 w-full">

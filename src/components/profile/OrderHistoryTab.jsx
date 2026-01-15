@@ -6,70 +6,12 @@
 import { memo } from 'react';
 import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
-import { Package, Clock, Truck } from 'lucide-react';
-
-// Utils
-import { formatOrderDate } from '../../utils/dateUtils';
-import { getStatusDisplay, getStatusColor } from '../../utils/orderUtils';
+import { Package } from 'lucide-react';
 
 // Components
 import OrderCardSkeleton from './OrderCardSkeleton';
+import OrderCard from './OrderCard';
 
-/**
- * Order History Card Component
- */
-function OrderHistoryCard({ order }) {
-  return (
-    <div className="bg-white rounded-2xl p-5 flex flex-col sm:flex-row sm:items-center gap-4 border border-dark/5">
-      <div className="flex items-center gap-4 flex-1">
-        <div className="w-14 h-14 bg-accent/10 rounded-xl flex flex-col items-center justify-center">
-          <Clock size={16} className="text-accent mb-0.5" aria-hidden="true" />
-          <span className="text-accent text-xs font-semibold">
-            {formatOrderDate(order.createdAt)}
-          </span>
-        </div>
-        <div>
-          <p className="text-dark font-medium">Order #{order.orderNumber}</p>
-          <p className="text-dark/50 text-sm truncate max-w-[250px]">
-            {order.items?.map((item) => item.name).join(', ')}
-          </p>
-          <p className="text-sm mt-1">
-            <span className="text-dark/40">
-              {order.itemCount || order.items?.length} Items
-            </span>
-            <span className="text-dark font-semibold ml-3">Rs. {order.total}</span>
-          </p>
-        </div>
-      </div>
-      <div className="flex items-center gap-3">
-        <span
-          className={`px-3 py-1.5 ${getStatusColor(order.orderStatus)} text-white text-xs font-medium rounded-full`}
-        >
-          {getStatusDisplay(order.orderStatus)}
-        </span>
-        <Link
-          to={`/track-order/${order._id}`}
-          className="px-4 py-2 bg-dark text-white text-sm font-medium rounded-full flex items-center gap-1 hover:bg-dark/90 transition-colors"
-        >
-          <Truck size={14} aria-hidden="true" />
-          Track Order
-        </Link>
-      </div>
-    </div>
-  );
-}
-
-OrderHistoryCard.propTypes = {
-  order: PropTypes.shape({
-    _id: PropTypes.string.isRequired,
-    orderNumber: PropTypes.string.isRequired,
-    createdAt: PropTypes.string.isRequired,
-    items: PropTypes.array,
-    itemCount: PropTypes.number,
-    total: PropTypes.number.isRequired,
-    orderStatus: PropTypes.string.isRequired,
-  }).isRequired,
-};
 
 /**
  * Empty State Component
@@ -139,7 +81,7 @@ function OrderHistoryTab({ orders, isLoading, error, onRetry }) {
       ) : orders.length > 0 ? (
         <div className="space-y-3">
           {orders.map((order) => (
-            <OrderHistoryCard key={order._id} order={order} />
+            <OrderCard key={order._id} order={order} variant="history" />
           ))}
         </div>
       ) : (

@@ -16,6 +16,9 @@ import useWishlistStore from "../stores/wishlistStore";
 import useOrders from "../hooks/user/useOrders";
 import useProfileForm from "../hooks/user/useProfileForm";
 
+// API
+import { getUserPointsApi } from "../api/rewardsApi";
+
 // Components
 import {
   ProfileSidebar,
@@ -33,6 +36,7 @@ export default function Profile() {
   const [searchParams, setSearchParams] = useSearchParams();
   const { user, isAuthenticated } = useAuthStore();
   const wishlistCount = useWishlistStore((state) => state.getCount());
+  const [sweetPoints, setSweetPoints] = useState(0);
 
   // Get initial tab from URL or default to 'overview'
   const tabFromUrl = searchParams.get("tab");
@@ -65,6 +69,24 @@ export default function Profile() {
     }
   }, [isAuthenticated, navigate]);
 
+  // Fetch sweet points from API
+  useEffect(() => {
+    const fetchSweetPoints = async () => {
+      try {
+        const response = await getUserPointsApi();
+        setSweetPoints(response.data?.data?.balance || 0);
+      } catch (error) {
+        console.error("Error fetching sweet points:", error);
+        // Fallback to user data if API fails
+        setSweetPoints(user?.sweetPoints || 0);
+      }
+    };
+
+    if (isAuthenticated() && user) {
+      fetchSweetPoints();
+    }
+  }, [isAuthenticated, user]);
+
   // Sync tab with URL when URL changes
   useEffect(() => {
     const tab = searchParams.get("tab");
@@ -95,9 +117,6 @@ export default function Profile() {
   if (!user) return null;
 
   const firstName = user.name?.split(" ")[0] || "User";
-
-  // TODO: Get sweet points from user object when implemented
-  const sweetPoints = user.sweetPoints || 0;
 
   return (
     <div className="min-h-screen bg-[#FDFBF7]">

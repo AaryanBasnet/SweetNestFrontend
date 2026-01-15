@@ -7,6 +7,7 @@
 import { useState } from 'react';
 import { Plus } from 'lucide-react';
 import { AddressList, AddressModal } from '../address';
+import DeleteModal from '../common/DeleteModal';
 import {
   useAddresses,
   useDeleteAddress,
@@ -17,6 +18,8 @@ import { toast } from 'react-toastify';
 export default function AddressBookTab() {
   const [modalOpen, setModalOpen] = useState(false);
   const [editingAddress, setEditingAddress] = useState(null);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [addressToDelete, setAddressToDelete] = useState(null);
 
   // React Query hooks
   const { data: addresses, isLoading, error } = useAddresses();
@@ -34,14 +37,17 @@ export default function AddressBookTab() {
     setModalOpen(true);
   };
 
-  const handleDelete = async (addressId) => {
-    if (!window.confirm('Are you sure you want to delete this address?')) {
-      return;
-    }
+  const handleDelete = (addressId) => {
+    setAddressToDelete(addressId);
+    setDeleteModalOpen(true);
+  };
 
+  const confirmDelete = async () => {
     try {
-      await deleteMutation.mutateAsync(addressId);
+      await deleteMutation.mutateAsync(addressToDelete);
       toast.success('Address deleted successfully');
+      setDeleteModalOpen(false);
+      setAddressToDelete(null);
     } catch (error) {
       toast.error(
         error.response?.data?.message || 'Failed to delete address'
@@ -120,6 +126,19 @@ export default function AddressBookTab() {
         onSuccess={() => {
           // Modal handles success toast and closing
         }}
+      />
+
+      {/* Delete Confirmation Modal */}
+      <DeleteModal
+        isOpen={deleteModalOpen}
+        onClose={() => {
+          setDeleteModalOpen(false);
+          setAddressToDelete(null);
+        }}
+        onConfirm={confirmDelete}
+        isLoading={deleteMutation.isPending}
+        title="Delete Address?"
+        message="Are you sure you want to delete this address? This action cannot be undone."
       />
     </div>
   );

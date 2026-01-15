@@ -73,6 +73,7 @@ export const useProfileForm = () => {
       const response = await updateUserProfileApi({
         name: formData.name,
         phone: formData.phone,
+        address: formData.address,
       });
 
       if (response.data?.success) {
