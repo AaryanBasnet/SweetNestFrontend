@@ -33,6 +33,7 @@ import Notifications from "../pages/Notifications";
 import AdminNotifications from "../pages/admin/Notifications";
 import CreateNotification from "../pages/admin/CreateNotification";
 import Rewards from "../pages/Rewards";
+import CustomPage from "../pages/CustomPage";
 
 export default function AppRouter() {
   return (
@@ -63,6 +64,8 @@ export default function AppRouter() {
           />
           <Route path="/track-order/:orderId" element={<TrackOrder />} />
           <Route path="/notifications" element={<Notifications />} />
+          <Route path="/custompage" element={<CustomPage />} />
+
           <Route path="/cake/:slug" element={<CakeDetail />} />
         </Route>
 

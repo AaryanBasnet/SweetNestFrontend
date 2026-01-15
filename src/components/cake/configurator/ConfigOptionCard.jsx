@@ -94,7 +94,7 @@ export const ConfigOptionCard = ({
           {/* Color indicator */}
           {colorValue && (
             <div
-              className="absolute bottom-3 left-3 w-5 h-5 rounded-full border-2 border-white shadow-md"
+              className="absolute bottom-3 left-3 w-20 h-20 rounded-full border-2 border-white shadow-md"
               style={{ backgroundColor: colorValue }}
             />
           )}
@@ -151,7 +151,7 @@ export const ConfigOptionCard = ({
       </div>
       {price !== undefined && price !== null && (
         <div className={`ml-3 font-medium ${isSelected ? "text-accent" : "text-dark/70"}`}>
-          {price > 0 ? `+रू ${price}` : "Free"}
+          {price > 0 ? `+Rs. ${price}` : "Free"}
         </div>
       )}
       {isSelected && (
