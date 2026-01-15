@@ -33,7 +33,7 @@ export default function AdminHeader({ title = "Overview", onMenuClick }) {
       {/* Right Section */}
       <div className="flex items-center gap-2 sm:gap-4">
         {/* Search - Desktop */}
-        <div className="hidden md:block relative">
+        {/* <div className="hidden md:block relative">
           <Search
             size={18}
             className="absolute left-3 top-1/2 -translate-y-1/2 text-dark/40"
@@ -43,7 +43,7 @@ export default function AdminHeader({ title = "Overview", onMenuClick }) {
             placeholder="Search..."
             className="w-48 lg:w-64 pl-10 pr-4 py-2 bg-cream border border-dark/10 rounded-lg text-sm focus:outline-none focus:border-accent/50"
           />
-        </div>
+        </div> */}
 
         {/* Search - Mobile Toggle */}
         <button
@@ -67,14 +67,14 @@ export default function AdminHeader({ title = "Overview", onMenuClick }) {
         </Link>
 
         {/* Add Product Button - Desktop */}
-        <button
-          onClick={() => navigate("/admin/products/new")}
+        {/* <button
+          onClick={() => navigate("/admin/products")}
           className="hidden sm:flex items-center gap-2 px-3 sm:px-4 py-2 bg-accent text-white text-sm font-medium rounded-lg hover:bg-accent/90 transition-colors"
         >
           <Plus size={18} />
           <span className="hidden lg:inline">Add Product</span>
           <span className="lg:hidden">Add</span>
-        </button>
+        </button> */}
 
         {/* Add Product Button - Mobile (icon only) */}
         <button
