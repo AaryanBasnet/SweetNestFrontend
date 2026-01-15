@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { toast } from "react-toastify";
 import {
   MapPin,
   Mail,
@@ -10,6 +11,7 @@ import {
   Facebook,
   Twitter,
 } from "lucide-react";
+import { useSubmitContact } from "../hooks/contact/useContact";
 
 const CONTACT_INFO = [
   {
@@ -90,15 +92,68 @@ export default function Contact() {
     subject: "",
     message: "",
   });
+  const [errors, setErrors] = useState({});
+
+  const submitContact = useSubmitContact();
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+    // Clear error for this field
+    if (errors[e.target.name]) {
+      setErrors({ ...errors, [e.target.name]: "" });
+    }
   };
 
-  const handleSubmit = (e) => {
+  const validate = () => {
+    const newErrors = {};
+
+    if (!formData.name.trim()) {
+      newErrors.name = "Name is required";
+    }
+
+    if (!formData.email.trim()) {
+      newErrors.email = "Email is required";
+    } else if (!/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(formData.email)) {
+      newErrors.email = "Please enter a valid email";
+    }
+
+    if (!formData.subject.trim()) {
+      newErrors.subject = "Subject is required";
+    }
+
+    if (!formData.message.trim()) {
+      newErrors.message = "Message is required";
+    } else if (formData.message.length < 10) {
+      newErrors.message = "Message must be at least 10 characters";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Handle form submission
-    console.log("Form submitted:", formData);
+
+    if (!validate()) {
+      toast.error("Please fill in all required fields correctly");
+      return;
+    }
+
+    try {
+      await submitContact.mutateAsync(formData);
+      toast.success("Message sent successfully! We'll get back to you soon.");
+
+      // Reset form
+      setFormData({
+        name: "",
+        email: "",
+        subject: "",
+        message: "",
+      });
+      setErrors({});
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Failed to send message. Please try again.");
+    }
   };
 
   return (
@@ -177,57 +232,79 @@ export default function Contact() {
             <form onSubmit={handleSubmit} className="space-y-5">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <div>
-                  <label className="block text-sm text-dark/60 mb-2">Name</label>
+                  <label className="block text-sm text-dark/60 mb-2">Name *</label>
                   <input
                     type="text"
                     name="name"
                     value={formData.name}
                     onChange={handleChange}
                     placeholder="Your Name"
-                    className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:border-accent transition-colors"
+                    className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:border-accent transition-colors ${
+                      errors.name ? 'border-red-500' : 'border-gray-200'
+                    }`}
                   />
+                  {errors.name && (
+                    <p className="text-red-500 text-xs mt-1">{errors.name}</p>
+                  )}
                 </div>
                 <div>
-                  <label className="block text-sm text-dark/60 mb-2">Email</label>
+                  <label className="block text-sm text-dark/60 mb-2">Email *</label>
                   <input
                     type="email"
                     name="email"
                     value={formData.email}
                     onChange={handleChange}
                     placeholder="your@email.com"
-                    className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:border-accent transition-colors"
+                    className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:border-accent transition-colors ${
+                      errors.email ? 'border-red-500' : 'border-gray-200'
+                    }`}
                   />
+                  {errors.email && (
+                    <p className="text-red-500 text-xs mt-1">{errors.email}</p>
+                  )}
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm text-dark/60 mb-2">Subject</label>
+                <label className="block text-sm text-dark/60 mb-2">Subject *</label>
                 <input
                   type="text"
                   name="subject"
                   value={formData.subject}
                   onChange={handleChange}
-                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:border-accent transition-colors"
+                  placeholder="What's this about?"
+                  className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:border-accent transition-colors ${
+                    errors.subject ? 'border-red-500' : 'border-gray-200'
+                  }`}
                 />
+                {errors.subject && (
+                  <p className="text-red-500 text-xs mt-1">{errors.subject}</p>
+                )}
               </div>
 
               <div>
-                <label className="block text-sm text-dark/60 mb-2">Message</label>
+                <label className="block text-sm text-dark/60 mb-2">Message *</label>
                 <textarea
                   name="message"
                   value={formData.message}
                   onChange={handleChange}
                   placeholder="Tell us about your sweet ideas..."
                   rows={4}
-                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:border-accent transition-colors resize-none"
+                  className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:border-accent transition-colors resize-none ${
+                    errors.message ? 'border-red-500' : 'border-gray-200'
+                  }`}
                 />
+                {errors.message && (
+                  <p className="text-red-500 text-xs mt-1">{errors.message}</p>
+                )}
               </div>
 
               <button
                 type="submit"
-                className="w-full bg-dark text-white py-4 rounded-xl font-medium flex items-center justify-center gap-2 hover:bg-dark/90 transition-colors"
+                disabled={submitContact.isPending}
+                className="w-full bg-dark text-white py-4 rounded-xl font-medium flex items-center justify-center gap-2 hover:bg-dark/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Send Message
+                {submitContact.isPending ? 'Sending...' : 'Send Message'}
                 <Send className="w-4 h-4" />
               </button>
             </form>
