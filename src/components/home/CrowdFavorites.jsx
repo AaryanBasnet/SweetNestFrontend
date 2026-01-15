@@ -1,52 +1,60 @@
 import { Heart, ArrowRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useCakes } from "../../hooks/cake";
 
-const FAVORITES = [
+const FALLBACK_FAVORITES = [
   {
     id: 1,
     name: "Wild Berry Bliss",
     description: "Sponge cake, cream, fresh berries",
-    price: "Rs. 555",
-    image: "https://images.unsplash.com/photo-1535141192574-5d4897c12636?q=80&w=800&auto=format&fit=crop",
+    basePrice: 555,
+    images: ["https://images.unsplash.com/photo-1535141192574-5d4897c12636?q=80&w=800&auto=format&fit=crop"],
+    coverImage: "https://images.unsplash.com/photo-1535141192574-5d4897c12636?q=80&w=800&auto=format&fit=crop",
     badge: null,
-    offsetClass: "",
+    slug: "wild-berry-bliss",
   },
   {
     id: 2,
     name: "Midnight Truffle",
     description: "85% Dark Chocolate, Gold flakes",
-    price: "Rs. 620",
-    image: "https://images.unsplash.com/photo-1578985545062-69928b1d9587?q=80&w=800&auto=format&fit=crop",
+    basePrice: 620,
+    images: ["https://images.unsplash.com/photo-1578985545062-69928b1d9587?q=80&w=800&auto=format&fit=crop"],
+    coverImage: "https://images.unsplash.com/photo-1578985545062-69928b1d9587?q=80&w=800&auto=format&fit=crop",
     badge: "Best Seller",
-    offsetClass: "lg:mt-12",
+    slug: "midnight-truffle",
   },
   {
     id: 3,
     name: "Citrus Cloud",
     description: "Lemon zest, poppy seeds, glaze",
-    price: "Rs. 480",
-    image: "https://images.unsplash.com/photo-1621303837174-89787a7d4729?q=80&w=800&auto=format&fit=crop",
+    basePrice: 480,
+    images: ["https://images.unsplash.com/photo-1621303837174-89787a7d4729?q=80&w=800&auto=format&fit=crop"],
+    coverImage: "https://images.unsplash.com/photo-1621303837174-89787a7d4729?q=80&w=800&auto=format&fit=crop",
     badge: null,
-    offsetClass: "",
+    slug: "citrus-cloud",
   },
 ];
 
-function ProductCard({ name, description, price, image, badge, offsetClass, onClick }) {
+function ProductCard({ cake, offsetClass, onClick }) {
+  // Get image URL - handle both object and string formats
+  const image = cake.images?.[0]?.url || cake.images?.[0] || cake.coverImage;
+  const description = cake.flavorTags?.join(', ') || cake.description || 'Delicious handmade cake';
+
   return (
     <div
       onClick={onClick}
       className={`group cursor-pointer hover:-translate-y-2 transition-transform duration-500 ${offsetClass}`}
     >
       <div className="relative aspect-[4/5] rounded-[3rem] overflow-hidden mb-6">
-        {badge && (
+        {cake.badge && (
           <span className="absolute top-6 left-6 bg-white px-4 py-1.5 text-[10px] font-bold tracking-widest uppercase rounded-full z-10 shadow-sm text-primary">
-            {badge}
+            {cake.badge}
           </span>
         )}
         <img
           src={image}
           className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-          alt={name}
+          alt={cake.name}
         />
         <div className="absolute top-4 right-4 w-12 h-12 bg-white/90 backdrop-blur rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 hover:text-red-500">
           <Heart size={20} className="text-primary" />
@@ -55,11 +63,11 @@ function ProductCard({ name, description, price, image, badge, offsetClass, onCl
       <div className="flex justify-between items-start px-2">
         <div>
           <h3 className="text-2xl font-medium group-hover:text-accent transition-colors font-serif text-primary">
-            {name}
+            {cake.name}
           </h3>
           <p className="text-sm text-primary/50 mt-1 font-sans">{description}</p>
         </div>
-        <span className="text-xl font-bold font-serif text-primary">{price}</span>
+        <span className="text-xl font-bold font-serif text-primary">Rs. {cake.basePrice}</span>
       </div>
     </div>
   );
@@ -68,8 +76,25 @@ function ProductCard({ name, description, price, image, badge, offsetClass, onCl
 export default function CrowdFavorites() {
   const navigate = useNavigate();
 
+  // Fetch top-rated cakes (sorted by rating)
+  const { data: cakesData } = useCakes({
+    sort: '-ratingsAverage',
+    limit: 3
+  });
+  const apiCakes = cakesData?.data || [];
+
+  // Use API data if available, otherwise fallback
+  const favorites = apiCakes.length >= 3 ? apiCakes : FALLBACK_FAVORITES;
+
+  // Add offset classes for staggered layout
+  const offsetClasses = ['', 'lg:mt-12', ''];
+
   const handleShopNow = () => {
-    navigate("/shop");
+    navigate("/menu");
+  };
+
+  const handleProductClick = (cake) => {
+    navigate(`/cake/${cake.slug}`);
   };
 
   return (
@@ -90,8 +115,13 @@ export default function CrowdFavorites() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {FAVORITES.map((product) => (
-          <ProductCard key={product.id} {...product} onClick={handleShopNow} />
+        {favorites.map((cake, index) => (
+          <ProductCard
+            key={cake._id || cake.id}
+            cake={cake}
+            offsetClass={offsetClasses[index] || ''}
+            onClick={() => handleProductClick(cake)}
+          />
         ))}
       </div>
 

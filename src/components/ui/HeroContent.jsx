@@ -1,5 +1,6 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { ShoppingCart } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const textVariants = {
   enter: { opacity: 0, x: 30 },
@@ -13,7 +14,8 @@ const transition = {
   damping: 25,
 };
 
-export default function HeroContent({ cake }) {
+export default function HeroContent({ cake, onOrderClick }) {
+  const navigate = useNavigate();
   return (
     <div className="flex flex-col">
       {/* Animated content - fixed height container */}
@@ -40,7 +42,7 @@ export default function HeroContent({ cake }) {
 
             <p className="text-2xl mt-6">
               <span className="italic font-normal">Starting at</span>{" "}
-              <span className="font-bold">Rs. {cake.price}</span>
+              <span className="font-bold">Rs. {cake.basePrice || cake.price}</span>
             </p>
           </motion.div>
         </AnimatePresence>
@@ -48,11 +50,17 @@ export default function HeroContent({ cake }) {
 
       {/* Static buttons - fixed position */}
       <div className="flex gap-4">
-        <button className="bg-dark text-cream rounded-full px-8 py-3 flex items-center gap-2 font-medium text-lg hover:opacity-90 transition-opacity">
+        <button 
+          onClick={onOrderClick} /* 2. Attached the click handler here */
+          className="bg-dark text-cream rounded-full px-8 py-3 flex items-center gap-2 font-medium text-lg hover:opacity-90 transition-opacity"
+        >
           Order Now
           <ShoppingCart size={20} />
         </button>
-        <button className="bg-cream border border-pink-200 text-dark rounded-full px-8 py-3 font-medium text-lg hover:bg-pink-50 transition-colors">
+        <button
+        onClick={() => navigate("/customPage")}
+        className="bg-cream border border-pink-200 text-dark rounded-full px-8 py-3 font-medium text-lg hover:bg-pink-50 transition-colors">
+          
           Custom Cake
         </button>
       </div>

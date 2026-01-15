@@ -8,10 +8,12 @@ import {
   CrowdFavorites,
   SeasonalCollection,
 } from "../components/home";
+import { useFeaturedCakes } from "../hooks/cake";
 import strawberryCheesecake from "../assets/strawberry-cheesecake.png";
 import chocolateCake from "../assets/chocolate-cake.png";
+import { useNavigate } from "react-router-dom";
 
-const HERO_CAKES = [
+const FALLBACK_HERO_CAKES = [
   {
     name: "Strawberry Cheesecake",
     nameLight: "Strawberry",
@@ -19,8 +21,8 @@ const HERO_CAKES = [
     tagline: "Fresh • Creamy • Irresistible",
     description:
       "Smooth cream cheese base blended with real, juicy strawberries, creating a naturally sweet and creamy flavor in every bite.",
-    price: 550,
-    image: strawberryCheesecake,
+    basePrice: 550,
+    images: [strawberryCheesecake],
   },
   {
     name: "Chocolate Cake",
@@ -29,8 +31,8 @@ const HERO_CAKES = [
     tagline: "Rich • Decadent • Heavenly",
     description:
       "Layers of moist chocolate sponge with velvety ganache, a timeless classic for chocolate lovers seeking pure indulgence.",
-    price: 650,
-    image: chocolateCake,
+    basePrice: 650,
+    images: [chocolateCake],
   },
 ];
 
@@ -39,17 +41,57 @@ const CAROUSEL_INTERVAL = 3000;
 export default function Home() {
   const [currentIndex, setCurrentIndex] = useState(0);
 
+  // Fetch featured cakes from API
+  const { data: featuredData, isLoading } = useFeaturedCakes(2);
+  const apiFeaturedCakes = featuredData?.data || [];
+
+  // Transform API cakes to hero format
+  const transformCakeToHero = (cake) => {
+    const words = cake.name.split(" ");
+    // Get image URL - handle both object and string formats
+    const imageUrl =
+      cake.images?.[0]?.url || cake.images?.[0] || cake.coverImage;
+
+    return {
+      ...cake,
+      nameLight: words[0] || cake.name,
+      nameBold: words.slice(1).join(" ") || "",
+      tagline: cake.flavorTags?.join(" • ") || "Delicious • Fresh • Handmade",
+      image: imageUrl,
+    };
+  };
+
+  // Use API cakes if available, otherwise fallback
+  const HERO_CAKES =
+    apiFeaturedCakes.length >= 2
+      ? apiFeaturedCakes.slice(0, 2).map(transformCakeToHero)
+      : FALLBACK_HERO_CAKES;
+
+  const navigate = useNavigate(); // 2. Initialize hook
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentIndex((prev) => (prev + 1) % HERO_CAKES.length);
     }, CAROUSEL_INTERVAL);
     return () => clearInterval(interval);
-  }, []);
+  }, [HERO_CAKES.length]);
 
   const currentCake = HERO_CAKES[currentIndex];
   const nextIndex = (currentIndex + 1) % HERO_CAKES.length;
   const images = HERO_CAKES.map((cake) => cake.image);
 
+  const handleOrderClick = () => {
+    // CURRENT CAKE from the carousel
+    // Ensure we look for 'slug' since that's what your router expects
+    const slug = currentCake.slug; 
+    
+    if (slug) {
+        // MATCHING YOUR ROUTER: /cake/:slug
+        navigate(`/cake/${slug}`);
+    } else {
+        // Fallback to the main menu if data is missing
+        navigate('/menu'); 
+    }
+  };
   return (
     <>
       {/* Hero Section - Mobile Layout */}
@@ -61,7 +103,11 @@ export default function Home() {
           </div>
           {/* Mobile Content - Text below image */}
           <div className="w-full text-center relative z-10">
-            <HeroContent cake={currentCake} mobile />
+            <HeroContent
+              cake={currentCake}
+              mobile
+              onOrderClick={handleOrderClick}
+            />
           </div>
         </div>
       </section>
@@ -69,7 +115,7 @@ export default function Home() {
       {/* Hero Section - Desktop Layout */}
       <section className="hidden lg:block relative h-[550px] xl:h-[648px] w-full overflow-hidden mt-5 px-8 lg:px-12 xl:px-[140px]">
         <div className="absolute left-8 lg:left-12 xl:left-[140px] top-16 xl:top-24 w-[400px] lg:w-[500px] xl:w-[600px] z-10">
-          <HeroContent cake={currentCake} />
+          <HeroContent cake={currentCake} onOrderClick={handleOrderClick} />
         </div>
 
         <div className="absolute left-1/2 -translate-x-1/2 xl:left-[calc(50%-50px)] xl:translate-x-0 -top-10 xl:-top-20 w-[400px] lg:w-[480px] xl:w-[540px] h-[550px] lg:h-[650px] xl:h-[730px]">

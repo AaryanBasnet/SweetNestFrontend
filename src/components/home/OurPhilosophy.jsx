@@ -1,3 +1,5 @@
+import { useNavigate } from "react-router-dom";
+
 const STATS = [
   { value: "20+", label: "Master Chefs" },
   { value: "100%", label: "Sustainable" },
@@ -5,6 +7,7 @@ const STATS = [
 ];
 
 export default function OurPhilosophy() {
+  const navigate = useNavigate();
   return (
     <section className="bg-[#F5F5F0] py-24 md:py-32 px-6">
       <div className="max-w-7xl mx-auto">
@@ -57,7 +60,10 @@ export default function OurPhilosophy() {
               ))}
             </div>
 
-            <button className="mt-12 px-8 py-4 bg-transparent border-b border-primary text-primary font-bold tracking-widest uppercase hover:text-accent hover:border-accent transition-colors">
+            <button
+            onClick={()=> navigate('/about')}
+            className="mt-12 px-8 py-4 bg-transparent border-b border-primary text-primary font-bold tracking-widest uppercase hover:text-accent hover:border-accent transition-colors">
+              
               Read Our Full Story
             </button>
           </div>

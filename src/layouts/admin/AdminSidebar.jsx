@@ -114,16 +114,16 @@ export default function AdminSidebar({ isMobileOpen = false, onMobileClose }) {
                 {user?.role || "Store Manager"}
               </p>
             </div>
-            <ChevronDown
+            {/* <ChevronDown
               size={16}
               className={`text-dark/40 transition-transform flex-shrink-0 ${
                 showUserMenu ? "rotate-180" : ""
               }`}
-            />
+            /> */}
           </button>
 
           {/* Dropdown Menu */}
-          {showUserMenu && (
+          {/* {showUserMenu && (
             <div className="absolute bottom-full left-0 right-0 mb-2 bg-white rounded-xl shadow-lg border border-dark/10 overflow-hidden">
               <button
                 onClick={handleLogout}
@@ -133,7 +133,7 @@ export default function AdminSidebar({ isMobileOpen = false, onMobileClose }) {
                 Logout
               </button>
             </div>
-          )}
+          )} */}
         </div>
 
         {/* Quick Logout Button (always visible) */}
