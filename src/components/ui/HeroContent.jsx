@@ -16,14 +16,18 @@ const transition = {
 
 export default function HeroContent({ cake, onOrderClick }) {
   const navigate = useNavigate();
+
   return (
-    <div className="flex flex-col">
-      {/* Animated content - fixed height container */}
-      <div className="relative h-[280px]">
+    <div className="flex flex-col w-full z-10">
+      {/* HEIGHT ADJUSTMENTS:
+         - h-[260px]: Reduced for Mobile (was 380px) to close the gap.
+         - md:h-[350px]: Increased for Desktop (was 280px) for more space.
+      */}
+      <div className="relative h-[240px] sm:h-[300px] md:h-[300px] w-full">
         <AnimatePresence mode="popLayout">
           <motion.div
             key={cake.name}
-            className="absolute inset-0"
+            className="absolute inset-0 flex flex-col justify-start"
             variants={textVariants}
             initial="enter"
             animate="center"
@@ -31,36 +35,45 @@ export default function HeroContent({ cake, onOrderClick }) {
             transition={transition}
           >
             <div>
-              <p className="font-heading text-lg opacity-40">{cake.tagline}</p>
-              <h1 className="text-5xl mt-2">
-                <span className="font-medium">{cake.nameLight} </span>
-                <span className="font-bold italic">{cake.nameBold}</span>
+              <p className="font-heading text-sm md:text-lg opacity-40 tracking-wider">
+                {cake.tagline}
+              </p>
+
+              <h1 className="text-3xl sm:text-4xl md:text-5xl mt-1 md:mt-2 leading-tight">
+                <span className="font-normal italic">{cake.nameLight} </span>
+                <span className="font-bold">{cake.nameBold}</span>
               </h1>
             </div>
 
-            <p className="text-xl font-light max-w-xl mt-6">{cake.description}</p>
+            <p className="text-sm sm:text-base md:text-xl font-light max-w-xl mt-2 md:mt-6 leading-relaxed opacity-90 line-clamp-3 md:line-clamp-none">
+              {cake.description}
+            </p>
 
-            <p className="text-2xl mt-6">
-              <span className="italic font-normal">Starting at</span>{" "}
-              <span className="font-bold">Rs. {cake.basePrice || cake.price}</span>
+            <p className="text-xl md:text-2xl mt-3 md:mt-6">
+              <span className="italic font-normal text-base md:text-lg">
+                Starting at
+              </span>{" "}
+              <span className="font-bold font-heading text-2xl md:text-3xl ml-2">
+                Rs. {cake.basePrice || cake.price}
+              </span>
             </p>
           </motion.div>
         </AnimatePresence>
       </div>
 
-      {/* Static buttons - fixed position */}
-      <div className="flex gap-4">
-        <button 
-          onClick={onOrderClick} /* 2. Attached the click handler here */
-          className="bg-dark text-cream rounded-full px-8 py-3 flex items-center gap-2 font-medium text-lg hover:opacity-90 transition-opacity"
+      {/* Buttons */}
+      <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mt-0 sm:mt-2">
+        <button
+          onClick={onOrderClick}
+          className="bg-dark text-cream rounded-full px-6 py-3 md:px-8 md:py-3 flex items-center justify-center gap-2 font-medium text-base md:text-lg hover:opacity-90 transition-opacity whitespace-nowrap"
         >
           Order Now
-          <ShoppingCart size={20} />
+          <ShoppingCart size={18} className="md:w-5 md:h-5" />
         </button>
         <button
-        onClick={() => navigate("/customPage")}
-        className="bg-cream border border-pink-200 text-dark rounded-full px-8 py-3 font-medium text-lg hover:bg-pink-50 transition-colors">
-          
+          onClick={() => navigate("/customPage")}
+          className="bg-cream border border-pink-200 text-dark rounded-full px-6 py-3 md:px-8 md:py-3 font-medium text-base md:text-lg hover:bg-pink-50 transition-colors whitespace-nowrap"
+        >
           Custom Cake
         </button>
       </div>
