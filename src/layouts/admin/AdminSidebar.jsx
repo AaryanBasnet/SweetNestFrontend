@@ -19,6 +19,7 @@ import {
   X,
   Bell,
   Tag,
+  MessageSquare,
 } from "lucide-react";
 import useAuthStore from "../../stores/authStore";
 
@@ -29,6 +30,7 @@ const NAV_ITEMS = [
   { path: "/admin/categories", icon: FolderOpen, label: "Categories" },
   { path: "/admin/promotions", icon: Tag, label: "Promotions" },
   { path: "/admin/customers", icon: Users, label: "Customers" },
+  { path: '/admin/contact-messages', icon: MessageSquare, label: 'Contact Messages' },
   { path: "/admin/notifications", icon: Bell, label: "Notifications" },
   { path: "/admin/analytics", icon: BarChart3, label: "Analytics" },
   { path: "/admin/settings", icon: Settings, label: "Settings" },
