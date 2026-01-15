@@ -1,4 +1,5 @@
 import axios from "axios";
+import { getNavigate } from "../utils/navigationService";
 
 const API_URL =
   import.meta.env.VITE_API_BASE_URL || "http://localhost:5050/api";
@@ -54,7 +55,15 @@ instance.interceptors.response.use(
       if (!isAuthEndpoint) {
         // Only redirect if not a login/register attempt
         localStorage.removeItem("auth-storage");
-        window.location.href = "/login";
+
+        // Use React Router navigation (SPA-friendly)
+        const navigate = getNavigate();
+        if (navigate) {
+          navigate('/login', { replace: true });
+        } else {
+          // Fallback to window.location only if navigate is not available yet
+          window.location.href = "/login";
+        }
       }
     }
     // 403 Forbidden (not admin) - let calling code handle it
