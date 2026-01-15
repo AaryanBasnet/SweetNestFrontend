@@ -1,12 +1,13 @@
 import axios from "axios";
 
 const API_URL =
-  import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api";
+  import.meta.env.VITE_API_BASE_URL || "http://localhost:5050/api";
 
 const instance = axios.create({
   baseURL: API_URL,
   withCredentials: false, // Set to false for localhost - different ports are cross-origin
   timeout: 30000, // 30 second timeout,
+  
 });
 
 // Helper to get token from Zustand persisted store
@@ -45,9 +46,16 @@ instance.interceptors.response.use(
     }
 
     // Handle 401 Unauthorized - token invalid/expired, redirect to login
+    // BUT skip redirect for login/register endpoints (those handle their own errors)
     if (error.response?.status === 401) {
-      localStorage.removeItem("auth-storage");
-      window.location.href = "/login";
+      const isAuthEndpoint = error.config?.url?.includes('/users/login') ||
+                             error.config?.url?.includes('/users/register');
+
+      if (!isAuthEndpoint) {
+        // Only redirect if not a login/register attempt
+        localStorage.removeItem("auth-storage");
+        window.location.href = "/login";
+      }
     }
     // 403 Forbidden (not admin) - let calling code handle it
     return Promise.reject(error);

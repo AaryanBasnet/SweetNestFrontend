@@ -4,7 +4,7 @@
  * Transforms API responses into usable data
  */
 
-import * as cakeApi from '../../api/cake/cakeApi';
+import * as cakeApi from "../../api/cake/cakeApi";
 
 /**
  * Fetch cakes with optional filters
@@ -18,6 +18,7 @@ export const fetchCakes = async (filters = {}) => {
   if (filters.maxPrice) params.maxPrice = filters.maxPrice;
   if (filters.search) params.search = filters.search;
   if (filters.featured) params.featured = filters.featured;
+  if (filters.flavorTags) params.flavorTags = filters.flavorTags;
   if (filters.sort) params.sort = filters.sort;
   if (filters.page) params.page = filters.page;
   if (filters.limit) params.limit = filters.limit;
