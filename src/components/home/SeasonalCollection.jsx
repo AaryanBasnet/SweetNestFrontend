@@ -1,21 +1,32 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useActivePromotions } from "../../hooks/promotion";
 
-const HERO_IMAGES = [
+// Fallback images when no promotions are active
+const FALLBACK_IMAGES = [
   {
     id: 1,
     url: "https://images.unsplash.com/photo-1565958011703-44f9829ba187?q=80&w=800&auto=format&fit=crop",
     alt: "Summer Berry Delight",
+    description: "A perfect balance of texture and flavor. Our seasonal specials are crafted daily by our head pastry chef, ensuring that every bite captures the essence of the moment.",
+    ctaText: "VIEW DETAILS",
+    ctaLink: "/menu",
   },
   {
     id: 2,
     url: "https://images.unsplash.com/photo-1488477181946-6428a0291777?q=80&w=800&auto=format&fit=crop",
     alt: "Autumn Spice Collection",
+    description: "A perfect balance of texture and flavor. Our seasonal specials are crafted daily by our head pastry chef, ensuring that every bite captures the essence of the moment.",
+    ctaText: "VIEW DETAILS",
+    ctaLink: "/menu",
   },
   {
     id: 3,
     url: "https://images.unsplash.com/photo-1606890737304-57a1ca8a5b62?q=80&w=800&auto=format&fit=crop",
     alt: "Winter Chocolate Fantasy",
+    description: "A perfect balance of texture and flavor. Our seasonal specials are crafted daily by our head pastry chef, ensuring that every bite captures the essence of the moment.",
+    ctaText: "VIEW DETAILS",
+    ctaLink: "/menu",
   },
 ];
 
@@ -25,16 +36,54 @@ export default function SeasonalCollection() {
   const navigate = useNavigate();
   const [currentHeroIndex, setCurrentHeroIndex] = useState(0);
 
+  // Fetch active promotions from API
+  const { data: promotionsData, isLoading } = useActivePromotions();
+  const activePromotions = promotionsData?.data || [];
+
+  // Transform promotions to image format or use fallback
+  const HERO_IMAGES = activePromotions.length > 0
+    ? activePromotions.map((promo) => {
+        // Determine link: if linked to a cake, go to cake detail page
+        let link = '/shop';
+
+        // Debug: Log promotion data
+        console.log('Promotion:', promo.title, 'LinkedCakes:', promo.linkedCakes);
+
+        if (promo.linkedCakes && promo.linkedCakes.length > 0) {
+          const linkedCake = promo.linkedCakes[0];
+          console.log('Linked Cake:', linkedCake);
+          if (linkedCake && linkedCake.slug) {
+            link = `/cake/${linkedCake.slug}`;
+            console.log('Generated link:', link);
+          }
+        } else if (promo.ctaLink) {
+          link = promo.ctaLink;
+        }
+
+        return {
+          id: promo._id,
+          url: promo.images?.[0]?.url || FALLBACK_IMAGES[0].url,
+          alt: promo.title,
+          description: promo.description,
+          ctaText: promo.ctaText || 'VIEW DETAILS',
+          ctaLink: link,
+        };
+      })
+    : FALLBACK_IMAGES;
+
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentHeroIndex((prev) => (prev + 1) % HERO_IMAGES.length);
     }, CAROUSEL_INTERVAL);
     return () => clearInterval(interval);
-  }, []);
+  }, [HERO_IMAGES.length]);
 
   const handleShopNow = () => {
-    navigate("/shop");
+    const currentPromo = HERO_IMAGES[currentHeroIndex];
+    navigate(currentPromo.ctaLink || "/shop");
   };
+
+  const currentImage = HERO_IMAGES[currentHeroIndex];
 
   return (
     <section className="bg-white py-24 rounded-t-[3rem] relative z-20">
@@ -97,20 +146,21 @@ export default function SeasonalCollection() {
               Trending Now
             </div>
             <h3 className="text-4xl md:text-5xl font-serif text-primary mb-6">
-              {HERO_IMAGES[currentHeroIndex].alt}
+              {currentImage.alt}
             </h3>
             <p className="text-lg text-primary/60 mb-8 leading-relaxed font-sans">
-              A perfect balance of texture and flavor. Our seasonal specials are crafted daily by our head pastry chef, ensuring that every bite captures the essence of the moment.
+              {currentImage.description ||
+                "A perfect balance of texture and flavor. Our seasonal specials are crafted daily by our head pastry chef, ensuring that every bite captures the essence of the moment."}
             </p>
             <div className="flex flex-wrap gap-4">
               <button
                 onClick={handleShopNow}
                 className="px-8 py-3 bg-dark text-white border  border-primary/20 text-primary rounded-full font-bold tracking-wide hover:bg-primary  transition-all duration-300"
               >
-                VIEW DETAILS
+                {currentImage.ctaText || 'VIEW DETAILS'}
               </button>
               <button
-                onClick={handleShopNow}
+                onClick={() => navigate('/menu')}
                 className="px-8 py-3 bg-transparent border border-primary/20 text-primary rounded-full font-bold tracking-wide hover:bg-primary  transition-all duration-300"
               >
                 SEE FULL MENU

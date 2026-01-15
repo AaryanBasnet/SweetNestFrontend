@@ -22,6 +22,7 @@ import {
   Customers,
   Analytics,
   Settings,
+  Promotions,
 } from "../pages/admin";
 import CakeDetail from "../pages/CakeDetail";
 import Wishlist from "../pages/Wishlist";
@@ -88,6 +89,7 @@ export default function AppRouter() {
           />
           <Route path="/admin/categories" element={<Categories />} />
           <Route path="/admin/customers" element={<Customers />} />
+          <Route path="/admin/promotions" element={<Promotions />} />
           <Route path="/admin/notifications" element={<AdminNotifications />} />
           <Route
             path="/admin/notifications/create"

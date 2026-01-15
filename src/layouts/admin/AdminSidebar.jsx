@@ -4,8 +4,8 @@
  * Supports both desktop (fixed) and mobile (drawer) modes
  */
 
-import { useState } from 'react';
-import { NavLink, useNavigate } from 'react-router-dom';
+import { useState } from "react";
+import { NavLink, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard,
   ShoppingBag,
@@ -17,19 +17,21 @@ import {
   FolderOpen,
   LogOut,
   X,
-  Bell
-} from 'lucide-react';
-import useAuthStore from '../../stores/authStore';
+  Bell,
+  Tag,
+} from "lucide-react";
+import useAuthStore from "../../stores/authStore";
 
 const NAV_ITEMS = [
-  { path: '/admin', icon: LayoutDashboard, label: 'Dashboard', end: true },
-  { path: '/admin/orders', icon: ShoppingBag, label: 'Orders' },
-  { path: '/admin/products', icon: Cake, label: 'Products' },
-  { path: '/admin/categories', icon: FolderOpen, label: 'Categories' },
-  { path: '/admin/customers', icon: Users, label: 'Customers' },
-  { path: '/admin/notifications', icon: Bell, label: 'Notifications' },
-  { path: '/admin/analytics', icon: BarChart3, label: 'Analytics' },
-  { path: '/admin/settings', icon: Settings, label: 'Settings' },
+  { path: "/admin", icon: LayoutDashboard, label: "Dashboard", end: true },
+  { path: "/admin/orders", icon: ShoppingBag, label: "Orders" },
+  { path: "/admin/products", icon: Cake, label: "Products" },
+  { path: "/admin/categories", icon: FolderOpen, label: "Categories" },
+  { path: "/admin/promotions", icon: Tag, label: "Promotions" },
+  { path: "/admin/customers", icon: Users, label: "Customers" },
+  { path: "/admin/notifications", icon: Bell, label: "Notifications" },
+  { path: "/admin/analytics", icon: BarChart3, label: "Analytics" },
+  { path: "/admin/settings", icon: Settings, label: "Settings" },
 ];
 
 export default function AdminSidebar({ isMobileOpen = false, onMobileClose }) {
@@ -40,7 +42,7 @@ export default function AdminSidebar({ isMobileOpen = false, onMobileClose }) {
 
   const handleLogout = () => {
     logout();
-    navigate('/login');
+    navigate("/login");
   };
 
   const handleNavClick = () => {
@@ -77,8 +79,8 @@ export default function AdminSidebar({ isMobileOpen = false, onMobileClose }) {
                 className={({ isActive }) =>
                   `flex items-center gap-3 px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl text-sm font-medium transition-colors ${
                     isActive
-                      ? 'bg-accent/10 text-accent'
-                      : 'text-dark/60 hover:bg-dark/5 hover:text-dark'
+                      ? "bg-accent/10 text-accent"
+                      : "text-dark/60 hover:bg-dark/5 hover:text-dark"
                   }`
                 }
               >
@@ -99,16 +101,22 @@ export default function AdminSidebar({ isMobileOpen = false, onMobileClose }) {
           >
             <div className="w-8 h-8 sm:w-10 sm:h-10 bg-accent/10 rounded-full flex items-center justify-center flex-shrink-0">
               <span className="text-xs sm:text-sm font-medium text-accent">
-                {user?.name?.charAt(0) || 'A'}
+                {user?.name?.charAt(0) || "A"}
               </span>
             </div>
             <div className="flex-1 text-left min-w-0">
-              <p className="text-sm font-medium text-dark truncate">{user?.name || 'Admin User'}</p>
-              <p className="text-xs text-dark/50 truncate">{user?.role || 'Store Manager'}</p>
+              <p className="text-sm font-medium text-dark truncate">
+                {user?.name || "Admin User"}
+              </p>
+              <p className="text-xs text-dark/50 truncate">
+                {user?.role || "Store Manager"}
+              </p>
             </div>
             <ChevronDown
               size={16}
-              className={`text-dark/40 transition-transform flex-shrink-0 ${showUserMenu ? 'rotate-180' : ''}`}
+              className={`text-dark/40 transition-transform flex-shrink-0 ${
+                showUserMenu ? "rotate-180" : ""
+              }`}
             />
           </button>
 
@@ -148,7 +156,7 @@ export default function AdminSidebar({ isMobileOpen = false, onMobileClose }) {
       {/* Mobile Overlay */}
       <div
         className={`lg:hidden fixed inset-0 bg-black/50 z-40 transition-opacity duration-300 ${
-          isMobileOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
+          isMobileOpen ? "opacity-100" : "opacity-0 pointer-events-none"
         }`}
         onClick={onMobileClose}
       />
@@ -156,7 +164,7 @@ export default function AdminSidebar({ isMobileOpen = false, onMobileClose }) {
       {/* Mobile Sidebar - drawer */}
       <aside
         className={`lg:hidden fixed inset-y-0 left-0 w-[280px] max-w-[85%] bg-white z-50 flex flex-col transform transition-transform duration-300 ease-out ${
-          isMobileOpen ? 'translate-x-0' : '-translate-x-full'
+          isMobileOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
         <SidebarContent />
