@@ -68,14 +68,22 @@ export default function Profile() {
   // Sync tab with URL when URL changes
   useEffect(() => {
     const tab = searchParams.get("tab");
-    if (VALID_TAB_IDS.includes(tab) && tab !== activeTab) {
-      setActiveTab(tab);
+    const validTab = getValidTab(tab);
+    if (validTab !== activeTab) {
+      setActiveTab(validTab);
     }
-  }, [searchParams, activeTab]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
 
   // Update URL when tab changes
   const handleTabChange = (tabId) => {
+    // Ignore if already on this tab
+    if (activeTab === tabId) {
+      return;
+    }
+
     setActiveTab(tabId);
+
     if (tabId === DEFAULT_TAB) {
       setSearchParams({});
     } else {

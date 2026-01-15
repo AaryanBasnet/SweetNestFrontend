@@ -21,7 +21,7 @@ export const useProfileForm = () => {
     name: '',
     email: '',
     phone: '',
-    dateOfBirth: '',
+    address: '',
   });
 
   // Initialize form data from user
@@ -31,7 +31,7 @@ export const useProfileForm = () => {
         name: user.name || '',
         email: user.email || '',
         phone: user.phone || '',
-        dateOfBirth: user.dateOfBirth || '',
+        address: user.address || '',
       });
     }
   }, [user]);
@@ -59,7 +59,7 @@ export const useProfileForm = () => {
       name: user?.name || '',
       email: user?.email || '',
       phone: user?.phone || '',
-      dateOfBirth: user?.dateOfBirth || '',
+      address: user?.address || '',
     });
     setIsEditing(false);
   }, [user]);

@@ -223,27 +223,27 @@ function PersonalInfoForm({
             )}
           </div>
 
-          {/* Date of Birth */}
+          {/* Address */}
           <div>
             <label
-              htmlFor="dateOfBirth"
+              htmlFor="address"
               className="block text-dark/40 text-xs uppercase tracking-wider mb-2"
             >
-              Date of Birth
+              Address
             </label>
             {isEditing ? (
               <input
-                id="dateOfBirth"
+                id="address"
                 type="text"
-                name="dateOfBirth"
-                value={formData.dateOfBirth}
+                name="address"
+                value={formData.address}
                 onChange={onInputChange}
-                placeholder="January 24"
+                placeholder="Enter your address"
                 className="w-full px-4 py-3 bg-cream/50 rounded-xl text-dark text-sm focus:outline-none focus:ring-2 focus:ring-accent/20"
               />
             ) : (
               <div className="px-4 py-3 bg-cream/50 rounded-xl text-dark text-sm">
-                {user.dateOfBirth || '-'}
+                {user.address || '-'}
               </div>
             )}
           </div>
