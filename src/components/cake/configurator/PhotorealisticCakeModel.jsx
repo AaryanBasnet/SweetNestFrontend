@@ -9,17 +9,17 @@ import {
   TIER_OPTIONS,
   TOPPER_OPTIONS,
 } from "./cakeConfigConstants";
-
+ 
 /**
  * PHOTOREALISTIC CAKE MODEL
  * Based on professional food photography and PBR rendering techniques
  * Features: Subsurface scattering, procedural textures, warm lighting response
  */
-
+ 
 // ============================================
 // COLOR UTILITIES
 // ============================================
-
+ 
 /**
  * Adjusts color for food appeal using color psychology
  * Warm tones trigger appetite, higher saturation = more appealing
@@ -34,7 +34,7 @@ const adjustColorForAppeal = (hexColor) => {
     return new THREE.Color("#FFFFFF");
   }
 };
-
+ 
 /**
  * Creates a slightly darker shade for depth
  */
@@ -47,11 +47,11 @@ const createDarkerShade = (hexColor, amount = 0.15) => {
     return new THREE.Color("#CCCCCC");
   }
 };
-
+ 
 // ============================================
 // PROCEDURAL TEXTURE GENERATION
 // ============================================
-
+ 
 /**
  * Creates frosting texture with subtle noise variation
  */
@@ -60,36 +60,36 @@ const createFrostingTexture = (baseColor) => {
   canvas.width = 256;
   canvas.height = 256;
   const ctx = canvas.getContext("2d");
-
+ 
   const color = new THREE.Color(baseColor);
   const r = Math.floor(color.r * 255);
   const g = Math.floor(color.g * 255);
   const b = Math.floor(color.b * 255);
-
+ 
   // Fill with base color
   ctx.fillStyle = `rgb(${r}, ${g}, ${b})`;
   ctx.fillRect(0, 0, 256, 256);
-
+ 
   // Add subtle noise for frosting texture
   const imageData = ctx.getImageData(0, 0, 256, 256);
   const data = imageData.data;
-
+ 
   for (let i = 0; i < data.length; i += 4) {
     const noise = (Math.random() - 0.5) * 16; // ±8% variation
     data[i] = Math.min(255, Math.max(0, data[i] + noise));
     data[i + 1] = Math.min(255, Math.max(0, data[i + 1] + noise));
     data[i + 2] = Math.min(255, Math.max(0, data[i + 2] + noise));
   }
-
+ 
   ctx.putImageData(imageData, 0, 0);
-
+ 
   const texture = new THREE.CanvasTexture(canvas);
   texture.wrapS = THREE.RepeatWrapping;
   texture.wrapT = THREE.RepeatWrapping;
   texture.repeat.set(2, 2);
   return texture;
 };
-
+ 
 /**
  * Creates bump map for frosting surface detail
  */
@@ -98,10 +98,10 @@ const createBumpTexture = () => {
   canvas.width = 128;
   canvas.height = 128;
   const ctx = canvas.getContext("2d");
-
+ 
   ctx.fillStyle = "#808080";
   ctx.fillRect(0, 0, 128, 128);
-
+ 
   // Add circular swirl patterns mimicking frosting application
   for (let i = 0; i < 20; i++) {
     const x = Math.random() * 128;
@@ -116,17 +116,17 @@ const createBumpTexture = () => {
     ctx.arc(x, y, radius, 0, Math.PI * 2);
     ctx.fill();
   }
-
+ 
   const texture = new THREE.CanvasTexture(canvas);
   texture.wrapS = THREE.RepeatWrapping;
   texture.wrapT = THREE.RepeatWrapping;
   return texture;
 };
-
+ 
 // ============================================
 // FROSTING MATERIAL WITH SSS
 // ============================================
-
+ 
 /**
  * Creates photorealistic frosting material with subsurface scattering
  */
@@ -134,7 +134,7 @@ function FrostingMaterial({ color, isTopSurface = false }) {
   const adjustedColor = useMemo(() => adjustColorForAppeal(color), [color]);
   const frostingTexture = useMemo(() => createFrostingTexture(color), [color]);
   const bumpTexture = useMemo(() => createBumpTexture(), []);
-
+ 
   return (
     <meshPhysicalMaterial
       color={adjustedColor}
@@ -160,22 +160,22 @@ function FrostingMaterial({ color, isTopSurface = false }) {
     />
   );
 }
-
+ 
 FrostingMaterial.propTypes = {
   color: PropTypes.string.isRequired,
   isTopSurface: PropTypes.bool,
 };
-
+ 
 // ============================================
 // DECORATIVE PIPING
 // ============================================
-
+ 
 /**
  * Piping dots around cake edge
  */
 function PipingDots({ radius, y, count, color, dotSize = 0.06 }) {
   const adjustedColor = useMemo(() => adjustColorForAppeal(color), [color]);
-
+ 
   return (
     <group position={[0, y, 0]}>
       {Array.from({ length: count }).map((_, i) => {
@@ -197,7 +197,7 @@ function PipingDots({ radius, y, count, color, dotSize = 0.06 }) {
     </group>
   );
 }
-
+ 
 PipingDots.propTypes = {
   radius: PropTypes.number.isRequired,
   y: PropTypes.number.isRequired,
@@ -205,13 +205,13 @@ PipingDots.propTypes = {
   color: PropTypes.string.isRequired,
   dotSize: PropTypes.number,
 };
-
+ 
 /**
  * Shell border swirls
  */
 function ShellBorder({ radius, y, count, color }) {
   const adjustedColor = useMemo(() => adjustColorForAppeal(color), [color]);
-
+ 
   return (
     <group position={[0, y, 0]}>
       {Array.from({ length: count }).map((_, i) => {
@@ -235,18 +235,18 @@ function ShellBorder({ radius, y, count, color }) {
     </group>
   );
 }
-
+ 
 ShellBorder.propTypes = {
   radius: PropTypes.number.isRequired,
   y: PropTypes.number.isRequired,
   count: PropTypes.number.isRequired,
   color: PropTypes.string.isRequired,
 };
-
+ 
 // ============================================
 // CAKE TIER COMPONENT
 // ============================================
-
+ 
 function PhotorealisticTier({
   yPosition,
   radius,
@@ -261,10 +261,10 @@ function PhotorealisticTier({
     () => createDarkerShade(flavorColor, 0.1),
     [flavorColor]
   );
-
+ 
   const scaledRadius = radius * scale;
   const pipingRadius = scaledRadius * 0.92;
-
+ 
   return (
     <group position={[0, yPosition, 0]}>
       {/* CAKE SPONGE (inner layer, slightly smaller) */}
@@ -278,13 +278,13 @@ function PhotorealisticTier({
           metalness={0}
         />
       </mesh>
-
+ 
       {/* FROSTING LAYER (outer) */}
       <mesh castShadow receiveShadow>
         <cylinderGeometry args={[scaledRadius, scaledRadius, height, 48]} />
         <FrostingMaterial color={frostingColor} />
       </mesh>
-
+ 
       {/* TOP SURFACE with enhanced glossiness */}
       <mesh position={[0, height / 2 + 0.005, 0]} receiveShadow>
         <cylinderGeometry
@@ -292,7 +292,7 @@ function PhotorealisticTier({
         />
         <FrostingMaterial color={frostingColor} isTopSurface />
       </mesh>
-
+ 
       {/* DECORATIVE PIPING - Top edge */}
       <PipingDots
         radius={pipingRadius}
@@ -301,7 +301,7 @@ function PhotorealisticTier({
         color={frostingColor}
         dotSize={0.05}
       />
-
+ 
       {/* SHELL BORDER below top dots */}
       {isTopTier && (
         <ShellBorder
@@ -311,7 +311,7 @@ function PhotorealisticTier({
           color={frostingColor}
         />
       )}
-
+ 
       {/* BOTTOM BORDER */}
       <PipingDots
         radius={scaledRadius * 0.95}
@@ -320,11 +320,11 @@ function PhotorealisticTier({
         color={frostingColor}
         dotSize={0.04}
       />
-
+ 
     </group>
   );
 }
-
+ 
 PhotorealisticTier.propTypes = {
   yPosition: PropTypes.number.isRequired,
   radius: PropTypes.number.isRequired,
@@ -335,11 +335,11 @@ PhotorealisticTier.propTypes = {
   isTopTier: PropTypes.bool,
   tierIndex: PropTypes.number,
 };
-
+ 
 // ============================================
 // PHOTOREALISTIC TOPPINGS
 // ============================================
-
+ 
 /**
  * Realistic Strawberry with seeds and leaves
  */
@@ -386,12 +386,12 @@ function RealisticStrawberry({ position, scale = 1 }) {
     </group>
   );
 }
-
+ 
 RealisticStrawberry.propTypes = {
   position: PropTypes.arrayOf(PropTypes.number).isRequired,
   scale: PropTypes.number,
 };
-
+ 
 /**
  * Realistic Chocolate Curl
  */
@@ -408,12 +408,12 @@ function ChocolateCurl({ position, rotation }) {
     </mesh>
   );
 }
-
+ 
 ChocolateCurl.propTypes = {
   position: PropTypes.arrayOf(PropTypes.number).isRequired,
   rotation: PropTypes.arrayOf(PropTypes.number),
 };
-
+ 
 /**
  * Realistic Edible Flower
  */
@@ -455,18 +455,18 @@ function EdibleFlower({ position, petalColor = "#FFB6C1" }) {
     </group>
   );
 }
-
+ 
 EdibleFlower.propTypes = {
   position: PropTypes.arrayOf(PropTypes.number).isRequired,
   petalColor: PropTypes.string,
 };
-
+ 
 /**
  * French Macaron with proper "pied" detail
  */
 function FrenchMacaron({ position, color }) {
   const adjustedColor = useMemo(() => adjustColorForAppeal(color), [color]);
-
+ 
   return (
     <group position={position}>
       {/* Top shell */}
@@ -503,18 +503,18 @@ function FrenchMacaron({ position, color }) {
     </group>
   );
 }
-
+ 
 FrenchMacaron.propTypes = {
   position: PropTypes.arrayOf(PropTypes.number).isRequired,
   color: PropTypes.string.isRequired,
 };
-
+ 
 /**
  * Birthday Candle with realistic flame
  */
 function BirthdayCandle({ position }) {
   const flameRef = useRef();
-
+ 
   useFrame((state) => {
     if (flameRef.current) {
       // Flickering effect
@@ -522,7 +522,7 @@ function BirthdayCandle({ position }) {
       flameRef.current.scale.setScalar(1 + flicker);
     }
   });
-
+ 
   return (
     <group position={position}>
       {/* Candle body with wax SSS */}
@@ -578,11 +578,11 @@ function BirthdayCandle({ position }) {
     </group>
   );
 }
-
+ 
 BirthdayCandle.propTypes = {
   position: PropTypes.arrayOf(PropTypes.number).isRequired,
 };
-
+ 
 /**
  * Cake Toppings Manager
  */
@@ -590,15 +590,15 @@ function PhotorealisticToppings({ type, config, scale, yOffset }) {
   const topperData = TOPPER_OPTIONS[type] || { items: [] };
   const items = topperData.items || [];
   const frostingColor = COLOR_OPTIONS[config.color] || "#FFFFFF";
-
+ 
   if (!items.length) return null;
-
+ 
   return (
     <group position={[0, yOffset + 0.05, 0]}>
       {items.map((item, i) => {
         const pos = item.pos || [0, 0, 0];
         const itemScale = (item.scale || 1) * scale;
-
+ 
         switch (item.type) {
           case "fruit":
             return (
@@ -641,46 +641,94 @@ function PhotorealisticToppings({ type, config, scale, yOffset }) {
     </group>
   );
 }
-
+ 
 PhotorealisticToppings.propTypes = {
   type: PropTypes.string.isRequired,
   config: PropTypes.object.isRequired,
   scale: PropTypes.number.isRequired,
   yOffset: PropTypes.number.isRequired,
 };
-
+ 
 // ============================================
 // PROFESSIONAL CAKE BOARD
 // ============================================
-
+ 
 function ProfessionalCakeBoard({ radius }) {
   return (
     <group position={[0, -0.12, 0]}>
-      {/* Simple elegant plate */}
+      {/* Main plate - ceramic/porcelain */}
       <mesh receiveShadow>
-        <cylinderGeometry args={[radius * 1.15, radius * 1.1, 0.06, 48]} />
+        <cylinderGeometry args={[radius * 1.2, radius * 1.15, 0.08, 48]} />
         <meshPhysicalMaterial
           color="#FAFAFA"
-          roughness={0.2}
-          metalness={0.1}
-          clearcoat={0.8}
+          roughness={0.15}
+          metalness={0.35}
+          clearcoat={1}
+          reflectivity={0.9}
+          envMapIntensity={1.8}
+        />
+      </mesh>
+ 
+      {/* Outer gold rim */}
+      <mesh position={[0, 0.035, 0]}>
+        <torusGeometry args={[radius * 1.18, 0.015, 12, 48]} />
+        <meshStandardMaterial
+          color="#D4AF37"
+          metalness={0.95}
+          roughness={0.1}
+        />
+      </mesh>
+ 
+      {/* Inner gold rim */}
+      <mesh position={[0, 0.035, 0]}>
+        <torusGeometry args={[radius * 1.05, 0.01, 12, 48]} />
+        <meshStandardMaterial
+          color="#D4AF37"
+          metalness={0.95}
+          roughness={0.1}
+        />
+      </mesh>
+ 
+      {/* Decorative gold pattern dots */}
+      {Array.from({ length: 24 }).map((_, i) => {
+        const angle = (i / 24) * Math.PI * 2;
+        const x = Math.cos(angle) * radius * 1.12;
+        const z = Math.sin(angle) * radius * 1.12;
+        return (
+          <mesh key={i} position={[x, 0.04, z]}>
+            <sphereGeometry args={[0.012, 8, 8]} />
+            <meshStandardMaterial
+              color="#D4AF37"
+              metalness={0.95}
+              roughness={0.1}
+            />
+          </mesh>
+        );
+      })}
+ 
+      {/* Shadow catcher base */}
+      <mesh position={[0, -0.05, 0]} receiveShadow>
+        <cylinderGeometry args={[radius * 1.25, radius * 1.3, 0.02, 48]} />
+        <meshStandardMaterial
+          color="#E8E8E8"
+          roughness={0.8}
         />
       </mesh>
     </group>
   );
 }
-
+ 
 ProfessionalCakeBoard.propTypes = {
   radius: PropTypes.number.isRequired,
 };
-
+ 
 // ============================================
 // MAIN PHOTOREALISTIC CAKE MODEL
 // ============================================
-
+ 
 export function PhotorealisticCakeModel({ config }) {
   const groupRef = useRef();
-
+ 
   // Gentle floating animation
   useFrame((state) => {
     if (groupRef.current) {
@@ -688,32 +736,32 @@ export function PhotorealisticCakeModel({ config }) {
       groupRef.current.rotation.y = Math.sin(state.clock.elapsedTime * 0.2) * 0.05;
     }
   });
-
+ 
   // Extract configuration with defensive fallbacks
   const tierCount = TIER_OPTIONS[config.tiers]?.count || 1;
   const sizeMultiplier = SIZE_OPTIONS[config.size]?.scale || 1;
   const flavorColor = FLAVOR_OPTIONS[config.flavor]?.color || "#F5F5DC";
   const frostingColor = COLOR_OPTIONS[config.color] || "#FFFFFF";
-
+ 
   // Tier dimensions based on count
   const tierHeights = useMemo(() => {
     if (tierCount === 1) return [1.4];
     if (tierCount === 2) return [1.2, 1.0];
     return [1.1, 0.95, 0.8];
   }, [tierCount]);
-
+ 
   const tierRadii = useMemo(() => {
     if (tierCount === 1) return [1.6];
     if (tierCount === 2) return [1.9, 1.4];
     return [2.1, 1.6, 1.1];
   }, [tierCount]);
-
+ 
   const tierScales = useMemo(() => {
     if (tierCount === 1) return [1.0];
     if (tierCount === 2) return [1.0, 0.85];
     return [1.0, 0.85, 0.70];
   }, [tierCount]);
-
+ 
   // Calculate cumulative Y positions
   const tierPositions = useMemo(() => {
     const positions = [];
@@ -725,9 +773,9 @@ export function PhotorealisticCakeModel({ config }) {
     }
     return positions;
   }, [tierCount, tierHeights]);
-
+ 
   const topY = tierPositions[tierCount - 1] + tierHeights[tierCount - 1] / 2;
-
+ 
   return (
     <group ref={groupRef} scale={sizeMultiplier}>
       {/* CAKE TIERS */}
@@ -744,7 +792,7 @@ export function PhotorealisticCakeModel({ config }) {
           tierIndex={i}
         />
       ))}
-
+ 
       {/* TOPPINGS */}
       {config.topper && config.topper !== "None" && (
         <PhotorealisticToppings
@@ -754,13 +802,13 @@ export function PhotorealisticCakeModel({ config }) {
           yOffset={topY}
         />
       )}
-
+ 
       {/* PROFESSIONAL CAKE BOARD */}
-      <ProfessionalCakeBoard radius={tierRadii[0]} />
+      {/* <ProfessionalCakeBoard radius={tierRadii[0]} /> */}
     </group>
   );
 }
-
+ 
 PhotorealisticCakeModel.propTypes = {
   config: PropTypes.shape({
     tiers: PropTypes.string.isRequired,
@@ -771,5 +819,5 @@ PhotorealisticCakeModel.propTypes = {
     message: PropTypes.string,
   }).isRequired,
 };
-
+ 
 export default PhotorealisticCakeModel;

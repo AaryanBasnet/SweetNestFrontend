@@ -20,32 +20,33 @@ export const ConfigOptionCard = ({
 }) => {
   // For color variant
   if (variant === "color") {
-    return (
-      <button
-        type="button"
-        onClick={onClick}
-        disabled={disabled}
-        className={`group relative aspect-square rounded-full border-2 transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed
-          ${
-            isSelected
-              ? "border-accent scale-110 shadow-lg ring-2 ring-accent/20"
-              : "border-dark/15 hover:scale-105 hover:border-dark/30 hover:shadow-md"
-          }`}
-        style={{ backgroundColor: colorValue }}
-        title={label}
-        aria-label={label}
-        aria-pressed={isSelected}
-      >
-        {isSelected && (
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="bg-white rounded-full p-1 shadow-md">
-              <Check size={14} className="text-accent" strokeWidth={3} />
-            </div>
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      // ADDED: 'w-12 h-12' to force a size (try w-14 or w-16 for even bigger)
+      className={`w-12 h-12 group relative aspect-square rounded-full border-2 transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed
+        ${
+          isSelected
+            ? "border-accent scale-110 shadow-lg ring-2 ring-accent/20"
+            : "border-dark/15 hover:scale-105 hover:border-dark/30 hover:shadow-md"
+        }`}
+      style={{ backgroundColor: colorValue }}
+      title={label}
+      aria-label={label}
+      aria-pressed={isSelected}
+    >
+      {isSelected && (
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="bg-white rounded-full p-1 shadow-md">
+            <Check size={14} className="text-accent" strokeWidth={3} />
           </div>
-        )}
-      </button>
-    );
-  }
+        </div>
+      )}
+    </button>
+  );
+}
 
   // For flavor variant (with image)
   if (variant === "flavor") {
@@ -94,7 +95,7 @@ export const ConfigOptionCard = ({
           {/* Color indicator */}
           {colorValue && (
             <div
-              className="absolute bottom-3 left-3 w-20 h-20 rounded-full border-2 border-white shadow-md"
+              className="absolute bottom-3 left-3 w-5 h-5 rounded-full border-2 border-white shadow-md"
               style={{ backgroundColor: colorValue }}
             />
           )}
@@ -151,7 +152,7 @@ export const ConfigOptionCard = ({
       </div>
       {price !== undefined && price !== null && (
         <div className={`ml-3 font-medium ${isSelected ? "text-accent" : "text-dark/70"}`}>
-          {price > 0 ? `+Rs. ${price}` : "Free"}
+          {price > 0 ? `+रू ${price}` : "Free"}
         </div>
       )}
       {isSelected && (

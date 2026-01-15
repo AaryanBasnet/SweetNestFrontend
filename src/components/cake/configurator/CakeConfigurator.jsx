@@ -1,4 +1,10 @@
-import React, { useState, useRef, useCallback, Suspense, Component } from "react";
+import React, {
+  useState,
+  useRef,
+  useCallback,
+  Suspense,
+  Component,
+} from "react";
 import PropTypes from "prop-types";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import {
@@ -53,8 +59,12 @@ class SceneErrorBoundary extends Component {
           <div className="text-center space-y-4">
             <div className="text-4xl">🎂</div>
             <div className="space-y-2">
-              <p className="text-lg font-medium text-dark">3D Preview Loading...</p>
-              <p className="text-sm text-dark/60">Your design is being rendered</p>
+              <p className="text-lg font-medium text-dark">
+                3D Preview Loading...
+              </p>
+              <p className="text-sm text-dark/60">
+                Your design is being rendered
+              </p>
             </div>
           </div>
         </div>
@@ -79,7 +89,9 @@ function LoadingFallback() {
         <Loader2 className="w-12 h-12 animate-spin text-accent mx-auto" />
         <div className="space-y-2">
           <p className="text-lg font-medium text-dark">Loading 3D Cake...</p>
-          <p className="text-sm text-dark/60">Preparing your customization experience</p>
+          <p className="text-sm text-dark/60">
+            Preparing your customization experience
+          </p>
         </div>
       </div>
     </div>
@@ -158,7 +170,12 @@ function InteractiveSpot({ position, label, onClick, active }) {
       </mesh>
 
       {(hovered || active) && (
-        <Html position={[0.3, 0.3, 0]} center distanceFactor={8} zIndexRange={[100, 0]}>
+        <Html
+          position={[0.3, 0.3, 0]}
+          center
+          distanceFactor={8}
+          zIndexRange={[100, 0]}
+        >
           <div className="bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-lg shadow-lg border border-dark/10">
             <div className="flex items-center gap-2 whitespace-nowrap">
               <span
@@ -305,7 +322,14 @@ ProceduralToppings.propTypes = {
 /**
  * CakeTier - Individual cake layer with frosting
  */
-function CakeTier({ yPosition, radius, height, flavorColor, frostingColor, scale }) {
+function CakeTier({
+  yPosition,
+  radius,
+  height,
+  flavorColor,
+  frostingColor,
+  scale,
+}) {
   return (
     <group position={[0, yPosition, 0]}>
       {/* Cake Base (Sponge) */}
@@ -385,8 +409,10 @@ function CakeModel({ config, onSpotClick }) {
 
   useFrame((state) => {
     if (groupRef.current) {
-      groupRef.current.position.y = -0.5 + Math.sin(state.clock.elapsedTime * 0.8) * 0.03;
-      groupRef.current.rotation.y = Math.sin(state.clock.elapsedTime * 0.15) * 0.08;
+      groupRef.current.position.y =
+        -0.5 + Math.sin(state.clock.elapsedTime * 0.8) * 0.03;
+      groupRef.current.rotation.y =
+        Math.sin(state.clock.elapsedTime * 0.15) * 0.08;
     }
   });
 
@@ -522,10 +548,11 @@ function Scene({ config, currentStep, setCurrentStep }) {
       setUseSimpleModel(true);
     };
 
-    const canvas = document.querySelector('canvas');
+    const canvas = document.querySelector("canvas");
     if (canvas) {
-      canvas.addEventListener('webglcontextlost', handleContextLost);
-      return () => canvas.removeEventListener('webglcontextlost', handleContextLost);
+      canvas.addEventListener("webglcontextlost", handleContextLost);
+      return () =>
+        canvas.removeEventListener("webglcontextlost", handleContextLost);
     }
   }, []);
 
@@ -634,7 +661,10 @@ Scene.propTypes = {
  * CakeConfigurator - Main component
  * Production-ready 3D cake customizer with cart integration
  */
-export const CakeConfigurator = ({ onClose, initialConfig = DEFAULT_CONFIG }) => {
+export const CakeConfigurator = ({
+  onClose,
+  initialConfig = DEFAULT_CONFIG,
+}) => {
   const [currentStep, setCurrentStep] = useState("tiers");
   const [config, setConfig] = useState(initialConfig);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
@@ -647,7 +677,11 @@ export const CakeConfigurator = ({ onClose, initialConfig = DEFAULT_CONFIG }) =>
   const basePrice = SIZE_OPTIONS[config.size]?.price || 0;
   const topperPrice = TOPPER_OPTIONS[config.topper]?.price || 0;
   const tierMultiplier = TIER_OPTIONS[config.tiers]?.priceMultiplier || 1;
-  const totalPrice = calculateTotalPrice(config.size, config.topper, config.tiers);
+  const totalPrice = calculateTotalPrice(
+    config.size,
+    config.topper,
+    config.tiers
+  );
   const servings = SIZE_OPTIONS[config.size]?.serves || "";
 
   // Update configuration
@@ -681,14 +715,14 @@ export const CakeConfigurator = ({ onClose, initialConfig = DEFAULT_CONFIG }) =>
       }
 
       // Get the canvas element
-      const canvas = canvasRef.current.querySelector('canvas');
+      const canvas = canvasRef.current.querySelector("canvas");
       if (!canvas) {
         console.warn("Canvas element not found");
         return null;
       }
 
       // Convert canvas to base64 image
-      const imageData = canvas.toDataURL('image/jpeg', 0.8);
+      const imageData = canvas.toDataURL("image/jpeg", 0.8);
       return imageData;
     } catch (error) {
       console.error("Error capturing screenshot:", error);
@@ -712,7 +746,9 @@ export const CakeConfigurator = ({ onClose, initialConfig = DEFAULT_CONFIG }) =>
         cake: {
           _id: customId,
           name: `Custom ${config.flavor} Cake`,
-          slug: `custom-${config.flavor.toLowerCase().replace(/\s+/g, "-")}-cake`,
+          slug: `custom-${config.flavor
+            .toLowerCase()
+            .replace(/\s+/g, "-")}-cake`,
           description: `${config.tiers} • ${config.size} • ${config.flavor} • ${config.color}`,
           basePrice: totalPrice,
           images: [
@@ -839,7 +875,10 @@ export const CakeConfigurator = ({ onClose, initialConfig = DEFAULT_CONFIG }) =>
 
         {/* Mobile Progress */}
         <div className="lg:hidden col-span-1">
-          <CompactStepIndicator steps={CONFIG_STEPS} currentStep={currentStep} />
+          <CompactStepIndicator
+            steps={CONFIG_STEPS}
+            currentStep={currentStep}
+          />
         </div>
 
         {/* CENTER - 3D Preview */}
@@ -847,7 +886,8 @@ export const CakeConfigurator = ({ onClose, initialConfig = DEFAULT_CONFIG }) =>
           ref={canvasRef}
           className="col-span-1 lg:col-span-6 rounded-2xl overflow-hidden shadow-lg relative min-h-[400px] lg:min-h-[500px]"
           style={{
-            background: 'linear-gradient(135deg, #FFF8F0 0%, #FFF5E6 50%, #FFEDD5 100%)'
+            background:
+              "linear-gradient(135deg, #FFF8F0 0%, #FFF5E6 50%, #FFEDD5 100%)",
           }}
         >
           <SceneErrorBoundary>
@@ -872,7 +912,7 @@ export const CakeConfigurator = ({ onClose, initialConfig = DEFAULT_CONFIG }) =>
                 }}
                 className="w-full h-full"
                 onCreated={({ gl }) => {
-                  gl.setClearColor('#FFF8F0', 1);
+                  gl.setClearColor("#FFF8F0", 1);
                   gl.physicallyCorrectLights = true;
                 }}
               >
@@ -897,7 +937,8 @@ export const CakeConfigurator = ({ onClose, initialConfig = DEFAULT_CONFIG }) =>
 
           {/* 3D Controls Hint */}
           <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-white/90 backdrop-blur-sm px-4 py-2 rounded-lg text-xs text-dark/70 pointer-events-none shadow-md border border-dark/10">
-            <span className="font-medium">Drag to rotate</span> • <span className="font-medium">Scroll to zoom</span>
+            <span className="font-medium">Drag to rotate</span> •{" "}
+            <span className="font-medium">Scroll to zoom</span>
           </div>
 
           {/* Current Step Label */}
@@ -1025,7 +1066,10 @@ export const CakeConfigurator = ({ onClose, initialConfig = DEFAULT_CONFIG }) =>
               {/* MESSAGE */}
               {currentStep === "message" && (
                 <div className="space-y-4 animate-fadeInSlideUp">
-                  <div style={{ animationDelay: "0ms" }} className="animate-fadeInSlideUp">
+                  <div
+                    style={{ animationDelay: "0ms" }}
+                    className="animate-fadeInSlideUp"
+                  >
                     <label className="text-sm font-medium text-dark block mb-2">
                       Cake Message (Optional)
                     </label>
@@ -1041,8 +1085,13 @@ export const CakeConfigurator = ({ onClose, initialConfig = DEFAULT_CONFIG }) =>
                       {30 - config.message.length} characters remaining
                     </p>
                   </div>
-                  <div style={{ animationDelay: "100ms" }} className="animate-fadeInSlideUp">
-                    <p className="text-xs text-dark/50 mb-2">Quick suggestions:</p>
+                  <div
+                    style={{ animationDelay: "100ms" }}
+                    className="animate-fadeInSlideUp"
+                  >
+                    <p className="text-xs text-dark/50 mb-2">
+                      Quick suggestions:
+                    </p>
                     <div className="flex flex-wrap gap-2">
                       {MESSAGE_SUGGESTIONS.map((msg, index) => (
                         <button
