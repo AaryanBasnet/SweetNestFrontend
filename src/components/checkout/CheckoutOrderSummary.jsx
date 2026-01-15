@@ -1,9 +1,4 @@
-/**
- * CheckoutOrderSummary Component
- * Displays order summary in checkout sidebar
- */
-
-import { Calendar, Shield } from 'lucide-react';
+import { Calendar, Shield, Tag } from 'lucide-react'; // Added Tag icon
 import useCartStore from '../../stores/cartStore';
 import useCheckoutStore from '../../stores/checkoutStore';
 
@@ -12,8 +7,12 @@ export default function CheckoutOrderSummary() {
   const subtotal = useCartStore((state) => state.getSubtotal());
   const shipping = useCartStore((state) => state.getShipping());
   const total = useCartStore((state) => state.getTotal());
+  const promoCode = useCartStore((state) => state.promoCode); // 1. Get promoCode
 
   const { shippingData } = useCheckoutStore();
+
+  // 2. Calculate Discount Amount for Display
+  const discountAmount = subtotal + shipping - total;
 
   // Format delivery date
   const formatDeliveryDate = (dateStr) => {
@@ -75,10 +74,22 @@ export default function CheckoutOrderSummary() {
           <span className="text-dark/60">Subtotal</span>
           <span className="font-medium text-dark">Rs. {subtotal.toLocaleString()}</span>
         </div>
+        
         <div className="flex justify-between text-sm">
           <span className="text-dark/60">Shipping</span>
           <span className="font-medium text-accent">Rs. {shipping.toLocaleString()}</span>
         </div>
+
+        {/* 3. Discount Row - Only show if promo is applied */}
+        {promoCode && (
+          <div className="flex justify-between text-sm text-green-600 bg-green-50 p-1.5 rounded-lg">
+            <div className="flex items-center gap-1.5">
+               <Tag size={14} />
+               <span>Discount ({promoCode?.code || promoCode})</span>
+            </div>
+            <span className="font-medium">- Rs. {discountAmount.toLocaleString()}</span>
+          </div>
+        )}
       </div>
 
       {/* Total */}

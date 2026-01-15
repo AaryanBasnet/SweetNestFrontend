@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { ArrowRight, Gift } from "lucide-react";
+import { ArrowRight, Gift, Tag, X } from "lucide-react"; // Added Tag, X
 import DeliveryToggle from "./DeliveryToggle";
 import PriceRow from "./PriceRow";
 
@@ -24,6 +24,15 @@ export default function OrderSummary({
       setCode("");
     }
   };
+
+  // Helper to safely get the code string
+  const getPromoCodeLabel = () => {
+    if (!promoCode) return "";
+    return typeof promoCode === "object" ? promoCode.code : promoCode;
+  };
+
+  // Calculate discount for display
+  const discountAmount = subtotal + shipping - total;
 
   return (
     <div className="bg-white rounded-3xl shadow-sm overflow-hidden">
@@ -54,6 +63,17 @@ export default function OrderSummary({
           value={shipping === 0 ? "FREE" : shipping}
           isAccent={shipping > 0}
         />
+
+        {/* ✅ NEW: Discount Row (Only visible if discount > 0) */}
+        {discountAmount > 0 && (
+          <div className="flex justify-between items-center text-sm text-green-600 bg-green-50 p-2 rounded-lg">
+             <div className="flex items-center gap-2">
+                <Tag size={14} />
+                <span>Discount ({getPromoCodeLabel()})</span>
+             </div>
+             <span className="font-medium">- Rs. {discountAmount.toLocaleString()}</span>
+          </div>
+        )}
 
         {/* Free Shipping Progress */}
         {deliveryType === "delivery" && subtotal < 1000 && (
@@ -95,8 +115,9 @@ export default function OrderSummary({
                 <Gift size={14} className="text-green-600" />
               </div>
               <div>
+                {/* ✅ FIXED: Access .code safely here */}
                 <p className="text-sm font-medium text-green-700">
-                  {promoCode}
+                  {getPromoCodeLabel()}
                 </p>
                 <p className="text-xs text-green-600/70">Code applied</p>
               </div>
@@ -144,16 +165,29 @@ export default function OrderSummary({
 
         {/* Security Note */}
         <p className="text-xs text-dark/35 text-center mt-4 flex items-center justify-center gap-1.5">
-          <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
-            <path
-              fillRule="evenodd"
-              d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z"
-              clipRule="evenodd"
-            />
-          </svg>
+          <Shield size={14} className="text-emerald-500" /> {/* Replaced SVG with Icon */}
           Secure checkout powered by Esewa
         </p>
       </div>
     </div>
   );
+}
+
+// Simple internal component for the Security Icon if you don't want to import Shield
+function Shield({ size, className }) {
+    return (
+        <svg 
+            width={size} 
+            height={size} 
+            viewBox="0 0 24 24" 
+            fill="none" 
+            stroke="currentColor" 
+            strokeWidth="2" 
+            strokeLinecap="round" 
+            strokeLinejoin="round" 
+            className={className}
+        >
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+        </svg>
+    )
 }

@@ -260,6 +260,8 @@ export default function Rewards() {
         getUserCouponsApi('all'),
       ]);
 
+      console.log("Tiers Data:", tiersRes.data?.data?.tiers); // Check if they have .id or ._id
+
       setTiers(tiersRes.data?.data?.tiers || []);
       setUserPoints(pointsRes.data?.data?.balance || 0);
       setPointsHistory(pointsRes.data?.data?.history || []);
