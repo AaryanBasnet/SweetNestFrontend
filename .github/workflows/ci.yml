@@ -1,0 +1,113 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.x
+          cache: npm
+
+      - run: npm ci
+
+      - run: npm run test:coverage
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.x
+          cache: npm
+
+      - run: npm ci
+
+      - run: npm run build
+
+      # A production build that suddenly doubles in size is worth noticing
+      # before it ships, not after. Printed, not enforced - a hard budget
+      # belongs here once the 1.7MB three.js chunk has been split.
+      - name: Report bundle size
+        run: |
+          echo "### Bundle size" >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          du -h dist/assets/*.js dist/assets/*.css 2>/dev/null \
+            | sort -rh | head -15 >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+
+  lint:
+    name: Lint (changed files)
+    runs-on: ubuntu-latest
+    # Only meaningful on a pull request, where there is a base to diff against.
+    if: github.event_name == 'pull_request'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Need the base branch present locally to diff against it.
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.x
+          cache: npm
+
+      - run: npm ci
+
+      # ---------------------------------------------------------------------
+      # This lints ONLY the files the pull request touches, not the whole app.
+      #
+      # Why: the codebase carries ~81 pre-existing lint errors across 44 files
+      # (unused variables, plus the React Compiler rules that arrived with
+      # eslint-plugin-react-hooks v7). Turning those into a required check on
+      # day one would mean every PR starts red, and a check that is always red
+      # gets ignored - which is worse than no check.
+      #
+      # Gating changed files instead means new and edited code has to be clean,
+      # so the debt shrinks as the app is worked on rather than growing. Swap
+      # this for a plain `npm run lint` once the backlog reaches zero.
+      # ---------------------------------------------------------------------
+      - name: Lint changed files
+        run: |
+          BASE="origin/${{ github.base_ref }}"
+          CHANGED=$(git diff --name-only --diff-filter=ACMR "$BASE"...HEAD \
+            | grep -E '\.(js|jsx)$' || true)
+
+          if [ -z "$CHANGED" ]; then
+            echo "No JavaScript files changed."
+            exit 0
+          fi
+
+          echo "Linting:"
+          echo "$CHANGED"
+          npx eslint $CHANGED
+
+  audit:
+    name: Dependency audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.x
+          cache: npm
+
+      - run: npm ci
+
+      - run: npm audit --audit-level=high
