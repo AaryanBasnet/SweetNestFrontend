@@ -97,6 +97,44 @@ jobs:
           echo "$CHANGED"
           npx eslint $CHANGED
 
+  docker:
+    name: Docker image builds
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-buildx-action@v3
+
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: false
+          load: true
+          tags: sweetnest-web:ci
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      # Proves nginx serves the build AND that SPA deep links work - the
+      # try_files rule is easy to break and the failure only shows up when
+      # somebody refreshes on a route that is not /.
+      - name: Smoke test the image
+        run: |
+          docker run -d --name web-smoke -p 8080:80 sweetnest-web:ci
+          for i in $(seq 1 20); do
+            if curl -fsS -o /dev/null http://127.0.0.1:8080/; then break; fi
+            sleep 1
+          done
+
+          for path in / /menu /checkout /profile; do
+            code=$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:8080$path)
+            echo "$path -> $code"
+            if [ "$code" != "200" ]; then
+              echo "SPA routing broken for $path"
+              docker logs web-smoke
+              exit 1
+            fi
+          done
+
   audit:
     name: Dependency audit
     runs-on: ubuntu-latest

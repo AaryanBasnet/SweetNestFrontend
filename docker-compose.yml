@@ -1,0 +1,24 @@
+# =============================================================================
+# SweetNest Frontend
+#
+#   docker compose up --build
+#
+# Serves the production build on http://localhost:8080.
+# The API runs from the backend repo's own compose file (api + mongo).
+#
+# VITE_API_BASE_URL is a BUILD argument, not a runtime environment variable.
+# Vite inlines it into the JavaScript bundle at build time, so changing it
+# requires a rebuild - and it must never hold a secret, because anyone can
+# read it in the shipped code.
+# =============================================================================
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://localhost:5000/api}
+    restart: unless-stopped
+    ports:
+      - "${WEB_PORT:-8080}:80"
