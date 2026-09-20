@@ -89,6 +89,11 @@ export default function Settings() {
   const handlePasswordChange = async (e) => {
     e.preventDefault();
 
+    if (!securityData.currentPassword) {
+      toast.error('Please enter your current password');
+      return;
+    }
+
     if (securityData.newPassword !== securityData.confirmPassword) {
       toast.error('New passwords do not match');
       return;
@@ -109,8 +114,10 @@ export default function Settings() {
     setIsLoading(true);
 
     try {
-      // Update profile with new password
+      // Update profile with new password. currentPassword is verified
+      // server-side before the change is accepted.
       const response = await updateUserProfileApi({
+        currentPassword: securityData.currentPassword,
         password: securityData.newPassword,
       });
 

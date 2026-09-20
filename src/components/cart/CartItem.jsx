@@ -16,8 +16,8 @@ export default function CartItem({ item, onUpdateQuantity, onRemove, isLoading }
   // Format details string
   let detailsText = "";
   if (isCustomCake && item.customization) {
-    const { tiers, size, flavor, color, topper } = item.customization;
-    const details = [tiers, size, flavor, color].filter(Boolean);
+    const { shape, tiers, size, flavor, filling, color } = item.customization;
+    const details = [shape, tiers, size, flavor, filling ? `${filling} filling` : null, color].filter(Boolean);
     detailsText = details.join(" • ");
   } else {
     const weightLabel = item.selectedWeight?.label || "";

@@ -22,9 +22,9 @@ export function DripEffect({
   intensity = "medium" // "light", "medium", "heavy"
 }) {
   const dripCounts = {
-    light: 8,
-    medium: 16,
-    heavy: 24,
+    light: 14,
+    medium: 22,
+    heavy: 30,
   };
 
   const dripColors = {
@@ -42,8 +42,8 @@ export function DripEffect({
     const dripsArray = [];
     for (let i = 0; i < dripCount; i++) {
       const angle = (i / dripCount) * Math.PI * 2 + Math.random() * 0.3;
-      const dripLength = 0.3 + Math.random() * 0.4;
-      const dripWidth = 0.08 + Math.random() * 0.05;
+      const dripLength = 0.12 + Math.random() * 0.45;
+      const dripWidth = 0.11 + Math.random() * 0.09;
 
       dripsArray.push({
         angle,
@@ -58,8 +58,8 @@ export function DripEffect({
   return (
     <group position={[0, yPosition, 0]}>
       {/* Pool of drip on top edge */}
-      <mesh position={[0, 0.01, 0]}>
-        <torusGeometry args={[radius * scale * 0.98, 0.04, 16, 64]} />
+      <mesh position={[0, 0.01, 0]} rotation={[Math.PI / 2, 0, 0]}>
+        <torusGeometry args={[radius * scale * 0.97, 0.075, 16, 96]} />
         <meshPhysicalMaterial
           color={dripColor}
           roughness={0.15}
@@ -80,8 +80,8 @@ export function DripEffect({
           <group key={i} position={[x, 0, z]} rotation={[0, drip.angle, 0]}>
             {/* Drip body */}
             <mesh position={[0, -drip.length / 2 - drip.offset, 0]} castShadow>
-              <cylinderGeometry
-                args={[drip.width * 0.5, drip.width * 0.3, drip.length, 12]}
+              <capsuleGeometry
+                args={[drip.width * 0.5, drip.length, 4, 12]}
               />
               <meshPhysicalMaterial
                 color={dripColor}
@@ -97,7 +97,7 @@ export function DripEffect({
 
             {/* Drip droplet at bottom */}
             <mesh position={[0, -drip.length - drip.offset - 0.05, 0]} castShadow>
-              <sphereGeometry args={[drip.width * 0.4, 12, 12]} />
+              <sphereGeometry args={[drip.width * 0.58, 14, 14]} />
               <meshPhysicalMaterial
                 color={dripColor}
                 roughness={0.1}

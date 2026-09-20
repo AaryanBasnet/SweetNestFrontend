@@ -92,6 +92,11 @@ function SettingsTab() {
   const handlePasswordChange = async (e) => {
     e.preventDefault();
 
+    if (!passwordData.currentPassword) {
+      toast.error('Please enter your current password');
+      return;
+    }
+
     if (passwordData.newPassword !== passwordData.confirmPassword) {
       toast.error('New passwords do not match');
       return;
@@ -112,7 +117,11 @@ function SettingsTab() {
     setIsLoading(true);
 
     try {
+      // The API verifies currentPassword before accepting the change. The form
+      // collected it all along but never sent it, so the check the UI implied
+      // was not actually happening anywhere.
       const response = await updateUserProfileApi({
+        currentPassword: passwordData.currentPassword,
         password: passwordData.newPassword,
       });
 

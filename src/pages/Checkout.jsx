@@ -13,7 +13,11 @@ import useCartStore from '../stores/cartStore';
 import useAuthStore from '../stores/authStore';
 
 // API
-import { createOrderApi, initiateEsewaPaymentApi } from '../api/orderApi';
+import {
+  createOrderApi,
+  initiateEsewaPaymentApi,
+  checkPaymentStatusApi,
+} from '../api/orderApi';
 
 // Components
 import CheckoutStepIndicator from '../components/checkout/CheckoutStepIndicator';
@@ -48,6 +52,10 @@ export default function Checkout() {
 
   // Ref to track if we've handled the callback
   const callbackHandled = useRef(false);
+  // Holds the pending payment-status poll so it can be cancelled on unmount.
+  const pollTimer = useRef(null);
+
+  useEffect(() => () => clearTimeout(pollTimer.current), []);
 
   // Validation errors state
   const [validationErrors, setValidationErrors] = useState({});
@@ -71,6 +79,52 @@ export default function Checkout() {
         
         toast.success('Payment successful! Your order has been placed.');
         clearCart(); // Clear local UI cart
+      } else if (status === 'processing' && orderId) {
+        // eSewa has not settled yet, or we could not reach it during the
+        // redirect. Money may have moved, so never call this a failure -
+        // poll the server, which re-checks with eSewa on each request.
+        setCurrentStep(2);
+        toast.info(
+          message
+            ? decodeURIComponent(message)
+            : 'Confirming your payment, please wait...'
+        );
+
+        let attempt = 0;
+        const maxAttempts = 10;
+
+        const poll = async () => {
+          attempt += 1;
+          try {
+            const { data } = await checkPaymentStatusApi(orderId);
+            const paymentStatus = data?.data?.paymentStatus;
+
+            if (paymentStatus === 'paid') {
+              setOrderResult(orderId, data.data.orderNumber);
+              setCurrentStep(3);
+              toast.success('Payment confirmed! Your order has been placed.');
+              clearCart();
+              return;
+            }
+
+            if (paymentStatus === 'failed') {
+              toast.error('Payment was not completed. Please try again.');
+              return;
+            }
+          } catch {
+            // Keep polling - a transient error should not end the attempt.
+          }
+
+          if (attempt < maxAttempts) {
+            pollTimer.current = setTimeout(poll, 3000);
+          } else {
+            toast.info(
+              'Still confirming your payment. You can check the status from your orders page.'
+            );
+          }
+        };
+
+        poll();
       } else if (status === 'failed' || status === 'error') {
         // Payment failed
         setCurrentStep(2); // Go back to payment step
