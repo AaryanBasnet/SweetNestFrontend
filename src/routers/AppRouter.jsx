@@ -12,7 +12,7 @@ import { AdminLayout } from "../layouts/admin";
 import PageLoader from "../components/common/PageLoader";
 
 // Lazy load auth pages
-const Login = lazy(() => import("../pages/auth/LOgin"));
+const Login = lazy(() => import("../pages/auth/Login"));
 const Register = lazy(() => import("../pages/auth/Register"));
 const ForgotPassword = lazy(() => import("../pages/auth/ForgotPassword"));
 const VerifyCode = lazy(() => import("../pages/auth/VerifyCode"));
