@@ -128,6 +128,63 @@ Adjust the URL based on your backend deployment.
 | `npm run build`   | Build for production     |
 | `npm run preview` | Preview production build |
 | `npm run lint`    | Run ESLint               |
+| `npm test`        | Run the test suite       |
+| `npm run test:watch` | Re-run tests on change |
+| `npm run test:coverage` | Tests with coverage |
+
+---
+
+## 🧪 Testing
+
+**Vitest + React Testing Library**, running in a jsdom environment.
+
+```bash
+npm test              # run once
+npm run test:watch    # re-run on change
+npm run test:coverage # with a coverage report
+```
+
+**49 tests** covering:
+
+* `stores/cartStore` – subtotal, shipping, promo discounts, the zero floor
+* `stores/authStore` – login/register success and failure, logout, id
+  normalisation
+* `api/api` – the axios interceptors: token attachment, FormData handling,
+  401 sign-out, and the cases that must **not** sign the user out
+* `routers/` – `ProtectedRoute` and `AdminRoute` guards
+
+Note the cart tests assert the **client's** view of the total. The server
+recomputes every price independently and is the only figure a payment ever
+uses - the client number is for display.
+
+Coverage is scoped to the logic layer (stores, api, routers, utils) rather
+than every component, so the number reflects what is actually under test.
+Component and page tests are the next area to pick up.
+
+---
+
+## 🔄 Continuous Integration
+
+`.github/workflows/ci.yml` runs on every push to `main` and every pull
+request:
+
+* **Test** – the Vitest suite with coverage
+* **Build** – a production build, and prints the bundle size breakdown to the
+  run summary
+* **Lint** – on pull requests, lints **only the files the PR changes**
+* **Audit** – fails on any high or critical dependency advisory
+
+### Why lint only changed files
+
+The codebase currently carries ~81 pre-existing lint errors across 44 files
+(unused variables, plus the React Compiler rules introduced in
+`eslint-plugin-react-hooks` v7). Making those a required check today would
+mean every pull request starts red - and a check that is always red gets
+ignored, which is worse than having no check.
+
+Gating changed files means new and edited code must be clean, so the backlog
+shrinks as the app is worked on. Swap it for a plain `npm run lint` once the
+count reaches zero.
 
 ---
 
