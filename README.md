@@ -144,7 +144,7 @@ npm run test:watch    # re-run on change
 npm run test:coverage # with a coverage report
 ```
 
-**49 tests** covering:
+**55 tests** covering:
 
 * `stores/cartStore` – subtotal, shipping, promo discounts, the zero floor
 * `stores/authStore` – login/register success and failure, logout, id
@@ -152,6 +152,8 @@ npm run test:coverage # with a coverage report
 * `api/api` – the axios interceptors: token attachment, FormData handling,
   401 sign-out, and the cases that must **not** sign the user out
 * `routers/` – `ProtectedRoute` and `AdminRoute` guards
+* `ErrorBoundary` – that a render crash shows a fallback with a way out,
+  rather than a blank page
 
 Note the cart tests assert the **client's** view of the total. The server
 recomputes every price independently and is the only figure a payment ever
@@ -160,6 +162,64 @@ uses - the client number is for display.
 Coverage is scoped to the logic layer (stores, api, routers, utils) rather
 than every component, so the number reflects what is actually under test.
 Component and page tests are the next area to pick up.
+
+---
+
+## 🐳 Running with Docker
+
+```bash
+docker compose up --build
+```
+
+Serves the production build on http://localhost:8080. The API runs from the
+backend repo's own compose file.
+
+A Vite app compiles to static files, so the shipped image is **nginx serving a
+folder, not a Node server** - about 84MB instead of ~400MB, with a whole
+runtime removed from the attack surface.
+
+Two things worth knowing:
+
+* **`VITE_` variables are baked in at BUILD time**, not read at runtime. They
+  end up readable in the shipped JavaScript, so none of them may ever be a
+  secret, and changing one requires a rebuild:
+  `docker build --build-arg VITE_API_BASE_URL=https://api.example.com/api .`
+* **`try_files` in nginx.conf is what makes deep links work.** React Router
+  handles `/menu` and `/checkout` in the browser - those paths are not files.
+  Without it, a hard refresh or a pasted link to any route other than `/`
+  returns a 404 from nginx.
+
+nginx gotcha documented in `nginx.conf`: `add_header` directives are inherited
+from the enclosing block **only if the current block defines none of its own**.
+A single `add_header` in a `location` silently discards every header inherited
+from `server` - which is how a site ships with no security headers despite
+them being declared.
+
+---
+
+## 🛡️ Error boundary
+
+`ErrorBoundary` wraps the whole app in `main.jsx`. React unmounts the entire
+component tree when a render throws and nothing catches it, leaving the user on
+a blank white page - previously only the cake configurator had a boundary, so a
+render error anywhere else blanked the site.
+
+What a boundary cannot catch, because React cannot: errors inside event
+handlers, async code, or the boundary itself.
+
+---
+
+## 🚨 Error tracking
+
+**Sentry**, entirely opt-in. With no `VITE_SENTRY_DSN` set the SDK is never
+initialised and every call is a no-op.
+
+A crash in the browser is invisible by default - the user sees a blank page,
+closes the tab, and you never hear about it. This makes those visible.
+
+A Sentry DSN is safe to expose publicly (it only permits sending events, not
+reading them), which is why it is acceptable in a `VITE_` variable. No other
+secret is.
 
 ---
 

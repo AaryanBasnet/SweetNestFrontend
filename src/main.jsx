@@ -1,44 +1,18 @@
-import { StrictMode, useEffect } from "react";
 import { createRoot } from "react-dom/client";
 import "./index.css";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
 
-import AppRouter from "./routers/AppRouter";
-import useAuthStore from "./stores/authStore";
+import App from "./App";
+import ErrorBoundary from "./components/common/ErrorBoundary";
+import { initSentry } from "./lib/sentry";
 
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      retry: 1,
-      staleTime: 5 * 60 * 1000,
-    },
-  },
-});
-
-function App() {
-  const initialize = useAuthStore((state) => state.initialize);
-
-  useEffect(() => {
-    initialize();
-  }, [initialize]);
-
-  return (
-    <>
-      <AppRouter />
-      <ToastContainer
-        position="top-right"
-        autoClose={2000}
-        hideProgressBar={false}
-        theme="dark"
-      />
-    </>
-  );
-}
+// Before anything renders, so a crash during the first paint is still caught.
+// No-op unless VITE_SENTRY_DSN is set.
+initSentry();
 
 createRoot(document.getElementById("root")).render(
-    <QueryClientProvider client={queryClient}>
-      <App />
-    </QueryClientProvider>
+  // ErrorBoundary is outermost so it catches failures from the providers too,
+  // not only from the routed pages beneath them.
+  <ErrorBoundary>
+    <App />
+  </ErrorBoundary>
 );
