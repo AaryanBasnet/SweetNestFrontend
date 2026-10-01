@@ -13,6 +13,14 @@ import strawberryCheesecake from "../assets/strawberry-cheesecake.png";
 import chocolateCake from "../assets/chocolate-cake.png";
 import { useNavigate } from "react-router-dom";
 
+// Shown whenever the API has fewer than two featured cakes: while it is still
+// loading, if it is down, or if only one cake has been marked featured.
+//
+// Each entry must carry a singular `image`. That is the field the carousel
+// reads (the API cakes are mapped onto it by transformCakeToHero below). These
+// used to hold the picture only under `images`, so the carousel received
+// [undefined, undefined] and rendered an <img> with no src - a headline and a
+// price with no cake.
 const FALLBACK_HERO_CAKES = [
   {
     name: "Strawberry Cheesecake",
@@ -22,6 +30,7 @@ const FALLBACK_HERO_CAKES = [
     description:
       "Smooth cream cheese base blended with real, juicy strawberries, creating a naturally sweet and creamy flavor in every bite.",
     basePrice: 550,
+    image: strawberryCheesecake,
     images: [strawberryCheesecake],
   },
   {
@@ -32,6 +41,7 @@ const FALLBACK_HERO_CAKES = [
     description:
       "Layers of moist chocolate sponge with velvety ganache, a timeless classic for chocolate lovers seeking pure indulgence.",
     basePrice: 650,
+    image: chocolateCake,
     images: [chocolateCake],
   },
 ];
@@ -42,7 +52,7 @@ export default function Home() {
   const [currentIndex, setCurrentIndex] = useState(0);
 
   // Fetch featured cakes from API
-  const { data: featuredData, isLoading } = useFeaturedCakes(2);
+  const { data: featuredData } = useFeaturedCakes(2);
   const apiFeaturedCakes = featuredData?.data || [];
 
   // Transform API cakes to hero format
