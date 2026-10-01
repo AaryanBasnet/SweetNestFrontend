@@ -79,18 +79,42 @@ describe('response interceptor', () => {
     expect(responseHandler.fulfilled(response)).toBe(response);
   });
 
-  it('clears the session and redirects on a 401', async () => {
+  it('clears the session and redirects on a 401 for a signed-in request', async () => {
     storeToken('expired-token');
 
     await expect(
       responseHandler.rejected({
         response: { status: 401 },
-        config: { url: '/orders' },
+        config: { url: '/orders', headers: { Authorization: 'Bearer expired-token' } },
       })
     ).rejects.toBeDefined();
 
     expect(localStorage.getItem('auth-storage')).toBeNull();
     expect(navigate).toHaveBeenCalledWith('/login', { replace: true });
+  });
+
+  // The regression test for the bug where a logged-out visitor could not view
+  // the home page. The header polled a login-only endpoint with no token, got
+  // a 401, and this handler redirected them to /login as if a session had
+  // expired - when there never was one.
+  it('does not redirect when the 401 came from a request that had no token', async () => {
+    await expect(
+      responseHandler.rejected({
+        response: { status: 401 },
+        config: { url: '/notifications/unread-count', headers: {} },
+      })
+    ).rejects.toBeDefined();
+
+    expect(navigate).not.toHaveBeenCalled();
+  });
+
+  it('still rejects the error so the caller can react to it', async () => {
+    const error = {
+      response: { status: 401 },
+      config: { url: '/cart', headers: {} },
+    };
+
+    await expect(responseHandler.rejected(error)).rejects.toBe(error);
   });
 
   // A 401 from the login endpoint means "wrong password", not "session

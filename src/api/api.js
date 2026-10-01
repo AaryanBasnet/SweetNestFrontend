@@ -52,7 +52,15 @@ instance.interceptors.response.use(
       const isAuthEndpoint = error.config?.url?.includes('/users/login') ||
                              error.config?.url?.includes('/users/register');
 
-      if (!isAuthEndpoint) {
+      // "Your session expired" only makes sense if there was a session. A 401
+      // on a request that carried no token just means "this needs an account",
+      // and the caller can decide what to do about that. Redirecting anyway
+      // meant any anonymous request to a protected endpoint - such as the
+      // header's notification poll - bounced a logged-out visitor off a public
+      // page and onto the login form.
+      const hadSession = Boolean(error.config?.headers?.Authorization);
+
+      if (!isAuthEndpoint && hadSession) {
         // Only redirect if not a login/register attempt
         localStorage.removeItem("auth-storage");
 
