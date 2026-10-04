@@ -32,10 +32,13 @@ export default function AdminLayout() {
   // Get page title based on current route
   const pageTitle = ROUTE_TITLES[location.pathname] || 'Admin';
 
-  // Close sidebar when route changes
-  useEffect(() => {
+  // Close sidebar when route changes. Adjusted during render rather than in
+  // an effect (react-hooks rule), so the new page never paints with it open.
+  const [sidebarPath, setSidebarPath] = useState(location.pathname);
+  if (location.pathname !== sidebarPath) {
+    setSidebarPath(location.pathname);
     setIsMobileSidebarOpen(false);
-  }, [location.pathname]);
+  }
 
   // Lock body scroll when mobile sidebar is open
   useEffect(() => {
