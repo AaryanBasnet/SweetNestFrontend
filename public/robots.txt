@@ -1,0 +1,22 @@
+# SweetNest - https://sweetnest.aaryanbasnet.com.np
+User-agent: *
+Allow: /
+
+# Account, checkout and admin pages are private or empty without a login
+Disallow: /admin
+Disallow: /cart
+Disallow: /checkout
+Disallow: /profile
+Disallow: /settings
+Disallow: /wishlist
+Disallow: /rewards
+Disallow: /orders
+Disallow: /track-order
+Disallow: /notifications
+Disallow: /login
+Disallow: /register
+Disallow: /forgot-password
+Disallow: /verify-code
+Disallow: /reset-password
+
+Sitemap: https://sweetnest.aaryanbasnet.com.np/sitemap.xml

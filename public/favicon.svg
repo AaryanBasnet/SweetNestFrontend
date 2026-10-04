@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- SweetNest mark: "SN" in the logo's serif with its orange full stop, on the brand's dark brown -->
+  <rect width="64" height="64" rx="14" fill="#2C2420"/>
+  <text x="29" y="42" text-anchor="middle" font-family="'Playfair Display', Georgia, 'Times New Roman', serif" font-size="30" font-weight="700" letter-spacing="-1" fill="#FEF6EB">SN</text>
+  <circle cx="51" cy="40" r="3.6" fill="#EA580C"/>
+</svg>
