@@ -29,6 +29,23 @@ const useAuthStore = create(
         }
       },
 
+      // Same session shape as login, for the public demo accounts
+      demoLogin: async (role) => {
+        try {
+          const data = await authService.demoLogin(role);
+          const userData = data.userData || data.user;
+          const normalizedUser = { ...userData, _id: userData._id || userData.id };
+
+          set({ user: normalizedUser, token: data.token });
+          return { success: true, user: normalizedUser };
+        } catch (err) {
+          return {
+            success: false,
+            message: err.response?.data?.message || err.message,
+          };
+        }
+      },
+
       register: async (userData) => {
         try {
           const data = await authService.registerUser(userData);

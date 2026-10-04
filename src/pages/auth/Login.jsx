@@ -10,6 +10,7 @@ import { loginSchema } from "../../schemas/authSchema"; // Validation (Yup)
 import { Input } from "../../components/ui/Input"; // Reusable UI
 import { AuthButton } from "../../components/ui/AuthButton"; // Reusable UI
 import rightsideImage from "../../assets/auth_img.webp"; // Your image
+import DemoLoginPanel from "../../components/auth/DemoLoginPanel";
 export default function Login() {
   const { login } = useAuth();
   const navigate = useNavigate();
@@ -105,6 +106,8 @@ export default function Login() {
               Signup
             </Link>
           </p>
+
+          <DemoLoginPanel />
         </div>
       </div>
 

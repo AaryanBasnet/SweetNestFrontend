@@ -5,6 +5,7 @@ export const useAuth = () => {
   const token = useAuthStore((state) => state.token);
   const loading = useAuthStore((state) => state.loading);
   const login = useAuthStore((state) => state.login);
+  const demoLogin = useAuthStore((state) => state.demoLogin);
   const register = useAuthStore((state) => state.register);
   const logout = useAuthStore((state) => state.logout);
   const updateUser = useAuthStore((state) => state.updateUser);
@@ -16,6 +17,7 @@ export const useAuth = () => {
     loading,
     isAuthenticated: isAuthenticated(),
     login,
+    demoLogin,
     register,
     logout,
     updateUserState: updateUser,

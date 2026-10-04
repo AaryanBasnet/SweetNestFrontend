@@ -9,3 +9,8 @@ export const loginUser = async (credentials) => {
   const res = await authApi.loginUserApi(credentials);
   return res.data;
 };
+
+export const demoLogin = async (role) => {
+  const res = await authApi.demoLoginApi(role);
+  return res.data;
+};

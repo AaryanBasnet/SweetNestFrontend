@@ -9,6 +9,7 @@ import { Outlet, useLocation, Navigate } from 'react-router-dom';
 import AdminSidebar from './AdminSidebar';
 import AdminHeader from './AdminHeader';
 import useAuthStore from '../../stores/authStore';
+import DemoBanner from '../../components/auth/DemoBanner';
 
 // Map routes to titles
 const ROUTE_TITLES = {
@@ -63,6 +64,8 @@ export default function AdminLayout() {
 
       {/* Main Content */}
       <div className="lg:ml-60">
+        <DemoBanner />
+
         {/* Header */}
         <AdminHeader
           title={pageTitle}
