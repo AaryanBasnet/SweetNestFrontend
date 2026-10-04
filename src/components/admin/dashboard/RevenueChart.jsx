@@ -21,14 +21,14 @@ export default function RevenueChart({ data = [], title = 'Revenue Report', subt
         {data.map((item, index) => {
           const height = (item.revenue / maxValue) * 100;
           return (
-            <div key={index} className="flex-1 flex flex-col items-center gap-2">
-              {/* Bar */}
-              <div className="w-full flex justify-center">
-                <div
-                  className="w-5 sm:w-8 lg:w-10 bg-accent rounded-t-md sm:rounded-t-lg transition-all duration-500 hover:bg-accent/80"
-                  style={{ height: `${height}%`, minHeight: '8px' }}
-                />
-              </div>
+            // Full-height column: the bar's percentage height needs a parent
+            // with a real height, or every bar collapses to its minHeight.
+            <div key={index} className="flex-1 h-full flex items-end justify-center">
+              <div
+                className="w-5 sm:w-8 lg:w-10 bg-accent rounded-t-md sm:rounded-t-lg transition-all duration-500 hover:bg-accent/80"
+                style={{ height: `${height}%`, minHeight: '8px' }}
+                title={`${item.day}: Rs. ${Number(item.revenue).toLocaleString('en-IN')}`}
+              />
             </div>
           );
         })}

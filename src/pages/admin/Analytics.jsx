@@ -41,6 +41,9 @@ const formatPercentage = (value) => {
 };
 
 // Stats Card Component
+// `Icon` is used as <Icon />; core ESLint does not count JSX as a use of a
+// destructured argument, so it reports a false "unused" here.
+// eslint-disable-next-line no-unused-vars
 const StatsCard = ({ title, value, change, icon: Icon, prefix = '' }) => {
   const isPositive = change >= 0;
 
@@ -351,7 +354,7 @@ export default function Analytics() {
                     }`}
                   />
                   <span className="text-sm font-medium text-dark capitalize">
-                    {status.status.replace('_', ' ')}
+                    {status.status.replace(/_/g, ' ')}
                   </span>
                 </div>
                 <div className="text-right">

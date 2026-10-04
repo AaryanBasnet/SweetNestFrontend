@@ -37,7 +37,7 @@ export default function SeasonalCollection() {
   const [currentHeroIndex, setCurrentHeroIndex] = useState(0);
 
   // Fetch active promotions from API
-  const { data: promotionsData, isLoading } = useActivePromotions();
+  const { data: promotionsData } = useActivePromotions();
   const activePromotions = promotionsData?.data || [];
 
   // Transform promotions to image format or use fallback
@@ -46,15 +46,10 @@ export default function SeasonalCollection() {
         // Determine link: if linked to a cake, go to cake detail page
         let link = '/shop';
 
-        // Debug: Log promotion data
-        console.log('Promotion:', promo.title, 'LinkedCakes:', promo.linkedCakes);
-
         if (promo.linkedCakes && promo.linkedCakes.length > 0) {
           const linkedCake = promo.linkedCakes[0];
-          console.log('Linked Cake:', linkedCake);
           if (linkedCake && linkedCake.slug) {
             link = `/cake/${linkedCake.slug}`;
-            console.log('Generated link:', link);
           }
         } else if (promo.ctaLink) {
           link = promo.ctaLink;
@@ -128,6 +123,8 @@ export default function SeasonalCollection() {
                   <button
                     key={idx}
                     onClick={() => setCurrentHeroIndex(idx)}
+                    aria-label={`Show slide ${idx + 1} of ${HERO_IMAGES.length}`}
+                    aria-current={idx === currentHeroIndex}
                     className={`w-2 h-2 rounded-full transition-all duration-300 ${
                       idx === currentHeroIndex
                         ? "bg-white w-6"

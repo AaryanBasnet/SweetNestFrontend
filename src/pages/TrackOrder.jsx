@@ -43,12 +43,30 @@ const formatTime = (dateString) => {
   });
 };
 
+// The moment a delivery is due: the end of its time slot on the delivery day
+// ("09:00 AM - 12:00 PM" -> 12:00 PM), or the end of that day without a slot.
+// The date alone is midnight at the start of the day, so comparing against it
+// marked every order "Delayed" for its whole delivery day.
+const getDeliveryDeadline = (schedule) => {
+  const deadline = new Date(schedule.date);
+  const endTime = schedule.timeSlot?.split(' - ')[1];
+  const match = endTime?.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
+
+  if (!match) {
+    deadline.setHours(23, 59, 59, 999);
+    return deadline;
+  }
+  let hours = Number(match[1]) % 12;
+  if (match[3].toUpperCase() === 'PM') hours += 12;
+  deadline.setHours(hours, Number(match[2]), 0, 0);
+  return deadline;
+};
+
 // Check if order is on time based on delivery schedule
 const isOrderOnTime = (order) => {
   if (!order?.deliverySchedule?.date) return true;
-  const deliveryDate = new Date(order.deliverySchedule.date);
-  const now = new Date();
-  return now <= deliveryDate || order.orderStatus === 'delivered';
+  if (order.orderStatus === 'delivered') return true;
+  return new Date() <= getDeliveryDeadline(order.deliverySchedule);
 };
 
 // Get estimated arrival time from delivery schedule
@@ -243,7 +261,7 @@ function OrderSummary({ order }) {
   const items = order?.items || [];
   const itemCount = items.reduce((sum, item) => sum + item.quantity, 0);
   const total = order?.total || 0;
-  const firstItemImage = items[0]?.image || 'https://via.placeholder.com/60x60?text=Cake';
+  const firstItemImage = items[0]?.image || '/placeholder-cake.svg';
 
   return (
     <div className="bg-white rounded-3xl shadow-sm overflow-hidden">
@@ -283,7 +301,7 @@ function OrderSummary({ order }) {
               <div key={index} className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-lg overflow-hidden shrink-0">
                   <img
-                    src={item.image || 'https://via.placeholder.com/40x40?text=Cake'}
+                    src={item.image || '/placeholder-cake.svg'}
                     alt={item.name}
                     className="w-full h-full object-cover"
                   />
@@ -396,7 +414,7 @@ export default function TrackOrder() {
         let response;
         try {
           response = await getOrderByIdApi(orderId);
-        } catch (err) {
+        } catch {
           // If ID fetch fails, try by order number
           response = await getOrderByNumberApi(orderId);
         }

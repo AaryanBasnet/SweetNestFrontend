@@ -1,6 +1,15 @@
-import { BrowserRouter, Navigate, Route, Routes, useNavigate } from "react-router-dom";
+import {
+  BrowserRouter,
+  Navigate,
+  Route,
+  Routes,
+  matchPath,
+  useLocation,
+  useNavigate,
+} from "react-router-dom";
 import { lazy, Suspense, useEffect } from "react";
 import { setNavigate } from "../utils/navigationService";
+import usePageTitle from "../hooks/usePageTitle";
 
 // Route guards and layouts (load immediately)
 import GuestRoutes from "./GuestRoutes";
@@ -32,6 +41,8 @@ const Rewards = lazy(() => import("../pages/Rewards"));
 const TrackOrder = lazy(() => import("../pages/TrackOrder"));
 const Notifications = lazy(() => import("../pages/Notifications"));
 const CustomPage = lazy(() => import("../pages/CustomPage"));
+const Privacy = lazy(() => import("../pages/Privacy"));
+const Terms = lazy(() => import("../pages/Terms"));
 const NotFound = lazy(() => import("../pages/NotFound"));
 const Forbidden = lazy(() => import("../pages/Forbidden"));
 
@@ -59,10 +70,48 @@ function NavigationSetter() {
   return null;
 }
 
+// Browser tab title for each route. null gives the home page title.
+// The cake page refines its own title to the cake's name once it loads.
+const ROUTE_TITLES = [
+  ["/", null],
+  ["/home", null],
+  ["/menu", "Menu"],
+  ["/about", "About Us"],
+  ["/contact", "Contact Us"],
+  ["/privacy", "Privacy Policy"],
+  ["/terms", "Terms of Use"],
+  ["/cart", "Your Cart"],
+  ["/checkout", "Checkout"],
+  ["/profile", "My Profile"],
+  ["/wishlist", "Wishlist"],
+  ["/rewards", "SweetRewards"],
+  ["/track-order/:orderId", "Track Order"],
+  ["/notifications", "Notifications"],
+  ["/custompage", "Design Your Cake"],
+  ["/cake/:slug", "Cake"],
+  ["/login", "Log In"],
+  ["/register", "Create Account"],
+  ["/forgot-password", "Forgot Password"],
+  ["/verify-code", "Verify Code"],
+  ["/reset-password", "Reset Password"],
+  ["/forbidden", "Access Denied"],
+  ["/admin/*", "Admin"],
+];
+
+// Rendered before the routes, so a page's own title (set in its effects,
+// which run after this one) wins.
+function RouteTitle() {
+  const { pathname } = useLocation();
+  const match = ROUTE_TITLES.find(([path]) => matchPath(path, pathname));
+  usePageTitle(match ? match[1] : "Page Not Found");
+  return null;
+}
+
 export default function AppRouter() {
   return (
     <BrowserRouter>
       <NavigationSetter />
+      <RouteTitle />
       <Suspense fallback={<PageLoader />}>
       <Routes>
         {/* Home Layout - 140px margin */}
@@ -76,11 +125,17 @@ export default function AppRouter() {
           <Route path="/menu" element={<Menu />} />
           <Route path="/about" element={<About />} />
           <Route path="/contact" element={<Contact />} />
-          <Route path="/locations" element={<div>Locations Page</div>} />
+          <Route path="/privacy" element={<Privacy />} />
+          <Route path="/terms" element={<Terms />} />
+          {/* Old addresses kept working, pointed at the pages that exist */}
+          <Route path="/locations" element={<Navigate to="/contact" replace />} />
           <Route path="/cart" element={<Cart />} />
           <Route path="/checkout" element={<Checkout />} />
           <Route path="/profile" element={<Profile />} />
-          <Route path="/settings" element={<div>Settings Page</div>} />
+          <Route
+            path="/settings"
+            element={<Navigate to="/profile?tab=settings" replace />}
+          />
           <Route path="/wishlist" element={<Wishlist />} />
           <Route path="/rewards" element={<Rewards />} />
           <Route
@@ -99,17 +154,14 @@ export default function AppRouter() {
             <Route path="/admin" element={<Dashboard />} />
             <Route path="/admin/orders" element={<Orders />} />
             <Route path="/admin/products" element={<Products />} />
+            {/* Adding and editing happen in the Products page's form */}
             <Route
               path="/admin/products/new"
-              element={<div>Add Product Page</div>}
+              element={<Navigate to="/admin/products?new=1" replace />}
             />
             <Route
-              path="/admin/products/:id"
-              element={<div>Product Details Page</div>}
-            />
-            <Route
-              path="/admin/products/:id/edit"
-              element={<div>Edit Product Page</div>}
+              path="/admin/products/:id/*"
+              element={<Navigate to="/admin/products" replace />}
             />
             <Route path="/admin/categories" element={<Categories />} />
             <Route path="/admin/customers" element={<Customers />} />

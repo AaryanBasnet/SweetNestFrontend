@@ -4,13 +4,12 @@
  */
 
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
 import { Search, Plus, Edit, Trash2, Eye } from "lucide-react";
 // IMPORT HOOKS
 import {
   useAdminProducts,
   useDeleteProduct,
-  useToggleProductStatus,
   useCreateProduct,
   useUpdateProduct,
 } from "../../hooks/admin";
@@ -25,7 +24,6 @@ import {
 import { toast } from "react-toastify";
 
 export default function Products() {
-  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
 
   // States for Modals
@@ -35,6 +33,10 @@ export default function Products() {
   // Selection States
   const [selectedProduct, setSelectedProduct] = useState(null); // For delete
   const [editingProduct, setEditingProduct] = useState(null); // For edit
+
+  // ?new=1 (from the header's Add button) opens the add form straight away
+  const [searchParams, setSearchParams] = useSearchParams();
+  const addRequestedByUrl = searchParams.get("new") === "1";
 
   const {
     productsFilters,
@@ -51,7 +53,6 @@ export default function Products() {
 
   // Mutations
   const deleteProduct = useDeleteProduct();
-  const toggleStatus = useToggleProductStatus();
   const createProduct = useCreateProduct();
   const updateProduct = useUpdateProduct();
 
@@ -69,7 +70,7 @@ export default function Products() {
       toast.success("Product deleted successfully");
       setDeleteModalOpen(false);
       setSelectedProduct(null);
-    } catch (error) {
+    } catch {
       toast.error("Failed to delete product");
     }
   };
@@ -84,6 +85,12 @@ export default function Products() {
   const handleEditClick = (product) => {
     setEditingProduct(product);
     setAddModalOpen(true);
+  };
+
+  const closeProductModal = () => {
+    setAddModalOpen(false);
+    setEditingProduct(null);
+    if (addRequestedByUrl) setSearchParams({}, { replace: true });
   };
 
   // --- FORM DATA LOGIC ---
@@ -141,8 +148,7 @@ export default function Products() {
         await mutation.mutateAsync(formData);
         toast.success("Product added successfully");
       }
-      setAddModalOpen(false);
-      setEditingProduct(null);
+      closeProductModal();
     } catch (error) {
       console.error(error);
       toast.error(
@@ -161,7 +167,7 @@ export default function Products() {
         <div className="flex items-center gap-3">
           <div className="w-12 h-12 rounded-lg overflow-hidden bg-cream">
             <img
-              src={row.images?.[0]?.url || "https://via.placeholder.com/48"}
+              src={row.images?.[0]?.url || "/placeholder-cake.svg"}
               alt={row.name}
               className="w-full h-full object-cover"
             />
@@ -351,11 +357,8 @@ export default function Products() {
 
       {/* Add/Edit Product Modal */}
       <AddProductModal
-        isOpen={addModalOpen}
-        onClose={() => {
-          setAddModalOpen(false);
-          setEditingProduct(null);
-        }}
+        isOpen={addModalOpen || addRequestedByUrl}
+        onClose={closeProductModal}
         onSubmit={handleModalSubmit}
         isLoading={createProduct.isPending || updateProduct.isPending}
         initialData={editingProduct} // Pass the product data for editing

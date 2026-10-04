@@ -45,7 +45,6 @@ const useCartStore = create(
         let discount = 0;
 
         // Debug Log
-        // console.log("🔥 DEBUG: Calculating Total. PromoCode State:", promoCode);
 
         if (promoCode) {
            // Check 1: Direct Amount
@@ -374,17 +373,10 @@ const useCartStore = create(
             // 1. Call API
             const response = await cartApi.applyPromoCodeApi(code);
             
-            // 2. LOG THE EXACT RESPONSE
-            console.log("🔥 DEBUG: Full API Response:", response);
-            console.log("🔥 DEBUG: Response Data:", response.data);
-            
             // Handle different potential API structures
             // Sometimes APIs return response.data, sometimes response.data.data
             const backendData = response.data?.data || response.data;
             
-            console.log("🔥 DEBUG: Extracted Data:", backendData);
-            console.log("🔥 DEBUG: Discount Amount:", backendData?.discountAmount);
-
             // 3. Save to Store
             const promoObject = {
                 code: backendData?.promoCode || code,
@@ -394,8 +386,6 @@ const useCartStore = create(
                 discountValue: backendData?.discountValue
             };
             
-            console.log("🔥 DEBUG: Saving this to Store:", promoObject);
-
             set({
               promoCode: promoObject,
               isLoading: false,

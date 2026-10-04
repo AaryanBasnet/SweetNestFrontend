@@ -9,7 +9,8 @@ import { useAuth } from "../../hooks/user/useAuth"; // Hook
 import { loginSchema } from "../../schemas/authSchema"; // Validation (Yup)
 import { Input } from "../../components/ui/Input"; // Reusable UI
 import { AuthButton } from "../../components/ui/AuthButton"; // Reusable UI
-import rightsideImage from "../../assets/auth_img.png"; // Your image
+import rightsideImage from "../../assets/auth_img.webp"; // Your image
+import DemoLoginPanel from "../../components/auth/DemoLoginPanel";
 export default function Login() {
   const { login } = useAuth();
   const navigate = useNavigate();
@@ -32,7 +33,7 @@ export default function Login() {
         } else {
           toast.error(result.message || "Login failed. Please check your credentials.");
         }
-      } catch (error) {
+      } catch {
         toast.error("Login failed. Please check your credentials.");
       } finally {
         setSubmitting(false);
@@ -105,6 +106,8 @@ export default function Login() {
               Signup
             </Link>
           </p>
+
+          <DemoLoginPanel />
         </div>
       </div>
 

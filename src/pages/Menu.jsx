@@ -4,7 +4,7 @@
  */
 
 import { useEffect, useMemo, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "react-toastify";
 import { ChevronRight, SlidersHorizontal, X } from "lucide-react";
 
@@ -48,7 +48,30 @@ export default function Menu() {
 
   // Fetch categories
   const { data: categoriesData } = useCategories();
-  const categories = categoriesData?.data || [];
+  const categories = useMemo(() => categoriesData?.data || [], [categoriesData]);
+
+  // Links from elsewhere (the footer) can open the menu on a collection with
+  // a friendly name: /menu?category=cupcakes, or ?category=all to clear it.
+  // Real slugs carry a random suffix ("cupcakes-451f"), so match on the start.
+  // The param is dropped once applied; the filter itself lives in the store.
+  const [searchParams, setSearchParams] = useSearchParams();
+  const categoryParam = searchParams.get("category");
+
+  useEffect(() => {
+    if (categoryParam === null) return;
+
+    if (categoryParam === "all") {
+      setCategory(null);
+    } else {
+      if (categories.length === 0) return; // wait for the list to load
+      const wanted = categoryParam.toLowerCase();
+      const match = categories.find(
+        (cat) => cat.slug === wanted || cat.slug?.startsWith(wanted)
+      );
+      setCategory(match ? match.slug : null);
+    }
+    setSearchParams({}, { replace: true });
+  }, [categoryParam, categories, setCategory, setSearchParams]);
 
   // Build query params for API
   const queryParams = useMemo(() => {

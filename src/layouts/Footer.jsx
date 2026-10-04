@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { toast } from "react-toastify";
+import { subscribeNewsletterApi } from "../api/newsletterApi";
 
 function FooterList({ title, items }) {
   return (
@@ -26,27 +27,43 @@ function FooterList({ title, items }) {
 
 export default function Footer() {
   const [email, setEmail] = useState("");
+  const [honeypot, setHoneypot] = useState("");
+  const [subscribing, setSubscribing] = useState(false);
 
-  const handleNewsletterSubmit = (e) => {
+  const handleNewsletterSubmit = async (e) => {
     e.preventDefault();
+    if (subscribing) return;
     if (!email.trim()) {
       toast.error("Please enter your email address");
       return;
     }
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
       toast.error("Please enter a valid email address");
       return;
     }
-    toast.success("Thanks for subscribing! 🎂");
-    setEmail("");
+
+    setSubscribing(true);
+    try {
+      const { data } = await subscribeNewsletterApi(email.trim(), honeypot);
+      toast.success(data.message || "Thanks for subscribing!");
+      setEmail("");
+    } catch (error) {
+      toast.error(
+        error.response?.data?.message ||
+          "Could not sign you up right now. Please try again."
+      );
+    } finally {
+      setSubscribing(false);
+    }
   };
 
   const shopLinks = [
-    { label: "All Cakes", href: "/menu" },
+    // The menu matches these names to the real category slugs
+    { label: "All Cakes", href: "/menu?category=all" },
     { label: "Cupcakes", href: "/menu?category=cupcakes" },
     { label: "Macarons", href: "/menu?category=macarons" },
     { label: "Wedding", href: "/menu?category=wedding" },
-    { label: "Custom Orders", href: "/custom" },
+    { label: "Custom Orders", href: "/custompage" },
   ];
 
   const companyLinks = [
@@ -65,8 +82,8 @@ export default function Footer() {
             SweetNest<span className="text-accent">.</span>
           </h3>
           <p className="font-body text-sm sm:text-base text-dark/60 mb-6 sm:mb-8 max-w-[380px]">
-            Stay sweet. Join our newsletter for exclusive recipes, early access
-            to new collections, and a sweet surprise on your birthday.
+            Stay sweet. Join our newsletter for seasonal collections, new cakes
+            and offers before anyone else.
           </p>
           <form
             onSubmit={handleNewsletterSubmit}
@@ -79,13 +96,27 @@ export default function Footer() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="bg-transparent w-full outline-none text-dark font-body text-sm sm:text-base"
+                aria-label="Email address"
+                autoComplete="email"
               />
             </div>
+            {/* Honeypot: invisible to people, so only bots fill it in */}
+            <input
+              type="text"
+              name="website"
+              value={honeypot}
+              onChange={(e) => setHoneypot(e.target.value)}
+              tabIndex={-1}
+              autoComplete="off"
+              aria-hidden="true"
+              className="absolute -left-[9999px] w-px h-px opacity-0"
+            />
             <button
               type="submit"
-              className="bg-dark text-white px-6 py-3 rounded-md font-body text-sm uppercase hover:bg-accent transition-colors"
+              disabled={subscribing}
+              className="bg-dark text-white px-6 py-3 rounded-md font-body text-sm uppercase hover:bg-accent transition-colors disabled:opacity-60 disabled:cursor-wait"
             >
-              Join
+              {subscribing ? "Joining..." : "Join"}
             </button>
           </form>
         </div>
@@ -100,21 +131,21 @@ export default function Footer() {
       {/* Bottom Bar */}
       <div className="flex flex-col sm:flex-row justify-between items-center gap-4 pt-6 sm:pt-8 border-t border-gray-200/50">
         <p className="font-body text-[10px] sm:text-xs text-dark/40 uppercase tracking-widest text-center sm:text-left">
-          © 2025 SweetNest Bakery. All rights reserved.
+          © {new Date().getFullYear()} SweetNest Bakery. All rights reserved.
         </p>
         <div className="flex gap-4 sm:gap-6">
-          <button
-            onClick={() => toast.info("Privacy Policy coming soon")}
+          <Link
+            to="/privacy"
             className="font-body text-[10px] sm:text-xs text-dark/40 uppercase tracking-widest hover:text-dark transition-colors"
           >
             Privacy Policy
-          </button>
-          <button
-            onClick={() => toast.info("Terms of Use coming soon")}
+          </Link>
+          <Link
+            to="/terms"
             className="font-body text-[10px] sm:text-xs text-dark/40 uppercase tracking-widest hover:text-dark transition-colors"
           >
             Terms of Use
-          </button>
+          </Link>
         </div>
       </div>
     </footer>

@@ -10,10 +10,20 @@ const STATUS_STYLES = {
     text: 'text-amber-600',
     dot: 'bg-amber-500',
   },
+  confirmed: {
+    bg: 'bg-orange-50',
+    text: 'text-orange-600',
+    dot: 'bg-orange-500',
+  },
   processing: {
     bg: 'bg-blue-50',
     text: 'text-blue-600',
     dot: 'bg-blue-500',
+  },
+  out_for_delivery: {
+    bg: 'bg-purple-50',
+    text: 'text-purple-600',
+    dot: 'bg-purple-500',
   },
   shipped: {
     bg: 'bg-purple-50',
@@ -44,7 +54,9 @@ const STATUS_STYLES = {
 
 export default function StatusBadge({ status, showDot = true }) {
   const style = STATUS_STYLES[status?.toLowerCase()] || STATUS_STYLES.pending;
-  const label = status?.charAt(0).toUpperCase() + status?.slice(1);
+  // "out_for_delivery" -> "Out for delivery"
+  const words = String(status || '').replace(/_/g, ' ');
+  const label = words.charAt(0).toUpperCase() + words.slice(1);
 
   return (
     <span

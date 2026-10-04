@@ -7,7 +7,7 @@ import {
   ShoppingBag,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import img1 from "../assets/baker-mixing-dough.jpg";
+import img1 from "../assets/baker-mixing-dough.webp";
 
 export default function About() {
   const navigate = useNavigate();

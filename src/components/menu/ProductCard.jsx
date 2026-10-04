@@ -7,7 +7,6 @@ import { Heart, ShoppingBag, Star } from 'lucide-react';
 
 export default function ProductCard({
   name,
-  slug,
   description,
   basePrice,
   images = [],
@@ -18,7 +17,7 @@ export default function ProductCard({
   onClick,
   isWishlisted = false, // Checks if this card is in the wishlist
 }) {
-  const imageUrl = images[0]?.url || 'https://via.placeholder.com/300x300?text=Cake';
+  const imageUrl = images[0]?.url || '/placeholder-cake.svg';
 
   const handleAddToCart = (e) => {
     e.stopPropagation();

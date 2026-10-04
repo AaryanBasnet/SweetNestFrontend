@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Public pages only. Individual cake pages (/cake/<slug>) are not listed
+     here: their slugs live in the database, so search engines find them by
+     following links from the menu instead. -->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://sweetnest.aaryanbasnet.com.np/</loc><changefreq>weekly</changefreq><priority>1.0</priority></url>
+  <url><loc>https://sweetnest.aaryanbasnet.com.np/menu</loc><changefreq>daily</changefreq><priority>0.9</priority></url>
+  <url><loc>https://sweetnest.aaryanbasnet.com.np/custompage</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://sweetnest.aaryanbasnet.com.np/about</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://sweetnest.aaryanbasnet.com.np/contact</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://sweetnest.aaryanbasnet.com.np/privacy</loc><changefreq>yearly</changefreq><priority>0.3</priority></url>
+  <url><loc>https://sweetnest.aaryanbasnet.com.np/terms</loc><changefreq>yearly</changefreq><priority>0.3</priority></url>
+</urlset>

@@ -225,7 +225,7 @@ function PointsHistoryItem({ item }) {
 // Main Rewards Component
 export default function Rewards() {
   const navigate = useNavigate();
-  const { user, isAuthenticated } = useAuthStore();
+  const { isAuthenticated } = useAuthStore();
   const [activeTab, setActiveTab] = useState('redeem');
   const [tiers, setTiers] = useState([]);
   const [userPoints, setUserPoints] = useState(0);
@@ -260,8 +260,6 @@ export default function Rewards() {
         getUserCouponsApi('all'),
       ]);
 
-      console.log("Tiers Data:", tiersRes.data?.data?.tiers); // Check if they have .id or ._id
-
       setTiers(tiersRes.data?.data?.tiers || []);
       setUserPoints(pointsRes.data?.data?.balance || 0);
       setPointsHistory(pointsRes.data?.data?.history || []);
@@ -279,7 +277,6 @@ export default function Rewards() {
     setIsRedeeming(true);
     try {
       const response = await redeemPointsApi(tierId);
-      const newCoupon = response.data?.data?.coupon;
       const remainingPoints = response.data?.data?.remainingPoints;
 
       toast.success('Coupon redeemed successfully!');

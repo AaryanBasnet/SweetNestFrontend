@@ -43,7 +43,6 @@ export default function Checkout() {
     isCreatingOrder,
     setLoading,
     setError,
-    resetCheckout,
   } = useCheckoutStore();
 
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
@@ -211,13 +210,6 @@ export default function Checkout() {
           form.appendChild(input);
         });
 
-        // Debug logging
-        console.log('eSewa Form Data:', {
-          paymentUrl,
-          formData,
-          formFields: Object.keys(formData),
-        });
-
         // Append to body and submit
         document.body.appendChild(form);
 
@@ -225,7 +217,6 @@ export default function Checkout() {
         setTimeout(() => {
           try {
             form.submit();
-            console.log('Form submitted successfully');
           } catch (submitError) {
             console.error('Form submission error:', submitError);
             toast.error('Failed to redirect to eSewa payment gateway');

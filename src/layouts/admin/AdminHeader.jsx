@@ -78,7 +78,7 @@ export default function AdminHeader({ title = "Overview", onMenuClick }) {
 
         {/* Add Product Button - Mobile (icon only) */}
         <button
-          onClick={() => navigate("/admin/products/new")}
+          onClick={() => navigate("/admin/products?new=1")}
           className="sm:hidden w-9 h-9 flex items-center justify-center bg-accent text-white rounded-lg hover:bg-accent/90 transition-colors"
         >
           <Plus size={18} />

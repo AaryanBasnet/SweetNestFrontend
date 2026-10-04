@@ -3,13 +3,14 @@
  * Product detail page for individual cakes
  */
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 
 // Hooks
 import { useCakeBySlug, useCakes } from "../hooks/cake/useCakes";
 import { useDeleteReview, useMarkHelpful } from "../hooks/review";
+import usePageTitle from "../hooks/usePageTitle";
 
 // Stores
 import useWishlistStore from "../stores/wishlistStore";
@@ -33,6 +34,7 @@ export default function CakeDetail() {
   
   // Data Fetching
   const { data: cake, isLoading, isError, error } = useCakeBySlug(slug);
+  usePageTitle(cake?.name || "Cake");
   const { data: relatedData } = useCakes(
     { category: cake?.category?.slug, limit: 5 },
     { enabled: !!cake?.category?.slug }
@@ -64,20 +66,25 @@ export default function CakeDetail() {
 
   const isWishlisted = cake ? isInWishlist(cake._id) : false;
 
-  // Effects
-  useEffect(() => {
-    if (cake?.weightOptions?.length > 0) {
-      const defaultOption =
-        cake.weightOptions.find((opt) => opt.isDefault) ||
-        cake.weightOptions[0];
-      setSelectedWeight(defaultOption);
+  // Reset selections when a different cake loads. Done during render (React's
+  // recommended way to adjust state when a value changes) rather than in an
+  // effect, which would render once with the previous cake's selections.
+  const [weightsForCake, setWeightsForCake] = useState(null);
+  if (cake?._id && cake._id !== weightsForCake) {
+    setWeightsForCake(cake._id);
+    if (cake.weightOptions?.length > 0) {
+      setSelectedWeight(
+        cake.weightOptions.find((opt) => opt.isDefault) || cake.weightOptions[0]
+      );
     }
-  }, [cake]);
+  }
 
-  useEffect(() => {
+  const [shownSlug, setShownSlug] = useState(slug);
+  if (slug !== shownSlug) {
+    setShownSlug(slug);
     setSelectedImageIndex(0);
     setQuantity(1);
-  }, [slug]);
+  }
 
   // Handlers
   const getCurrentPrice = () => {

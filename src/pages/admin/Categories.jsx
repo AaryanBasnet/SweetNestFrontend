@@ -38,7 +38,7 @@ export default function Categories() {
         <div className="flex items-center gap-3">
           <div className="w-12 h-12 rounded-lg overflow-hidden bg-cream">
             <img
-              src={row.image?.url || 'https://via.placeholder.com/48'}
+              src={row.image?.url || '/placeholder-cake.svg'}
               alt={row.name}
               className="w-full h-full object-cover"
             />
@@ -134,7 +134,7 @@ export default function Categories() {
       toast.success('Category deleted successfully');
       setDeleteModalOpen(false);
       setSelectedCategory(null);
-    } catch (error) {
+    } catch {
       toast.error('Failed to delete category');
     }
   };
