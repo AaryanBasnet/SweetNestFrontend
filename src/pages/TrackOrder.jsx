@@ -243,7 +243,7 @@ function OrderSummary({ order }) {
   const items = order?.items || [];
   const itemCount = items.reduce((sum, item) => sum + item.quantity, 0);
   const total = order?.total || 0;
-  const firstItemImage = items[0]?.image || 'https://via.placeholder.com/60x60?text=Cake';
+  const firstItemImage = items[0]?.image || '/placeholder-cake.svg';
 
   return (
     <div className="bg-white rounded-3xl shadow-sm overflow-hidden">
@@ -283,7 +283,7 @@ function OrderSummary({ order }) {
               <div key={index} className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-lg overflow-hidden shrink-0">
                   <img
-                    src={item.image || 'https://via.placeholder.com/40x40?text=Cake'}
+                    src={item.image || '/placeholder-cake.svg'}
                     alt={item.name}
                     className="w-full h-full object-cover"
                   />

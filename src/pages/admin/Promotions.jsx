@@ -36,7 +36,7 @@ export default function Promotions() {
         <div className="flex items-center gap-3">
           <div className="w-16 h-16 rounded-lg overflow-hidden bg-cream">
             <img
-              src={row.images?.[0]?.url || 'https://via.placeholder.com/64'}
+              src={row.images?.[0]?.url || '/placeholder-cake.svg'}
               alt={row.title}
               className="w-full h-full object-cover"
             />

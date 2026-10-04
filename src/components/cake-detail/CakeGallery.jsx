@@ -25,7 +25,7 @@ export default function CakeGallery({
   const displayImages =
     images.length > 0
       ? images
-      : [{ url: "https://via.placeholder.com/600x600?text=Cake" }];
+      : [{ url: "/placeholder-cake.svg" }];
 
   return (
     <div>

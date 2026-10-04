@@ -9,7 +9,7 @@ export default function CartItem({ item, onUpdateQuantity, onRemove, isLoading }
 
   const imageUrl =
     cakeData.images?.[0]?.url ||
-    "https://via.placeholder.com/150x150?text=Cake";
+    "/placeholder-cake.svg";
   const itemPrice = item.selectedWeight?.price || cakeData.basePrice || 0;
   const totalPrice = itemPrice * (item.quantity || 1);
 

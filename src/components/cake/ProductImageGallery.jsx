@@ -11,7 +11,7 @@ export default function ProductImageGallery({ images = [], badge }) {
   // Fallback image if no images provided
   const displayImages = images.length > 0
     ? images
-    : [{ url: 'https://via.placeholder.com/600x600?text=Cake' }];
+    : [{ url: '/placeholder-cake.svg' }];
 
   const mainImage = displayImages[selectedIndex]?.url;
 
