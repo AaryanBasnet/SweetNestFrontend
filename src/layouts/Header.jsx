@@ -132,6 +132,7 @@ export default function Header({ wide = false }) {
             {/* Cart Button */}
             <Link
               to="/cart"
+              aria-label={cartItemCount > 0 ? `Cart, ${cartItemCount} items` : "Cart"}
               className="p-2.5 sm:p-3 bg-dark text-white rounded-full hover:bg-accent transition-colors relative shadow-lg group"
             >
               <ShoppingBag className="w-4 h-4 sm:w-5 sm:h-5 group-hover:scale-110 transition-transform" />
@@ -145,6 +146,8 @@ export default function Header({ wide = false }) {
             {/* Mobile Menu Button */}
             <button
               onClick={() => setIsMobileMenuOpen(true)}
+              aria-label="Open menu"
+              aria-expanded={isMobileMenuOpen}
               className="p-2 hover:bg-dark/5 rounded-full text-dark transition-colors lg:hidden"
             >
               <MenuIcon className="w-6 h-6" />
@@ -175,6 +178,7 @@ export default function Header({ wide = false }) {
             </h2>
             <button
               onClick={closeMobileMenu}
+              aria-label="Close menu"
               className="p-2 hover:bg-dark/5 rounded-full transition-colors"
             >
               <X className="w-6 h-6 text-dark" />

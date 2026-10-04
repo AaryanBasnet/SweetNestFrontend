@@ -123,6 +123,8 @@ export default function SeasonalCollection() {
                   <button
                     key={idx}
                     onClick={() => setCurrentHeroIndex(idx)}
+                    aria-label={`Show slide ${idx + 1} of ${HERO_IMAGES.length}`}
+                    aria-current={idx === currentHeroIndex}
                     className={`w-2 h-2 rounded-full transition-all duration-300 ${
                       idx === currentHeroIndex
                         ? "bg-white w-6"
