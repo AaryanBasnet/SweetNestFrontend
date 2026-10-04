@@ -132,7 +132,10 @@ export default function AppRouter() {
           <Route path="/cart" element={<Cart />} />
           <Route path="/checkout" element={<Checkout />} />
           <Route path="/profile" element={<Profile />} />
-          <Route path="/settings" element={<div>Settings Page</div>} />
+          <Route
+            path="/settings"
+            element={<Navigate to="/profile?tab=settings" replace />}
+          />
           <Route path="/wishlist" element={<Wishlist />} />
           <Route path="/rewards" element={<Rewards />} />
           <Route
@@ -151,17 +154,14 @@ export default function AppRouter() {
             <Route path="/admin" element={<Dashboard />} />
             <Route path="/admin/orders" element={<Orders />} />
             <Route path="/admin/products" element={<Products />} />
+            {/* Adding and editing happen in the Products page's form */}
             <Route
               path="/admin/products/new"
-              element={<div>Add Product Page</div>}
+              element={<Navigate to="/admin/products?new=1" replace />}
             />
             <Route
-              path="/admin/products/:id"
-              element={<div>Product Details Page</div>}
-            />
-            <Route
-              path="/admin/products/:id/edit"
-              element={<div>Edit Product Page</div>}
+              path="/admin/products/:id/*"
+              element={<Navigate to="/admin/products" replace />}
             />
             <Route path="/admin/categories" element={<Categories />} />
             <Route path="/admin/customers" element={<Customers />} />
