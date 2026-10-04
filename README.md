@@ -1,6 +1,43 @@
 # 🍰 SweetNest Frontend
 
-**SweetNest Frontend** is the client-side application for the SweetNest custom cake ordering platform. It delivers a rich, interactive user experience for browsing, customizing, and ordering cakes, with smooth animations, modern state management, and scalable architecture.
+[![CI](https://github.com/AaryanBasnet/SweetNestFrontend/actions/workflows/ci.yml/badge.svg)](https://github.com/AaryanBasnet/SweetNestFrontend/actions/workflows/ci.yml)
+![Lighthouse performance](https://img.shields.io/badge/performance-98-brightgreen)
+![Lighthouse accessibility](https://img.shields.io/badge/accessibility-89%E2%80%9396-green)
+![Lighthouse best practices](https://img.shields.io/badge/best%20practices-96-brightgreen)
+![Lighthouse SEO](https://img.shields.io/badge/SEO-100-brightgreen)
+
+A custom-cake bakery storefront where customers browse cakes, **design their own cake in a live 3D preview**, pay with eSewa and track delivery, backed by a full admin dashboard.
+
+**Live site: [sweetnest.aaryanbasnet.com.np](https://sweetnest.aaryanbasnet.com.np)** · Backend: [SweetNestBackend](https://github.com/AaryanBasnet/SweetNestBackend)
+
+> **Try it without signing up.** The login page has one-click **Customer demo** and **Admin demo** buttons. The admin demo is read-only (enforced by the API, not just the UI). Checkout runs on eSewa's sandbox, so no real money moves: eSewa ID `9806800001`, password `Nepal@123`, MPIN `1122`, token `123456`.
+
+| Storefront | 3D cake designer |
+|---|---|
+| ![Home page](docs/screenshots/home.jpg) | ![3D cake designer](docs/screenshots/designer.jpg) |
+| **Order tracking** | **Admin dashboard** |
+| ![Order tracking](docs/screenshots/order-tracking.jpg) | ![Admin dashboard](docs/screenshots/admin-dashboard.jpg) |
+
+### Highlights
+
+- **3D cake designer** built with React Three Fiber: shape, tiers, weight, sponge, filling, frosting, drip, toppers and an iced message, with live pricing.
+- **One-click demo accounts** so reviewers can try both the shop and the admin side in seconds.
+- **Production details:**
+  - Route-level code splitting.
+  - React Query caching.
+  - Error boundary with optional Sentry.
+  - SEO metadata, link previews, `robots.txt` and a sitemap.
+  - WebP images (about 3.2 MB down to 211 KB).
+- **Tested in CI** on every push (65 tests), with the production build checked too.
+
+### Lighthouse
+
+Measured on the production build of the home page (October 2026):
+
+| | Performance | Accessibility | Best practices | SEO |
+|---|---|---|---|---|
+| Desktop | 98 | 89 | 96 | 100 |
+| Mobile | 72 | 96 | 96 | 100 |
 
 This repository contains **only the frontend codebase**. The backend lives in a separate repository and communicates via REST APIs.
 
