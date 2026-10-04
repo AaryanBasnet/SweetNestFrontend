@@ -65,10 +65,18 @@ export default function Header({ wide = false }) {
   const navLinks = [
     { name: "Home", href: "/" },
     { name: "Menu", href: "/menu" },
+    { name: "Custom Cake", href: "/custompage", badge: "3D" },
     { name: "About", href: "/about" },
 
     { name: "Contact Us", href: "/contact" },
   ];
+
+  const navBadge = (badge) =>
+    badge && (
+      <span className="ml-1.5 rounded-full bg-accent text-white text-[9px] font-bold tracking-wider px-1.5 py-0.5 align-middle">
+        {badge}
+      </span>
+    );
 
   return (
     <>
@@ -94,6 +102,7 @@ export default function Header({ wide = false }) {
                 className="hover:text-accent transition-colors"
               >
                 {link.name}
+                {navBadge(link.badge)}
               </Link>
             ))}
           </div>
@@ -211,7 +220,10 @@ export default function Header({ wide = false }) {
                     onClick={closeMobileMenu}
                     className="flex items-center justify-between px-4 py-3 rounded-xl hover:bg-cream text-dark font-body transition-colors"
                   >
-                    <span>{link.name}</span>
+                    <span>
+                      {link.name}
+                      {navBadge(link.badge)}
+                    </span>
                     <ChevronRight className="w-4 h-4 text-dark/30" />
                   </Link>
                 ))}
