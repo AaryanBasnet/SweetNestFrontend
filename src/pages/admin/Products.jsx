@@ -4,13 +4,12 @@
  */
 
 import { useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
 import { Search, Plus, Edit, Trash2, Eye } from "lucide-react";
 // IMPORT HOOKS
 import {
   useAdminProducts,
   useDeleteProduct,
-  useToggleProductStatus,
   useCreateProduct,
   useUpdateProduct,
 } from "../../hooks/admin";
@@ -25,7 +24,6 @@ import {
 import { toast } from "react-toastify";
 
 export default function Products() {
-  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
 
   // States for Modals
@@ -55,7 +53,6 @@ export default function Products() {
 
   // Mutations
   const deleteProduct = useDeleteProduct();
-  const toggleStatus = useToggleProductStatus();
   const createProduct = useCreateProduct();
   const updateProduct = useUpdateProduct();
 
@@ -73,7 +70,7 @@ export default function Products() {
       toast.success("Product deleted successfully");
       setDeleteModalOpen(false);
       setSelectedProduct(null);
-    } catch (error) {
+    } catch {
       toast.error("Failed to delete product");
     }
   };

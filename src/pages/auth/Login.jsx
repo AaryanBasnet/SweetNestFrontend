@@ -32,7 +32,7 @@ export default function Login() {
         } else {
           toast.error(result.message || "Login failed. Please check your credentials.");
         }
-      } catch (error) {
+      } catch {
         toast.error("Login failed. Please check your credentials.");
       } finally {
         setSubmitting(false);

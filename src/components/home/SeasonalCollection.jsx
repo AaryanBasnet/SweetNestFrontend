@@ -37,7 +37,7 @@ export default function SeasonalCollection() {
   const [currentHeroIndex, setCurrentHeroIndex] = useState(0);
 
   // Fetch active promotions from API
-  const { data: promotionsData, isLoading } = useActivePromotions();
+  const { data: promotionsData } = useActivePromotions();
   const activePromotions = promotionsData?.data || [];
 
   // Transform promotions to image format or use fallback

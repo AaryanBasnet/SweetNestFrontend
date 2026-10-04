@@ -7,7 +7,6 @@ import { Heart, ShoppingBag, Star } from 'lucide-react';
 
 export default function ProductCard({
   name,
-  slug,
   description,
   basePrice,
   images = [],

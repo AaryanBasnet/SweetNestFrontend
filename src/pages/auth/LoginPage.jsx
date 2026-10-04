@@ -27,7 +27,7 @@ export default function Login() {
         } else {
           navigate("/");
         }
-      } catch (error) {
+      } catch {
         toast.error("Login failed. Please check your credentials.");
       } finally {
         setSubmitting(false);

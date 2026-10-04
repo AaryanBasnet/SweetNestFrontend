@@ -396,7 +396,7 @@ export default function TrackOrder() {
         let response;
         try {
           response = await getOrderByIdApi(orderId);
-        } catch (err) {
+        } catch {
           // If ID fetch fails, try by order number
           response = await getOrderByNumberApi(orderId);
         }

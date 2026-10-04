@@ -24,7 +24,7 @@ export default function Register() {
     validationSchema: registerSchema,
     onSubmit: async (values, { setSubmitting }) => {
       try {
-        const { confirmPassword, ...apiData } = values;
+        const { confirmPassword: _confirmPassword, ...apiData } = values;
         const result = await register(apiData);
 
         if (result.success) {
@@ -33,7 +33,7 @@ export default function Register() {
         } else {
           toast.error(result.message || "Registration failed");
         }
-      } catch (error) {
+      } catch {
         toast.error("Unexpected error occurred.");
       } finally {
         setSubmitting(false);

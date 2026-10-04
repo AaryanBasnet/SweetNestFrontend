@@ -134,7 +134,7 @@ export default function Categories() {
       toast.success('Category deleted successfully');
       setDeleteModalOpen(false);
       setSelectedCategory(null);
-    } catch (error) {
+    } catch {
       toast.error('Failed to delete category');
     }
   };

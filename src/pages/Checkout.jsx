@@ -43,7 +43,6 @@ export default function Checkout() {
     isCreatingOrder,
     setLoading,
     setError,
-    resetCheckout,
   } = useCheckoutStore();
 
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
