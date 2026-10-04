@@ -42,11 +42,12 @@ export default function Footer() {
   };
 
   const shopLinks = [
-    { label: "All Cakes", href: "/menu" },
+    // The menu matches these names to the real category slugs
+    { label: "All Cakes", href: "/menu?category=all" },
     { label: "Cupcakes", href: "/menu?category=cupcakes" },
     { label: "Macarons", href: "/menu?category=macarons" },
     { label: "Wedding", href: "/menu?category=wedding" },
-    { label: "Custom Orders", href: "/custom" },
+    { label: "Custom Orders", href: "/custompage" },
   ];
 
   const companyLinks = [
@@ -100,7 +101,7 @@ export default function Footer() {
       {/* Bottom Bar */}
       <div className="flex flex-col sm:flex-row justify-between items-center gap-4 pt-6 sm:pt-8 border-t border-gray-200/50">
         <p className="font-body text-[10px] sm:text-xs text-dark/40 uppercase tracking-widest text-center sm:text-left">
-          © 2025 SweetNest Bakery. All rights reserved.
+          © {new Date().getFullYear()} SweetNest Bakery. All rights reserved.
         </p>
         <div className="flex gap-4 sm:gap-6">
           <Link
