@@ -1,6 +1,15 @@
-import { BrowserRouter, Navigate, Route, Routes, useNavigate } from "react-router-dom";
+import {
+  BrowserRouter,
+  Navigate,
+  Route,
+  Routes,
+  matchPath,
+  useLocation,
+  useNavigate,
+} from "react-router-dom";
 import { lazy, Suspense, useEffect } from "react";
 import { setNavigate } from "../utils/navigationService";
+import usePageTitle from "../hooks/usePageTitle";
 
 // Route guards and layouts (load immediately)
 import GuestRoutes from "./GuestRoutes";
@@ -59,10 +68,48 @@ function NavigationSetter() {
   return null;
 }
 
+// Browser tab title for each route. null gives the home page title.
+// The cake page refines its own title to the cake's name once it loads.
+const ROUTE_TITLES = [
+  ["/", null],
+  ["/home", null],
+  ["/menu", "Menu"],
+  ["/about", "About Us"],
+  ["/contact", "Contact Us"],
+  ["/privacy", "Privacy Policy"],
+  ["/terms", "Terms of Use"],
+  ["/cart", "Your Cart"],
+  ["/checkout", "Checkout"],
+  ["/profile", "My Profile"],
+  ["/wishlist", "Wishlist"],
+  ["/rewards", "SweetRewards"],
+  ["/track-order/:orderId", "Track Order"],
+  ["/notifications", "Notifications"],
+  ["/custompage", "Design Your Cake"],
+  ["/cake/:slug", "Cake"],
+  ["/login", "Log In"],
+  ["/register", "Create Account"],
+  ["/forgot-password", "Forgot Password"],
+  ["/verify-code", "Verify Code"],
+  ["/reset-password", "Reset Password"],
+  ["/forbidden", "Access Denied"],
+  ["/admin/*", "Admin"],
+];
+
+// Rendered before the routes, so a page's own title (set in its effects,
+// which run after this one) wins.
+function RouteTitle() {
+  const { pathname } = useLocation();
+  const match = ROUTE_TITLES.find(([path]) => matchPath(path, pathname));
+  usePageTitle(match ? match[1] : "Page Not Found");
+  return null;
+}
+
 export default function AppRouter() {
   return (
     <BrowserRouter>
       <NavigationSetter />
+      <RouteTitle />
       <Suspense fallback={<PageLoader />}>
       <Routes>
         {/* Home Layout - 140px margin */}

@@ -10,6 +10,7 @@ import { toast } from "react-toastify";
 // Hooks
 import { useCakeBySlug, useCakes } from "../hooks/cake/useCakes";
 import { useDeleteReview, useMarkHelpful } from "../hooks/review";
+import usePageTitle from "../hooks/usePageTitle";
 
 // Stores
 import useWishlistStore from "../stores/wishlistStore";
@@ -33,6 +34,7 @@ export default function CakeDetail() {
   
   // Data Fetching
   const { data: cake, isLoading, isError, error } = useCakeBySlug(slug);
+  usePageTitle(cake?.name || "Cake");
   const { data: relatedData } = useCakes(
     { category: cake?.category?.slug, limit: 5 },
     { enabled: !!cake?.category?.slug }
