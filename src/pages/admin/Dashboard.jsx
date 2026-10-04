@@ -25,19 +25,15 @@ const formatCurrency = (amount) => {
 export default function Dashboard() {
   // Fetch real data from backend
   const { data: overview, isLoading: overviewLoading } = useOverviewAnalytics();
-  console.log("Overview Data:", overview);
   const { data: revenueTrends, isLoading: trendsLoading } = useRevenueTrends({
     period: "daily",
     limit: 7,
   });
-  console.log("Revenue Trends Data:", revenueTrends);
   const { data: topProducts, isLoading: productsLoading } = useTopProducts({
     limit: 5,
   });
-  console.log("Top Products Data:", topProducts);
   const { data: recentActivity, isLoading: activityLoading } =
     useRecentActivity({ limit: 10 });
-  console.log("Recent Activity Data:", recentActivity);
 
   // Loading state
   if (overviewLoading) {

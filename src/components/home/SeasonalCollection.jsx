@@ -46,15 +46,10 @@ export default function SeasonalCollection() {
         // Determine link: if linked to a cake, go to cake detail page
         let link = '/shop';
 
-        // Debug: Log promotion data
-        console.log('Promotion:', promo.title, 'LinkedCakes:', promo.linkedCakes);
-
         if (promo.linkedCakes && promo.linkedCakes.length > 0) {
           const linkedCake = promo.linkedCakes[0];
-          console.log('Linked Cake:', linkedCake);
           if (linkedCake && linkedCake.slug) {
             link = `/cake/${linkedCake.slug}`;
-            console.log('Generated link:', link);
           }
         } else if (promo.ctaLink) {
           link = promo.ctaLink;

@@ -18,7 +18,6 @@ export const fetchOrders = async (filters = {}) => {
   if (filters.search) params.search = filters.search;
 
   const response = await ordersApi.getOrdersApi(params);
-  console.log("Fetched orders with filters:", params, response.data);
   return response.data;
 };
 
