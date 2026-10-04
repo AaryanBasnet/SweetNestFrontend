@@ -103,18 +103,18 @@ export default function Footer() {
           © 2025 SweetNest Bakery. All rights reserved.
         </p>
         <div className="flex gap-4 sm:gap-6">
-          <button
-            onClick={() => toast.info("Privacy Policy coming soon")}
+          <Link
+            to="/privacy"
             className="font-body text-[10px] sm:text-xs text-dark/40 uppercase tracking-widest hover:text-dark transition-colors"
           >
             Privacy Policy
-          </button>
-          <button
-            onClick={() => toast.info("Terms of Use coming soon")}
+          </Link>
+          <Link
+            to="/terms"
             className="font-body text-[10px] sm:text-xs text-dark/40 uppercase tracking-widest hover:text-dark transition-colors"
           >
             Terms of Use
-          </button>
+          </Link>
         </div>
       </div>
     </footer>

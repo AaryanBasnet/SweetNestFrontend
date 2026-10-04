@@ -41,6 +41,8 @@ const Rewards = lazy(() => import("../pages/Rewards"));
 const TrackOrder = lazy(() => import("../pages/TrackOrder"));
 const Notifications = lazy(() => import("../pages/Notifications"));
 const CustomPage = lazy(() => import("../pages/CustomPage"));
+const Privacy = lazy(() => import("../pages/Privacy"));
+const Terms = lazy(() => import("../pages/Terms"));
 const NotFound = lazy(() => import("../pages/NotFound"));
 const Forbidden = lazy(() => import("../pages/Forbidden"));
 
@@ -123,7 +125,10 @@ export default function AppRouter() {
           <Route path="/menu" element={<Menu />} />
           <Route path="/about" element={<About />} />
           <Route path="/contact" element={<Contact />} />
-          <Route path="/locations" element={<div>Locations Page</div>} />
+          <Route path="/privacy" element={<Privacy />} />
+          <Route path="/terms" element={<Terms />} />
+          {/* Old addresses kept working, pointed at the pages that exist */}
+          <Route path="/locations" element={<Navigate to="/contact" replace />} />
           <Route path="/cart" element={<Cart />} />
           <Route path="/checkout" element={<Checkout />} />
           <Route path="/profile" element={<Profile />} />
