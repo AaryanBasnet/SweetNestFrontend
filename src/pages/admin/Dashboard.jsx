@@ -22,6 +22,26 @@ const formatCurrency = (amount) => {
   return Math.round(amount).toLocaleString();
 };
 
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+/**
+ * Seven bars, one per day ending today, labelled "Sep 27". The API only
+ * returns days that had sales, so a quiet day would otherwise vanish from
+ * the axis. Keys are UTC dates, matching how the backend groups them.
+ */
+const lastSevenDays = (trends = []) => {
+  const revenueByDay = new Map((trends || []).map((t) => [t.date, t.revenue]));
+  return Array.from({ length: 7 }, (_, i) => {
+    const key = new Date(Date.now() - (6 - i) * DAY_MS).toISOString().slice(0, 10);
+    const label = new Date(`${key}T00:00:00Z`).toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      timeZone: "UTC",
+    });
+    return { day: label, revenue: revenueByDay.get(key) || 0 };
+  });
+};
+
 export default function Dashboard() {
   // Fetch real data from backend
   const { data: overview, isLoading: overviewLoading } = useOverviewAnalytics();
@@ -103,12 +123,7 @@ export default function Dashboard() {
             </div>
           ) : (
             <RevenueChart
-              data={
-                revenueTrends?.map((item) => ({
-                  day: item.date,
-                  revenue: item.revenue,
-                })) || []
-              }
+              data={lastSevenDays(revenueTrends)}
               title="Revenue Report"
               subtitle="Sales performance over the last 7 days"
             />
@@ -139,11 +154,7 @@ export default function Dashboard() {
           </div>
         </div>
       ) : (
-        <RecentOrdersTable
-          orders={recentActivity?.recentOrders || []}
-          onFilterDate={() => console.log("Filter date")}
-          onDownloadReport={() => console.log("Download report")}
-        />
+        <RecentOrdersTable orders={recentActivity?.recentOrders || []} />
       )}
     </div>
   );

@@ -4,17 +4,59 @@
  * Standalone - receives data via props
  */
 
+import { useState } from 'react';
 import { Calendar, Download, MoreHorizontal } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import StatusBadge from '../shared/StatusBadge';
 
+const DATE_RANGES = [
+  { value: 'all', label: 'All recent' },
+  { value: 'today', label: 'Today' },
+  { value: '7d', label: 'Last 7 days' },
+];
+
+const startOfRange = (range) => {
+  const start = new Date();
+  start.setHours(0, 0, 0, 0);
+  if (range === '7d') start.setDate(start.getDate() - 6);
+  return start;
+};
+
+/** Quote a value for CSV, so commas and quotes in names stay in one cell. */
+const csvCell = (value) => `"${String(value ?? '').replace(/"/g, '""')}"`;
+
+const downloadCsv = (orders) => {
+  const header = ['Order ID', 'Customer', 'Email', 'Date', 'Total (Rs.)', 'Order status', 'Payment status'];
+  const rows = orders.map((order) => [
+    order.orderNumber,
+    order.user?.name || 'Unknown',
+    order.user?.email || '',
+    new Date(order.createdAt).toISOString().slice(0, 10),
+    Math.round(order.total),
+    order.orderStatus?.replace(/_/g, ' '),
+    order.paymentStatus || '',
+  ]);
+  const csv = [header, ...rows].map((row) => row.map(csvCell).join(',')).join('\r\n');
+
+  const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = `sweetnest-recent-orders-${new Date().toISOString().slice(0, 10)}.csv`;
+  link.click();
+  URL.revokeObjectURL(url);
+};
+
 export default function RecentOrdersTable({
-  orders = [],
-  onFilterDate,
-  onDownloadReport,
+  orders: allOrders = [],
   onViewAll,
 }) {
   const navigate = useNavigate();
+  const [range, setRange] = useState('all');
+
+  const orders =
+    range === 'all'
+      ? allOrders
+      : allOrders.filter((order) => new Date(order.createdAt) >= startOfRange(range));
 
   const handleViewAll = () => {
     if (onViewAll) {
@@ -49,17 +91,27 @@ export default function RecentOrdersTable({
         </div>
 
         <div className="flex items-center gap-2 sm:gap-3">
-          <button
-            onClick={onFilterDate}
-            className="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-4 py-1.5 sm:py-2 border border-dark/10 rounded-lg text-xs sm:text-sm text-dark/70 hover:bg-dark/5 transition-colors"
-          >
+          {/* Same look as the button it replaces, but a working date filter */}
+          <label className="relative flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-4 py-1.5 sm:py-2 border border-dark/10 rounded-lg text-xs sm:text-sm text-dark/70 hover:bg-dark/5 transition-colors cursor-pointer">
             <Calendar size={14} className="sm:w-4 sm:h-4" />
-            <span className="hidden sm:inline">Filter Date</span>
-            <span className="sm:hidden">Filter</span>
-          </button>
+            <span>{DATE_RANGES.find((r) => r.value === range).label}</span>
+            <select
+              value={range}
+              onChange={(e) => setRange(e.target.value)}
+              aria-label="Filter recent orders by date"
+              className="absolute inset-0 opacity-0 cursor-pointer"
+            >
+              {DATE_RANGES.map((r) => (
+                <option key={r.value} value={r.value}>
+                  {r.label}
+                </option>
+              ))}
+            </select>
+          </label>
           <button
-            onClick={onDownloadReport}
-            className="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-4 py-1.5 sm:py-2 border border-dark/10 rounded-lg text-xs sm:text-sm text-dark/70 hover:bg-dark/5 transition-colors"
+            onClick={() => downloadCsv(orders)}
+            disabled={orders.length === 0}
+            className="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-4 py-1.5 sm:py-2 border border-dark/10 rounded-lg text-xs sm:text-sm text-dark/70 hover:bg-dark/5 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <Download size={14} className="sm:w-4 sm:h-4" />
             <span className="hidden sm:inline">Download Report</span>
@@ -97,7 +149,7 @@ export default function RecentOrdersTable({
             {orders.length === 0 ? (
               <tr>
                 <td colSpan="6" className="py-8 text-center text-dark/50 text-sm">
-                  No recent orders
+                  {range === 'all' ? 'No recent orders' : 'No orders in this period'}
                 </td>
               </tr>
             ) : (

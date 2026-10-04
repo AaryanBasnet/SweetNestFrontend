@@ -351,7 +351,7 @@ export default function Analytics() {
                     }`}
                   />
                   <span className="text-sm font-medium text-dark capitalize">
-                    {status.status.replace('_', ' ')}
+                    {status.status.replace(/_/g, ' ')}
                   </span>
                 </div>
                 <div className="text-right">
