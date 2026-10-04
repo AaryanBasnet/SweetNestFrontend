@@ -8,7 +8,7 @@ import { useAuth } from "../../hooks/user/useAuth";
 import { registerSchema } from "../../schemas/authSchema";
 import { Input } from "../../components/ui/Input";
 import { AuthButton } from "../../components/ui/AuthButton";
-import rightsideImage from "../../assets/auth_img.png";
+import rightsideImage from "../../assets/auth_img.webp";
 
 export default function Register() {
   const { register } = useAuth();

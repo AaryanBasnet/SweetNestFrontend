@@ -9,8 +9,8 @@ import {
   SeasonalCollection,
 } from "../components/home";
 import { useFeaturedCakes } from "../hooks/cake";
-import strawberryCheesecake from "../assets/strawberry-cheesecake.png";
-import chocolateCake from "../assets/chocolate-cake.png";
+import strawberryCheesecake from "../assets/strawberry-cheesecake.webp";
+import chocolateCake from "../assets/chocolate-cake.webp";
 import { useNavigate } from "react-router-dom";
 
 // Shown whenever the API has fewer than two featured cakes: while it is still

@@ -9,7 +9,7 @@ import { useAuth } from "../../hooks/user/useAuth"; // Hook
 import { loginSchema } from "../../schemas/authSchema"; // Validation (Yup)
 import { Input } from "../../components/ui/Input"; // Reusable UI
 import { AuthButton } from "../../components/ui/AuthButton"; // Reusable UI
-import rightsideImage from "../../assets/auth_img.png"; // Your image
+import rightsideImage from "../../assets/auth_img.webp"; // Your image
 export default function Login() {
   const { login } = useAuth();
   const navigate = useNavigate();
