@@ -80,7 +80,7 @@ describe('hero - with two featured cakes from the API', () => {
     renderHome();
 
     act(() => {
-      vi.advanceTimersByTime(3100);
+      vi.advanceTimersByTime(5100);
     });
 
     const sources = heroPictures().map((img) => img.getAttribute('src'));
@@ -130,7 +130,7 @@ describe('hero - fallback when the API has fewer than two featured cakes', () =>
     const first = heroPictures().map((img) => img.getAttribute('src'));
 
     act(() => {
-      vi.advanceTimersByTime(3100);
+      vi.advanceTimersByTime(5100);
     });
 
     const second = heroPictures().map((img) => img.getAttribute('src'));

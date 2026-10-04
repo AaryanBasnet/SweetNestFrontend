@@ -14,7 +14,14 @@ const transition = {
   damping: 25,
 };
 
-export default function HeroContent({ cake, onOrderClick }) {
+export default function HeroContent({
+  cake,
+  onOrderClick,
+  count = 0,
+  index = 0,
+  interval = 5000,
+  onSelect,
+}) {
   const navigate = useNavigate();
 
   return (
@@ -23,7 +30,8 @@ export default function HeroContent({ cake, onOrderClick }) {
          - h-[260px]: Reduced for Mobile (was 380px) to close the gap.
          - md:h-[350px]: Increased for Desktop (was 280px) for more space.
       */}
-      <div className="relative h-[240px] sm:h-[300px] md:h-[300px] w-full">
+      {/* lg is taller: its narrower column wraps the cake's name onto two lines. */}
+      <div className="relative h-[240px] sm:h-[300px] md:h-[300px] lg:h-[340px] xl:h-[300px] w-full">
         <AnimatePresence mode="popLayout">
           <motion.div
             key={cake.name}
@@ -45,7 +53,7 @@ export default function HeroContent({ cake, onOrderClick }) {
               </h1>
             </div>
 
-            <p className="text-sm sm:text-base md:text-xl font-light max-w-xl mt-2 md:mt-6 leading-relaxed opacity-90 line-clamp-3 md:line-clamp-none">
+            <p className="text-sm sm:text-base md:text-lg font-light max-w-xl mt-2 md:mt-5 leading-relaxed opacity-90 line-clamp-3">
               {cake.description}
             </p>
 
@@ -71,12 +79,44 @@ export default function HeroContent({ cake, onOrderClick }) {
           <ShoppingCart size={18} className="md:w-5 md:h-5" />
         </button>
         <button
-          onClick={() => navigate("/customPage")}
-          className="bg-cream border border-pink-200 text-dark rounded-full px-6 py-3 md:px-8 md:py-3 font-medium text-base md:text-lg hover:bg-pink-50 transition-colors whitespace-nowrap"
+          onClick={() => navigate("/custompage")}
+          className="bg-accent text-white rounded-full px-6 py-3 md:px-8 md:py-3 font-medium text-base md:text-lg hover:bg-orange-700 transition-colors whitespace-nowrap"
         >
           Custom Cake
         </button>
       </div>
+
+      {/* Which cake is showing, and how long until the next one */}
+      {count > 1 && (
+        <div className="flex items-center justify-center lg:justify-start gap-2 mt-5">
+          {Array.from({ length: count }).map((_, i) => (
+            <button
+              key={i}
+              type="button"
+              onClick={() => onSelect?.(i)}
+              aria-label={`Show cake ${i + 1} of ${count}`}
+              aria-current={i === index}
+              className="group py-2"
+            >
+              <span
+                className={`relative block h-1 rounded-full overflow-hidden bg-dark/15 transition-all duration-500 ease-out group-hover:bg-dark/25 ${
+                  i === index ? "w-12" : "w-5"
+                }`}
+              >
+                {i === index && (
+                  <motion.span
+                    key={index}
+                    className="absolute inset-0 bg-accent origin-left rounded-full"
+                    initial={{ scaleX: 0 }}
+                    animate={{ scaleX: 1 }}
+                    transition={{ duration: interval / 1000, ease: "linear" }}
+                  />
+                )}
+              </span>
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
