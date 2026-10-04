@@ -46,7 +46,8 @@ const FALLBACK_HERO_CAKES = [
   },
 ];
 
-const CAROUSEL_INTERVAL = 3000;
+// Long enough to read a cake's description before it changes.
+const CAROUSEL_INTERVAL = 5000;
 
 export default function Home() {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -78,12 +79,22 @@ export default function Home() {
       : FALLBACK_HERO_CAKES;
 
   const navigate = useNavigate(); // 2. Initialize hook
+  // A timeout re-armed on every change of cake, rather than one free-running
+  // interval: picking a cake from the progress bar then gives it a full turn,
+  // and the bar always starts filling from empty.
   useEffect(() => {
-    const interval = setInterval(() => {
+    const timeout = setTimeout(() => {
       setCurrentIndex((prev) => (prev + 1) % HERO_CAKES.length);
     }, CAROUSEL_INTERVAL);
-    return () => clearInterval(interval);
-  }, [HERO_CAKES.length]);
+    return () => clearTimeout(timeout);
+  }, [currentIndex, HERO_CAKES.length]);
+
+  const heroProgress = {
+    count: HERO_CAKES.length,
+    index: currentIndex,
+    interval: CAROUSEL_INTERVAL,
+    onSelect: setCurrentIndex,
+  };
 
   const currentCake = HERO_CAKES[currentIndex];
   const nextIndex = (currentIndex + 1) % HERO_CAKES.length;
@@ -117,22 +128,30 @@ export default function Home() {
               cake={currentCake}
               mobile
               onOrderClick={handleOrderClick}
+              {...heroProgress}
             />
           </div>
         </div>
       </section>
 
       {/* Hero Section - Desktop Layout */}
-      <section className="hidden lg:block relative h-[550px] xl:h-[648px] w-full overflow-hidden mt-5 px-8 lg:px-12 xl:px-[140px]">
-        <div className="absolute left-8 lg:left-12 xl:left-[140px] top-16 xl:top-24 w-[400px] lg:w-[500px] xl:w-[600px] z-10">
-          <HeroContent cake={currentCake} onOrderClick={handleOrderClick} />
+      <section className="hidden lg:block relative h-[590px] xl:h-[648px] w-full overflow-hidden mt-5 px-8 lg:px-12 xl:px-[140px]">
+        {/* The text column and the cake are sized so they never share space:
+            the cake used to sit on top of the end of the description. */}
+        <div className="absolute left-8 lg:left-12 xl:left-[140px] top-16 xl:top-24 lg:w-[440px] xl:w-[520px] z-10">
+          <HeroContent
+            cake={currentCake}
+            onOrderClick={handleOrderClick}
+            {...heroProgress}
+          />
         </div>
 
-        <div className="absolute left-1/2 -translate-x-1/2 xl:left-[calc(50%-50px)] xl:translate-x-0 -top-10 xl:-top-20 w-[400px] lg:w-[480px] xl:w-[540px] h-[550px] lg:h-[650px] xl:h-[730px]">
+        <div className="absolute right-12 xl:right-auto xl:left-[calc(50%+30px)] -top-10 xl:-top-20 lg:w-[460px] xl:w-[540px] lg:h-[650px] xl:h-[730px]">
           <HeroCarousel images={images} currentIndex={currentIndex} />
         </div>
 
-        <div className="hidden xl:block absolute right-[140px] top-8">
+        {/* Tucked into the top-right corner, clear of the cake beside it */}
+        <div className="hidden xl:block absolute right-6 top-0">
           <HeroPreview image={HERO_CAKES[nextIndex].image} />
         </div>
       </section>
