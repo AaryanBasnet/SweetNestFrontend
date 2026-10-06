@@ -106,8 +106,10 @@ SweetNestFrontend/
 │   ├── layouts/        # Layout wrappers
 │   ├── stores/         # Zustand stores
 │   ├── hooks/          # Custom hooks
+│   ├── services/       # Request wrappers used by the hooks
+│   ├── schemas/        # Yup form validation
+│   ├── lib/            # Third-party setup (Sentry)
 │   ├── utils/          # Helper utilities
-│   ├── styles/         # Global & shared styles
 │   └── main.jsx
 ├── public/
 ├── package.json
@@ -231,6 +233,62 @@ from the enclosing block **only if the current block defines none of its own**.
 A single `add_header` in a `location` silently discards every header inherited
 from `server` - which is how a site ships with no security headers despite
 them being declared.
+
+---
+
+## 🧭 Architecture and decisions
+
+```mermaid
+flowchart LR
+  Page["pages/ + components/"] --> Hook["hooks/ (React Query)"]
+  Hook --> Service["services/ + api/"]
+  Service --> Axios["axios instance<br/>(token + 401 handling)"]
+  Axios --> API["SweetNest API"]
+  Page --> Store["stores/ (Zustand)"]
+  Store --> Service
+```
+
+### Two kinds of state, kept apart
+
+- **Server data** (cakes, orders, analytics, reviews) lives in **React Query**, which owns caching, loading and error states. Defaults are one retry and a 5-minute `staleTime`, so moving between pages doesn't refetch what was just loaded.
+- **Client state** (session, cart, checkout progress, UI) lives in small **Zustand** stores. `auth`, `cart` and `checkout` persist to `localStorage`, and each one chooses what to persist with `partialize`: the auth store keeps only the user and token, the checkout store keeps the step and order reference but not transient flags.
+
+Server data never goes in a store and client state never goes in a query. When a bug appears, it's clear which side to look at.
+
+### The cart works for guests and for logged-in users
+
+A logged-out visitor's cart is kept in `localStorage`. After login it is synced to the server and merged with any custom cakes designed in the 3D builder. Orders are priced by the server when they are created, so the totals the browser shows are for display and editing `localStorage` can't change what an order costs.
+
+### One place for requests
+
+All HTTP goes through one axios instance (`src/api/api.js`) that attaches the token and handles auth failures in a single place. A `401` clears the session and returns the user to the login page, but only when the request actually carried a token. An anonymous request to a protected endpoint (for example the header's notification poll) used to bounce logged-out visitors off public pages, and that distinction fixed it.
+
+### Admin and demo access are enforced by the API
+
+`ProtectedRoute` and `AdminRoute` decide what to render, but they are a convenience, not security. The server checks the token and role on every request. That matters for the demo: the one-click **Admin demo** is read-only, and the backend also hides every real customer from it, so hiding buttons in the UI is not what makes it safe. The UI only reads `isDemo` to show a banner telling the visitor they are in a demo.
+
+### Performance choices
+
+- Every page is a route-level `lazy()` import behind one `Suspense` fallback, so the 3D designer's code is only downloaded on `/custompage`.
+- Images are WebP, sized for where they appear (the home page's images went from about 3.2 MB to 211 KB).
+- Lighthouse numbers are above, measured on the production build.
+
+### Failing visibly
+
+- An app-wide error boundary replaces a white screen with a recovery page, and the 3D designer has its own boundary.
+- Sentry is opt-in through `VITE_SENTRY_DSN`. A DSN only lets a client *send* events, which is why it's safe in a public bundle.
+- Pages set their own `<title>` per route, so tabs and link previews say something useful.
+
+### Tests and CI
+
+65 Vitest tests cover the stores (cart, auth), the axios interceptors, the error boundary, the admin route guard and the home page. CI runs the tests and a production build on every PR, and lints only the files a PR changed (see below), so old lint debt can't block new work while new code is still held to the rules.
+
+### Known gaps
+
+- The token is kept in `localStorage`, which is simple but readable by any script on the page. An `httpOnly` cookie is the stronger option and would need backend changes.
+- Many older components are still plain JavaScript with no prop types or TypeScript.
+- There are no end-to-end tests yet. Playwright covering browse → design → checkout would be the next addition.
+- Lint still has a backlog in older files.
 
 ---
 
