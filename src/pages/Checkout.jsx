@@ -43,6 +43,7 @@ export default function Checkout() {
     isCreatingOrder,
     setLoading,
     setError,
+    resetCheckout,
   } = useCheckoutStore();
 
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
@@ -135,6 +136,18 @@ export default function Checkout() {
       window.history.replaceState({}, '', '/checkout');
     }
   }, [searchParams, setOrderResult, setCurrentStep, clearCart]);
+
+  // A finished order stays in storage so its confirmation survives a reload.
+  // Arriving here with a new cart means a new checkout, not that old
+  // confirmation, which is what used to show up instead of the shipping form.
+  const staleChecked = useRef(false);
+  useEffect(() => {
+    if (staleChecked.current) return;
+    staleChecked.current = true;
+    if (!searchParams.get('status') && currentStep === 3 && cartItems.length > 0) {
+      resetCheckout();
+    }
+  }, [searchParams, currentStep, cartItems, resetCheckout]);
 
   // Redirect if not authenticated
   useEffect(() => {

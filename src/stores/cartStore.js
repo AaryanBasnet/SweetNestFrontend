@@ -6,8 +6,16 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import * as cartApi from "../api/cartApi";
+import useAuthStore from "./authStore";
 
 const STORAGE_KEY = "sweetnest-cart";
+
+// Lines a guest added carry a temporary local_ id. Lines from the server do not,
+// and must never be sent back up or the quantities double.
+const isGuestLine = (item) => typeof item._id === "string" && item._id.startsWith("local_");
+
+// Two syncs at once would upload the guest's items twice
+let syncInFlight = null;
 
 const useCartStore = create(
   persist(
@@ -274,6 +282,11 @@ const useCartStore = create(
           });
 
           const response = await cartApi.getCartApi();
+          // Signed out while this was in flight: do not bring the account's cart back
+          if (!useAuthStore.getState().user) {
+            set({ isLoading: false });
+            return { success: false, message: "Signed out" };
+          }
           const data = response.data?.data;
 
           // Merge server items with custom cakes
@@ -297,8 +310,18 @@ const useCartStore = create(
         }
       },
 
-      // Sync localStorage cart with server (on login)
-      syncWithServer: async () => {
+      // Sync localStorage cart with server (on login). Safe to call twice: the
+      // second caller gets the first call's result.
+      syncWithServer: () => {
+        if (!syncInFlight) {
+          syncInFlight = get()._syncNow().finally(() => {
+            syncInFlight = null;
+          });
+        }
+        return syncInFlight;
+      },
+
+      _syncNow: async () => {
         const { items } = get();
 
         // Separate custom cakes from regular cakes
@@ -311,8 +334,9 @@ const useCartStore = create(
         const cartItems = items
           .filter((item) => {
             const cakeId = item.cakeId || item.cake?._id || item.cake;
-            return !(
-              typeof cakeId === "string" && cakeId.startsWith("custom-")
+            return (
+              isGuestLine(item) &&
+              !(typeof cakeId === "string" && cakeId.startsWith("custom-"))
             );
           })
           .map((item) => ({
@@ -331,6 +355,10 @@ const useCartStore = create(
         try {
           set({ isLoading: true, error: null });
           const response = await cartApi.syncCartApi(cartItems);
+          if (!useAuthStore.getState().user) {
+            set({ isLoading: false });
+            return { success: false, message: "Signed out" };
+          }
           const data = response.data?.data;
 
           // Merge server items with custom cakes

@@ -1,5 +1,5 @@
 import React from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useFormik } from "formik";
 import { toast } from "react-toastify";
 import { Mail, Lock, User, CheckCircle } from "lucide-react";
@@ -10,10 +10,12 @@ import { Input } from "../../components/ui/Input";
 import { AuthButton } from "../../components/ui/AuthButton";
 import rightsideImage from "../../assets/auth_img.webp";
 import Logo from "../../components/common/Logo";
+import { getSafeRedirect } from "../../utils/redirect";
 
 export default function Register() {
   const { register } = useAuth();
   const navigate = useNavigate();
+  const { search } = useLocation();
 
   const formik = useFormik({
     initialValues: {
@@ -30,7 +32,7 @@ export default function Register() {
 
         if (result.success) {
           toast.success("Account created successfully!");
-          navigate("/");
+          navigate(getSafeRedirect(search));
         } else {
           toast.error(result.message || "Registration failed");
         }
@@ -114,7 +116,7 @@ export default function Register() {
           <p className="text-center text-gray-700 mt-6">
             Already have an account?{" "}
             <Link
-              to="/login"
+              to={`/login${search}`}
               className="text-accent font-medium hover:underline"
             >
               Log in

@@ -26,14 +26,21 @@ export default function ReviewCard({
     return date.toLocaleDateString('en-US', options);
   };
 
-  // Track helpful in localStorage (simple client-side approach)
-  const helpfulKey = `review-helpful-${review._id}`;
-  const hasMarkedHelpful = localStorage.getItem(helpfulKey) === 'true';
+  // The server keeps one vote per person and lets them take it back, so the
+  // state comes from the server rather than a flag saved in this browser.
+  const [hasMarkedHelpful, setHasMarkedHelpful] = useState(() =>
+    Boolean(currentUserId && review.helpfulVotes?.includes(currentUserId))
+  );
+  const [voting, setVoting] = useState(false);
 
-  const handleMarkHelpful = () => {
-    if (!hasMarkedHelpful) {
-      localStorage.setItem(helpfulKey, 'true');
-      onMarkHelpful?.(review._id);
+  const handleMarkHelpful = async () => {
+    if (voting) return;
+    setVoting(true);
+    try {
+      const result = await onMarkHelpful?.(review._id);
+      if (typeof result?.hasVoted === 'boolean') setHasMarkedHelpful(result.hasVoted);
+    } finally {
+      setVoting(false);
     }
   };
 
@@ -83,10 +90,11 @@ export default function ReviewCard({
           {/* Helpful Button */}
           <button
             onClick={handleMarkHelpful}
-            disabled={hasMarkedHelpful}
+            disabled={voting}
+            aria-pressed={hasMarkedHelpful}
             className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs transition-colors ${
               hasMarkedHelpful
-                ? 'bg-accent/10 text-accent cursor-not-allowed'
+                ? 'bg-accent/10 text-accent'
                 : 'bg-dark/5 text-dark/60 hover:bg-dark/10'
             }`}
             aria-label="Mark review as helpful"
