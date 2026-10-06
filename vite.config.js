@@ -1,5 +1,5 @@
 /// <reference types="vitest" />
-import { defineConfig } from 'vite'
+import { defineConfig, configDefaults } from 'vitest/config'
 import tailwindcss from '@tailwindcss/vite'
 import react from '@vitejs/plugin-react'
 
@@ -8,6 +8,9 @@ export default defineConfig({
   plugins: [react(), tailwindcss()],
 
   test: {
+    // The Playwright tests in e2e/ run in their own runner (npm run test:e2e)
+    exclude: [...configDefaults.exclude, 'e2e/**'],
+
     // Components need a DOM; the store and api tests do not care either way.
     environment: 'jsdom',
     globals: true,

@@ -30,4 +30,9 @@ export default defineConfig([
       ],
     },
   },
+  {
+    // Playwright config and tests run in Node, not in the browser bundle
+    files: ['playwright.config.js', 'e2e/**/*.js'],
+    languageOptions: { globals: { ...globals.node } },
+  },
 ])

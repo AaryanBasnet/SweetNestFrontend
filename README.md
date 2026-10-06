@@ -30,7 +30,7 @@ A custom-cake bakery storefront where customers browse cakes, **design their own
   - Error boundary with optional Sentry.
   - SEO metadata, link previews, `robots.txt` and a sitemap.
   - WebP images (about 3.2 MB down to 211 KB).
-- **Tested in CI** on every push (65 tests), with the production build checked too.
+- **Tested in CI** on every push: 98 unit tests, 4 end-to-end journeys in a real browser against the real backend, and the production build.
 
 ### Lighthouse
 
@@ -185,7 +185,7 @@ npm run test:watch    # re-run on change
 npm run test:coverage # with a coverage report
 ```
 
-**55 tests** covering:
+**98 tests** covering:
 
 * `stores/cartStore` – subtotal, shipping, promo discounts, the zero floor
 * `stores/authStore` – login/register success and failure, logout, id
@@ -195,6 +195,15 @@ npm run test:coverage # with a coverage report
 * `routers/` – `ProtectedRoute` and `AdminRoute` guards
 * `ErrorBoundary` – that a render crash shows a fallback with a way out,
   rather than a blank page
+* `hooks/useAccountSession` – a guest's cart is uploaded on sign-in, never
+  doubled, and cleared on sign-out
+* `utils/deliverySchedule` – the 24-hour notice rule and the 90-day window
+  (mirrors the server's rule)
+* `schemas/authSchema` – the sign-up form asks for the password rule the server enforces
+* `utils/redirect` – that "go back to where you were" can never send someone to
+  another website
+* `components/home/CrowdFavorites`, `components/common/Logo` – the home section
+  and the shared wordmark
 
 Note the cart tests assert the **client's** view of the total. The server
 recomputes every price independently and is the only figure a payment ever
@@ -203,6 +212,30 @@ uses - the client number is for display.
 Coverage is scoped to the logic layer (stores, api, routers, utils) rather
 than every component, so the number reflects what is actually under test.
 Component and page tests are the next area to pick up.
+
+### End-to-end tests
+
+**Playwright** drives a real browser through the shopping journey, against the
+real backend and an empty database. Several of the bugs found by hand-testing
+this site lived *between* the pieces, where a unit test on either side cannot
+see them, so these walk the path the way a customer does:
+
+* a guest adds a cake, is sent to sign up, comes back to checkout with the cake
+  still in the cart, pays on delivery, and the order exists on the server
+* a finished order does not show up in place of the next checkout
+* the customer demo returns to checkout with the guest cart intact
+* the delivery calendar only offers days with 24 hours' notice
+
+```bash
+npm run test:e2e
+```
+
+Needs MongoDB on `localhost:27017` and the [backend](https://github.com/AaryanBasnet/SweetNestBackend)
+checked out next to this repository (or set `BACKEND_DIR`). Playwright starts the
+backend and a production build of this app itself, and resets a database named
+for e2e tests (it refuses to touch any other). Set `PW_CHANNEL=chrome` to use an
+installed Chrome instead of downloading Playwright's browser. CI runs the same
+thing on every pull request and keeps screenshots and traces of any failure.
 
 ---
 
@@ -289,7 +322,7 @@ All HTTP goes through one axios instance (`src/api/api.js`) that attaches the to
 
 - The token is kept in `localStorage`, which is simple but readable by any script on the page. An `httpOnly` cookie is the stronger option and would need backend changes.
 - Many older components are still plain JavaScript with no prop types or TypeScript.
-- There are no end-to-end tests yet. Playwright covering browse → design → checkout would be the next addition.
+- The end-to-end tests cover browse → sign up → checkout, but not the 3D designer or the eSewa payment redirect (it needs the sandbox).
 
 ---
 
