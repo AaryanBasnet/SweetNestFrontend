@@ -9,6 +9,7 @@ import { registerSchema } from "../../schemas/authSchema";
 import { Input } from "../../components/ui/Input";
 import { AuthButton } from "../../components/ui/AuthButton";
 import rightsideImage from "../../assets/auth_img.webp";
+import Logo from "../../components/common/Logo";
 
 export default function Register() {
   const { register } = useAuth();
@@ -45,9 +46,7 @@ export default function Register() {
     <div className="h-screen w-screen bg-white text-dark font-body flex overflow-hidden relative">
       {/* Logo */}
       <div className="absolute top-6 left-6 md:left-10 z-20">
-        <h1 className="text-3xl font-heading font-bold text-dark">
-          SweetNest<span className="text-accent"> .</span>
-        </h1>
+        <Logo linked />
       </div>
 
       {/* LEFT SECTION */}

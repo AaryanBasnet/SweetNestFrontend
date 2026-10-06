@@ -3,14 +3,14 @@
  * Loading fallback for lazy-loaded pages
  */
 
+import Logo from "./Logo";
+
 export default function PageLoader() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-cream/30">
       <div className="flex flex-col items-center gap-6">
         {/* Logo */}
-        <h1 className="font-heading text-3xl text-dark">
-          SweetNest<span className="text-accent">.</span>
-        </h1>
+        <Logo size="lg" />
 
         {/* Animated dots */}
         <div className="flex items-center gap-2">

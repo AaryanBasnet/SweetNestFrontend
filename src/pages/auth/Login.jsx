@@ -11,6 +11,7 @@ import { Input } from "../../components/ui/Input"; // Reusable UI
 import { AuthButton } from "../../components/ui/AuthButton"; // Reusable UI
 import rightsideImage from "../../assets/auth_img.webp"; // Your image
 import DemoLoginPanel from "../../components/auth/DemoLoginPanel";
+import Logo from "../../components/common/Logo";
 export default function Login() {
   const { login } = useAuth();
   const navigate = useNavigate();
@@ -46,9 +47,7 @@ export default function Login() {
 
       {/* Logo */}
       <div className="absolute top-4 left-4 sm:top-6 sm:left-6 md:left-10 z-20">
-        <h1 className="font-heading text-xl sm:text-2xl md:text-h1 text-dark">
-          SweetNest<span className="text-accent"> .</span>
-        </h1>
+        <Logo linked />
       </div>
 
       {/* Left Section */}

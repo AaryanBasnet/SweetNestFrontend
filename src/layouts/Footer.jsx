@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { toast } from "react-toastify";
 import { subscribeNewsletterApi } from "../api/newsletterApi";
+import Logo from "../components/common/Logo";
 
 function FooterList({ title, items }) {
   return (
@@ -78,9 +79,7 @@ export default function Footer() {
       <div className="flex flex-col lg:flex-row lg:items-start gap-10 lg:gap-0 mb-12 sm:mb-16 lg:mb-20">
         {/* Newsletter */}
         <div className="w-full lg:w-auto lg:flex-1 lg:max-w-[592px]">
-          <h3 className="font-heading text-2xl sm:text-3xl text-dark mb-3 sm:mb-4">
-            SweetNest<span className="text-accent">.</span>
-          </h3>
+          <Logo linked />
           <p className="font-body text-sm sm:text-base text-dark/60 mb-6 sm:mb-8 max-w-[380px]">
             Stay sweet. Join our newsletter for seasonal collections, new cakes
             and offers before anyone else.
