@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components -- this file also exports hooks and constants next to its components; that only costs a full reload instead of hot reload in dev */
 import React, { useMemo, useRef } from "react";
 import PropTypes from "prop-types";
 import * as THREE from "three";

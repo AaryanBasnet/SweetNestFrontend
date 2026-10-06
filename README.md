@@ -283,14 +283,13 @@ All HTTP goes through one axios instance (`src/api/api.js`) that attaches the to
 
 ### Tests and CI
 
-65 Vitest tests cover the stores (cart, auth), the axios interceptors, the error boundary, the admin route guard and the home page. CI runs the tests and a production build on every PR, and lints only the files a PR changed (see below), so old lint debt can't block new work while new code is still held to the rules.
+65 Vitest tests cover the stores (cart, auth), the axios interceptors, the error boundary, the admin route guard and the home page. CI runs the tests, a production build and the linter on every PR.
 
 ### Known gaps
 
 - The token is kept in `localStorage`, which is simple but readable by any script on the page. An `httpOnly` cookie is the stronger option and would need backend changes.
 - Many older components are still plain JavaScript with no prop types or TypeScript.
 - There are no end-to-end tests yet. Playwright covering browse → design → checkout would be the next addition.
-- Lint still has a backlog in older files.
 
 ---
 
@@ -328,20 +327,15 @@ request:
 * **Test** – the Vitest suite with coverage
 * **Build** – a production build, and prints the bundle size breakdown to the
   run summary
-* **Lint** – on pull requests, lints **only the files the PR changes**
+* **Lint** – the whole app, on every pull request
 * **Audit** – fails on any high or critical dependency advisory
 
-### Why lint only changed files
+### Lint
 
-The codebase currently carries ~81 pre-existing lint errors across 44 files
-(unused variables, plus the React Compiler rules introduced in
-`eslint-plugin-react-hooks` v7). Making those a required check today would
-mean every pull request starts red - and a check that is always red gets
-ignored, which is worse than having no check.
-
-Gating changed files means new and edited code must be clean, so the backlog
-shrinks as the app is worked on. Swap it for a plain `npm run lint` once the
-count reaches zero.
+The whole app passes `npm run lint` with zero errors, and CI checks all of it on
+every pull request. Where a rule genuinely doesn't fit (for example mutating the
+camera that react-three-fiber hands out), the exception sits next to that code
+with its reason.
 
 ---
 

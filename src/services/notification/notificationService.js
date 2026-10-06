@@ -88,7 +88,7 @@ export const formatNotificationTime = (timestamp) => {
 
     const diffInYears = Math.floor(diffInDays / 365);
     return `${diffInYears} ${diffInYears === 1 ? 'year' : 'years'} ago`;
-  } catch (error) {
+  } catch {
     return 'Recently';
   }
 };

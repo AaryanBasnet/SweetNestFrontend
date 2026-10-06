@@ -35,12 +35,6 @@ export default function AddPromotionModal({
   const { data: cakesData } = useCakes({}, { enabled: isOpen });
   const cakes = cakesData?.data || [];
 
-  useEffect(() => {
-    if (!isOpen) {
-      resetForm();
-    }
-  }, [isOpen]);
-
   const resetForm = () => {
     setFormData({
       title: '',
@@ -57,6 +51,14 @@ export default function AddPromotionModal({
     setImagePreviewUrls([]);
     setErrors({});
   };
+
+  useEffect(() => {
+    if (!isOpen) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- the form must reload whenever the modal opens; a `key` on the modal would be the cleaner fix
+      resetForm();
+    }
+  }, [isOpen]);
+
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;

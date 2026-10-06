@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components -- this file also exports hooks and constants next to its components; that only costs a full reload instead of hot reload in dev */
 import React from "react";
 import PropTypes from "prop-types";
 import { Environment } from "@react-three/drei";
@@ -130,8 +131,6 @@ BackgroundSelector.propTypes = {
  * Decorative Floor/Table Component
  */
 export function DecorativeFloor({ preset = "studio" }) {
-  const sceneData = BACKGROUND_PRESETS[preset] || BACKGROUND_PRESETS.studio;
-
   // Floor appearance based on preset
   const getFloorMaterial = () => {
     switch (preset) {

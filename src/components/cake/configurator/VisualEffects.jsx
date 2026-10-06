@@ -1,5 +1,6 @@
 import React, { useRef, useMemo } from "react";
 import PropTypes from "prop-types";
+import { pseudoRandom } from "./pseudoRandom";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { Sparkles } from "@react-three/drei";
@@ -41,15 +42,15 @@ export function DripEffect({
   const drips = useMemo(() => {
     const dripsArray = [];
     for (let i = 0; i < dripCount; i++) {
-      const angle = (i / dripCount) * Math.PI * 2 + Math.random() * 0.3;
-      const dripLength = 0.12 + Math.random() * 0.45;
-      const dripWidth = 0.11 + Math.random() * 0.09;
+      const angle = (i / dripCount) * Math.PI * 2 + pseudoRandom(i, 1) * 0.3;
+      const dripLength = 0.12 + pseudoRandom(i, 2) * 0.45;
+      const dripWidth = 0.11 + pseudoRandom(i, 3) * 0.09;
 
       dripsArray.push({
         angle,
         length: dripLength,
         width: dripWidth,
-        offset: Math.random() * 0.05,
+        offset: pseudoRandom(i, 4) * 0.05,
       });
     }
     return dripsArray;
@@ -407,6 +408,11 @@ OmbreGradient.propTypes = {
 
 // ==================== CONFETTI CELEBRATION ====================
 
+/* The burst is meant to be random, and it is mutated frame by frame in a ref, so
+   the purity rule does not fit this one component. It is not mounted
+   anywhere yet. */
+/* eslint-disable react-hooks/purity */
+
 /**
  * Confetti Animation - Celebration effect when adding to cart
  */
@@ -465,6 +471,8 @@ export function ConfettiCelebration({ active, position = [0, 3, 0] }) {
     </group>
   );
 }
+
+/* eslint-enable react-hooks/purity */
 
 ConfettiCelebration.propTypes = {
   active: PropTypes.bool.isRequired,

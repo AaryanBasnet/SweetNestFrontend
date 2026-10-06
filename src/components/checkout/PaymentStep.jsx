@@ -3,7 +3,6 @@
  * Step 2: Select payment method (eSewa or COD)
  */
 
-import { useState } from 'react';
 import { Check, Wallet, Banknote, ArrowLeft, Loader2 } from 'lucide-react';
 import useCheckoutStore from '../../stores/checkoutStore';
 import useCartStore from '../../stores/cartStore';

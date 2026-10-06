@@ -1,6 +1,5 @@
 // `motion` is used as <motion.div>; core ESLint does not count JSX member
 // expressions as a use, so it reports a false "unused" here.
-// eslint-disable-next-line no-unused-vars
 import { motion, AnimatePresence } from "framer-motion";
 import { ShoppingCart } from "lucide-react";
 import { useNavigate } from "react-router-dom";

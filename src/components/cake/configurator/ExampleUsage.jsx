@@ -57,7 +57,6 @@ export function PageConfiguratorExample() {
 
 export function ProductDetailWithCustomize() {
   const [showConfigurator, setShowConfigurator] = useState(false);
-  const navigate = useNavigate();
 
   // Sample product data
   const product = {

@@ -53,7 +53,7 @@ export default function AdminSidebar({ isMobileOpen = false, onMobileClose }) {
   };
 
   // Sidebar content shared between desktop and mobile
-  const SidebarContent = () => (
+  const sidebarContent = (
     <>
       {/* Logo */}
       <div className="px-4 sm:px-6 py-4 sm:py-6 flex items-center justify-between">
@@ -152,7 +152,7 @@ export default function AdminSidebar({ isMobileOpen = false, onMobileClose }) {
     <>
       {/* Desktop Sidebar - fixed */}
       <aside className="hidden lg:flex w-[240px] h-screen bg-white border-r border-dark/10 flex-col fixed left-0 top-0 z-30">
-        <SidebarContent />
+        {sidebarContent}
       </aside>
 
       {/* Mobile Overlay */}
@@ -169,7 +169,7 @@ export default function AdminSidebar({ isMobileOpen = false, onMobileClose }) {
           isMobileOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
-        <SidebarContent />
+        {sidebarContent}
       </aside>
     </>
   );
