@@ -26,9 +26,22 @@ export default function AddCategoryModal({
   const [imagePreviewUrl, setImagePreviewUrl] = useState(null);
   const [errors, setErrors] = useState({});
 
+  const resetForm = () => {
+    setFormData({
+      name: '',
+      description: '',
+      displayOrder: 0,
+      isActive: true,
+      image: null,
+    });
+    setImagePreviewUrl(null);
+    setErrors({});
+  };
+
   // Populate form when editing
   useEffect(() => {
     if (editData) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- the form must reload whenever the modal opens; a `key` on the modal would be the cleaner fix
       setFormData({
         name: editData.name || '',
         description: editData.description || '',
@@ -42,17 +55,6 @@ export default function AddCategoryModal({
     }
   }, [editData, isOpen]);
 
-  const resetForm = () => {
-    setFormData({
-      name: '',
-      description: '',
-      displayOrder: 0,
-      isActive: true,
-      image: null,
-    });
-    setImagePreviewUrl(null);
-    setErrors({});
-  };
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;

@@ -52,15 +52,10 @@ jobs:
           echo '```' >> "$GITHUB_STEP_SUMMARY"
 
   lint:
-    name: Lint (changed files)
+    name: Lint
     runs-on: ubuntu-latest
-    # Only meaningful on a pull request, where there is a base to diff against.
-    if: github.event_name == 'pull_request'
     steps:
       - uses: actions/checkout@v4
-        with:
-          # Need the base branch present locally to diff against it.
-          fetch-depth: 0
 
       - uses: actions/setup-node@v4
         with:
@@ -69,33 +64,10 @@ jobs:
 
       - run: npm ci
 
-      # ---------------------------------------------------------------------
-      # This lints ONLY the files the pull request touches, not the whole app.
-      #
-      # Why: the codebase carries ~81 pre-existing lint errors across 44 files
-      # (unused variables, plus the React Compiler rules that arrived with
-      # eslint-plugin-react-hooks v7). Turning those into a required check on
-      # day one would mean every PR starts red, and a check that is always red
-      # gets ignored - which is worse than no check.
-      #
-      # Gating changed files instead means new and edited code has to be clean,
-      # so the debt shrinks as the app is worked on rather than growing. Swap
-      # this for a plain `npm run lint` once the backlog reaches zero.
-      # ---------------------------------------------------------------------
-      - name: Lint changed files
-        run: |
-          BASE="origin/${{ github.base_ref }}"
-          CHANGED=$(git diff --name-only --diff-filter=ACMR "$BASE"...HEAD \
-            | grep -E '\.(js|jsx)$' || true)
-
-          if [ -z "$CHANGED" ]; then
-            echo "No JavaScript files changed."
-            exit 0
-          fi
-
-          echo "Linting:"
-          echo "$CHANGED"
-          npx eslint $CHANGED
+      # The whole app is lint-clean, so the whole app is checked. Exceptions are
+      # written next to the code that needs them, each with its reason.
+      - name: Lint
+        run: npm run lint
 
   docker:
     name: Docker image builds

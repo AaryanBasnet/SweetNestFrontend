@@ -1,4 +1,5 @@
-import React, { useState, useRef } from "react";
+/* eslint-disable react-refresh/only-export-components -- this file also exports hooks and constants next to its components; that only costs a full reload instead of hot reload in dev */
+import React, { useRef } from "react";
 import PropTypes from "prop-types";
 import { useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
@@ -82,7 +83,8 @@ export function SmoothCameraRig({ preset, tierCount, enabled = true }) {
     currentLookAt.current.lerp(targetLookAt.current, delta * 2);
     camera.lookAt(currentLookAt.current);
 
-    // Smooth FOV transition
+    // Smooth FOV transition (react-three-fiber hands out the camera to be mutated)
+    // eslint-disable-next-line react-hooks/immutability
     camera.fov = THREE.MathUtils.lerp(camera.fov, presetData.fov, delta * 3);
     camera.updateProjectionMatrix();
   });

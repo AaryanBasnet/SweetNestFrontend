@@ -6,7 +6,7 @@
 
 import { create } from 'zustand';
 
-const useAdminStore = create((set, get) => ({
+const useAdminStore = create((set) => ({
   // Orders state
   ordersFilters: {
     status: null,

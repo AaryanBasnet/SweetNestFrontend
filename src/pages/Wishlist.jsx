@@ -1,9 +1,8 @@
 import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { Trash2, Bell, ShoppingCart, Plus, Minus, Gift, Heart, ChevronRight, Calendar } from "lucide-react";
 import { toast } from "react-toastify";
 import useWishlistStore from "../stores/wishlistStore";
-import useCartStore from "../stores/cartStore";
 import useAuthStore from "../stores/authStore";
 import ReminderModal from "../components/wishlist/ReminderModal"; // Import the modal
 import DeleteConfirmationModal from "../components/common/DeleteModal";
@@ -11,8 +10,8 @@ import DeleteConfirmationModal from "../components/common/DeleteModal";
 
 
 
-function WishlistItemCard({ item, onRemove, onAddToCart, isLoading, onSetReminder }) {
-  const [quantity, setQuantity] = useState(1);
+function WishlistItemCard({ item, onRemove, onAddToCart, onSetReminder }) {
+  const quantity = 1;
   const cakeData = typeof item === "string" ? null : item.cake;
   const cakeId = typeof item === "string" ? item : item.cake?._id;
 

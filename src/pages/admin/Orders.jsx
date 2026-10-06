@@ -2,7 +2,7 @@ import { useState, useEffect } from "react"; // 1. Added useEffect
 import { Search, Filter, Download, RefreshCw, X } from "lucide-react";
 import { useOrders, useUpdateOrderStatus, useProcessRefund } from "../../hooks/admin";
 import useAdminStore from "../../stores/adminStore";
-import { ORDER_STATUSES, PAYMENT_STATUSES, getPaymentStatusColor } from "../../services/admin/ordersService";
+import { ORDER_STATUSES, PAYMENT_STATUSES } from "../../services/admin/ordersService";
 import {
   PageHeader,
   DataTable,
@@ -97,7 +97,7 @@ export default function Orders() {
     try {
       await updateStatus.mutateAsync({ id: orderId, status: newStatus });
       toast.success("Order status updated");
-    } catch (error) {
+    } catch {
       toast.error("Failed to update status");
     }
   };

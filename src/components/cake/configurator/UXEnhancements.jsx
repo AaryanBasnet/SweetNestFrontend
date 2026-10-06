@@ -1,4 +1,5 @@
-import React, { useState, useCallback, useRef } from "react";
+/* eslint-disable react-refresh/only-export-components -- this file also exports hooks and constants next to its components; that only costs a full reload instead of hot reload in dev */
+import React, { useState, useCallback } from "react";
 import PropTypes from "prop-types";
 import { Download, Undo2, Redo2, Save, Share2, Wand2 } from "lucide-react";
 import { toast } from "react-toastify";
@@ -132,8 +133,6 @@ UndoRedoControls.propTypes = {
  * Screenshot functionality for Canvas
  */
 export function useScreenshot() {
-  const canvasRef = useRef(null);
-
   const captureScreenshot = useCallback(async (filename = "my-cake-design") => {
     try {
       const canvas = document.querySelector("canvas");

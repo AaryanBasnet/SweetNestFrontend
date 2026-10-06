@@ -5,7 +5,7 @@
  */
 
 import { MapPin, Edit2, Trash2, Star } from 'lucide-react';
-import { formatAddressDisplay, getLabelDisplay } from '../../services/address/addressService';
+import { getLabelDisplay } from '../../services/address/addressService';
 
 export default function AddressCard({
   address,

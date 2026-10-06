@@ -108,7 +108,7 @@ export default function ContactMessages() {
       try {
         await updateStatus.mutateAsync({ id: contact._id, status: 'read' });
         toast.success('Marked as read');
-      } catch (error) {
+      } catch {
         toast.error('Failed to update status');
       }
     }

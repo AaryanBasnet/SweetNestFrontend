@@ -54,6 +54,14 @@ export default function Customers() {
 
   const debouncedSearch = useDebounce(search, 500);
 
+  // Go back to page 1 when the filters change (adjusting state while rendering,
+  // which React prefers to doing it in an effect after the fact)
+  const [seenFilters, setSeenFilters] = useState({ debouncedSearch, sort });
+  if (seenFilters.debouncedSearch !== debouncedSearch || seenFilters.sort !== sort) {
+    setSeenFilters({ debouncedSearch, sort });
+    setPage(1);
+  }
+
   // --- Fetch Data ---
   const { data, isLoading } = useCustomers({
     page,
@@ -62,11 +70,6 @@ export default function Customers() {
     sort: sort.key,
     order: sort.order,
   });
-
-  // Reset page when filters change
-  useEffect(() => {
-    setPage(1);
-  }, [debouncedSearch, sort]);
 
   // --- Filter Options Configuration ---
   const filterOptions = [

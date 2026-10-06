@@ -26,7 +26,7 @@ export default function ReviewForm({
     onSubmit: async (values, { setSubmitting }) => {
       try {
         await onSubmit(values);
-      } catch (error) {
+      } catch {
         // Error handled by parent component
       } finally {
         setSubmitting(false);

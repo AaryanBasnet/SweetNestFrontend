@@ -164,7 +164,8 @@ export default function ShippingStep({ onNext, errors = {} }) {
     prefillFromUser,
     selectedAddressId,
     selectSavedAddress,
-    useManualEntry,
+    // a store action, named like a hook, so rename it before React's lint mistakes it for one
+    useManualEntry: switchToManualEntry,
   } = useCheckoutStore();
   const user = useAuthStore((state) => state.user);
   const [saveAddress, setSaveAddress] = useState(false);
@@ -194,7 +195,7 @@ export default function ShippingStep({ onNext, errors = {} }) {
   };
 
   const handleUseManualEntry = () => {
-    useManualEntry();
+    switchToManualEntry();
   };
 
   return (

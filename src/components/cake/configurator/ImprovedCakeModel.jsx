@@ -1,5 +1,6 @@
 import React, { useRef, useMemo } from "react";
 import PropTypes from "prop-types";
+import { pseudoRandom } from "./pseudoRandom";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import {
@@ -209,9 +210,9 @@ function EnhancedToppings({ type, config, scale, yOffset }) {
               key={i}
               position={item.pos}
               rotation={[
-                Math.random() * Math.PI,
-                Math.random() * Math.PI,
-                Math.random() * Math.PI,
+                pseudoRandom(i, 1) * Math.PI,
+                pseudoRandom(i, 2) * Math.PI,
+                pseudoRandom(i, 3) * Math.PI,
               ]}
               castShadow
             >
@@ -428,7 +429,7 @@ EnhancedPlate.propTypes = {
 /**
  * Complete Enhanced Cake Model
  */
-export function ImprovedCakeModel({ config, onSpotClick }) {
+export function ImprovedCakeModel({ config }) {
   const groupRef = useRef(null);
 
   // Gentle floating animation

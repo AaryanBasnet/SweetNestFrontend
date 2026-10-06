@@ -37,10 +37,28 @@ export default function AddProductModal({
   const [removedImageIds, setRemovedImageIds] = useState([]);
   const [errors, setErrors] = useState({});
 
+  const handleReset = () => {
+    setFormData({
+      name: '',
+      description: '',
+      category: '',
+      isActive: true,
+      isFeatured: false,
+      storageAndCare: '',
+      weightOptions: [{ weightInKg: 0.5, label: '1 Pound', price: 0, isDefault: true }],
+      images: [],
+    });
+    setIngredientsText(''); // Reset text
+    setImagePreviewUrls([]);
+    setErrors({});
+    setRemovedImageIds([]);
+  };
+
   // Populate Data on Open
   useEffect(() => {
     if (isOpen) {
       if (initialData) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect -- the form must reload whenever the modal opens; a `key` on the modal would be the cleaner fix
         setFormData({
           name: initialData.name || '',
           description: initialData.description || '',
@@ -69,22 +87,6 @@ export default function AddProductModal({
     }
   }, [isOpen, initialData]);
 
-  const handleReset = () => {
-    setFormData({
-      name: '',
-      description: '',
-      category: '',
-      isActive: true,
-      isFeatured: false,
-      storageAndCare: '',
-      weightOptions: [{ weightInKg: 0.5, label: '1 Pound', price: 0, isDefault: true }],
-      images: [],
-    });
-    setIngredientsText(''); // Reset text
-    setImagePreviewUrls([]);
-    setErrors({});
-    setRemovedImageIds([]);
-  };
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;

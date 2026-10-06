@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { CakeConfigurator } from "../components/cake/configurator";
 import { Sparkles, ArrowRight, Check } from "lucide-react";
 
@@ -9,7 +8,6 @@ import { Sparkles, ArrowRight, Check } from "lucide-react";
  */
 export default function CustomPage() {
   const [showConfigurator, setShowConfigurator] = useState(false);
-  const navigate = useNavigate();
 
   // If configurator is open, show it full screen
   if (showConfigurator) {
