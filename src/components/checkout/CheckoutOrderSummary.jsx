@@ -36,7 +36,7 @@ export default function CheckoutOrderSummary() {
         {items.map((item) => (
           <div key={item._id || item.cake?._id} className="flex items-center gap-3">
             <div className="w-14 h-14 rounded-xl overflow-hidden bg-cream/50 shrink-0">
-              <img
+              <img loading="lazy" decoding="async"
                 src={item.cake?.images?.[0]?.url || '/placeholder-cake.jpg'}
                 alt={item.cake?.name}
                 className="w-full h-full object-cover"

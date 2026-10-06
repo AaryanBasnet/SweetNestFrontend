@@ -1,13 +1,10 @@
-import { useState, useEffect } from "react";
+import { lazy, Suspense, useState, useEffect } from "react";
 import HeroContent from "../components/ui/HeroContent";
 import HeroCarousel from "../components/ui/HeroCarousel";
 import HeroPreview from "../components/ui/HeroPreview";
-import {
-  FeaturesGrid,
-  OurPhilosophy,
-  CrowdFavorites,
-  SeasonalCollection,
-} from "../components/home";
+
+// Below the hero: loaded after the hero has been painted
+const HomeSections = lazy(() => import("../components/home/HomeSections"));
 import { useFeaturedCakes } from "../hooks/cake";
 import strawberryCheesecake from "../assets/strawberry-cheesecake.webp";
 import chocolateCake from "../assets/chocolate-cake.webp";
@@ -156,17 +153,9 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Seasonal Collection Section */}
-      <SeasonalCollection />
-
-      {/* Features Grid Section */}
-      <FeaturesGrid />
-
-      {/* Crowd Favorites Section */}
-      <CrowdFavorites />
-
-      {/* Our Philosophy Section */}
-      <OurPhilosophy />
+      <Suspense fallback={null}>
+        <HomeSections />
+      </Suspense>
     </>
   );
 }

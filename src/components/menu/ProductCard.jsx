@@ -36,7 +36,7 @@ export default function ProductCard({
     >
       {/* Image Section */}
       <div className="relative aspect-[4/3] overflow-hidden bg-[#E8E4DD] rounded-t-2xl">
-        <img
+        <img loading="lazy" decoding="async"
           src={imageUrl}
           alt={name}
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"

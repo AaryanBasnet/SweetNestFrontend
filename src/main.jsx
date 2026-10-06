@@ -1,4 +1,9 @@
 import { createRoot } from "react-dom/client";
+// Same faces and weights as before, served from this site: no extra connections
+// to Google before the text can be drawn.
+import "@fontsource/playfair-display/latin-500.css";
+import "@fontsource/dm-sans/latin-400.css";
+import "@fontsource/dm-sans/latin-500.css";
 import "./index.css";
 
 import App from "./App";

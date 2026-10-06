@@ -73,7 +73,7 @@ function WishlistButton({ cake, active, onToggle, className }) {
 function SpotlightCard({ cake, wished, onAdd, onWish }) {
   return (
     <article className="group relative isolate overflow-hidden rounded-[30px] text-white min-h-[460px] lg:row-span-2">
-      <img
+      <img loading="lazy" decoding="async"
         src={imageOf(cake)}
         alt=""
         className="absolute inset-0 -z-20 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
@@ -118,7 +118,7 @@ function SideCard({ cake, rank, wished, onAdd, onWish }) {
     <article className="group relative grid grid-cols-[110px_1fr] sm:grid-cols-[150px_1fr] gap-4 sm:gap-5 rounded-[26px] bg-white p-3.5 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_18px_36px_-18px_rgba(44,36,32,0.35)]">
       <CardLink cake={cake} radius="rounded-[26px]" ringClass="focus-visible:ring-accent" />
       <div className="relative min-h-[130px] overflow-hidden rounded-[18px]">
-        <img src={imageOf(cake)} alt="" className="absolute inset-0 w-full h-full object-cover" />
+        <img loading="lazy" decoding="async" src={imageOf(cake)} alt="" className="absolute inset-0 w-full h-full object-cover" />
         <span className="absolute left-2.5 top-2.5 flex h-[30px] w-[30px] items-center justify-center rounded-full bg-white font-serif text-[15px]">
           {rank}
         </span>

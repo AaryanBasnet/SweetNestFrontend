@@ -33,7 +33,7 @@ function WishlistItemCard({ item, onRemove, onAddToCart, onSetReminder }) {
       
       {/* --- Image Section --- */}
       <div className="relative aspect-[4/3] overflow-hidden bg-gray-50">
-        <img 
+        <img loading="lazy" decoding="async" 
           src={cakeData.images?.[0]?.url} 
           alt={cakeData.name} 
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-in-out" 
