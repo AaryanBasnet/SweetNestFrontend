@@ -12,6 +12,8 @@ A custom-cake bakery storefront where customers browse cakes, **design their own
 
 > **Try it without signing up.** The login page has one-click **Customer demo** and **Admin demo** buttons. The admin demo is read-only (enforced by the API, not just the UI). Checkout runs on eSewa's sandbox, so no real money moves: eSewa ID `9806800001`, password `Nepal@123`, MPIN `1122`, token `123456`.
 
+<p align="center"><img src="docs/promo-demo.gif" alt="18-second promo: browse cakes, design a custom cake in 3D, check out and track the order" width="280"></p>
+
 | Storefront | 3D cake designer |
 |---|---|
 | ![Home page](docs/screenshots/home.jpg) | ![3D cake designer](docs/screenshots/designer.jpg) |
