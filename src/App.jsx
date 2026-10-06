@@ -5,6 +5,7 @@ import "react-toastify/dist/ReactToastify.css";
 
 import AppRouter from "./routers/AppRouter";
 import useAuthStore from "./stores/authStore";
+import useAccountSession from "./hooks/user/useAccountSession";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -28,6 +29,7 @@ const queryClient = new QueryClient({
  */
 export default function App() {
   const initialize = useAuthStore((state) => state.initialize);
+  useAccountSession();
 
   useEffect(() => {
     initialize();

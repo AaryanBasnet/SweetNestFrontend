@@ -5,6 +5,7 @@
 
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { isBookingValid } from '../utils/deliverySchedule';
 
 const initialShippingData = {
   email: '',
@@ -156,6 +157,12 @@ const useCheckoutStore = create(
 
         if (!shippingData.deliveryDate) errors.deliveryDate = 'Please select a delivery date';
         if (!shippingData.deliveryTime) errors.deliveryTime = 'Please select a time slot';
+        else if (
+          shippingData.deliveryDate &&
+          !isBookingValid(shippingData.deliveryDate, shippingData.deliveryTime)
+        ) {
+          errors.deliveryTime = 'That delivery slot is no longer available. Please choose another.';
+        }
 
         return {
           isValid: Object.keys(errors).length === 0,

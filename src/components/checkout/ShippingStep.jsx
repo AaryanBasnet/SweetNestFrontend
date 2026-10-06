@@ -8,13 +8,21 @@ import { Mail, Calendar, MessageSquare, MapPin, ChevronLeft, ChevronRight, Arrow
 import useCheckoutStore from '../../stores/checkoutStore';
 import useAuthStore from '../../stores/authStore';
 import { AddressSelector } from '../address';
+import {
+  TIME_SLOTS,
+  bookingDay,
+  firstAvailableDay,
+  isDayAvailable,
+  isSlotAvailable,
+  lastAvailableDay,
+  toBookingDate,
+} from '../../utils/deliverySchedule';
 
-// Time slots
-const TIME_SLOTS = [
-  '09:00 AM - 12:00 PM',
-  '12:00 PM - 03:00 PM',
-  '03:00 PM - 06:00 PM',
+const MONTH_NAMES = [
+  'January', 'February', 'March', 'April', 'May', 'June',
+  'July', 'August', 'September', 'October', 'November', 'December',
 ];
+const DAY_NAMES = ['SU', 'MO', 'TU', 'WE', 'TH', 'FR', 'SA'];
 
 // Get days in month
 const getDaysInMonth = (year, month) => {
@@ -26,24 +34,22 @@ const getFirstDayOfMonth = (year, month) => {
   return new Date(year, month, 1).getDay();
 };
 
-// Simple Calendar Component
-function DeliveryCalendar({ selectedDate, onSelectDate }) {
-  const today = new Date();
-  const minDate = new Date(today);
-  minDate.setDate(minDate.getDate() + 2); // At least 2 days from now (24 hours notice)
+const monthIndex = ({ year, month }) => year * 12 + month;
 
-  const [currentMonth, setCurrentMonth] = useState(minDate.getMonth());
-  const [currentYear, setCurrentYear] = useState(minDate.getFullYear());
+// Calendar of the days that can still be booked (24 hours' notice, 90 days ahead)
+function DeliveryCalendar({ selectedDate, onSelectDate }) {
+  const [first] = useState(() => firstAvailableDay());
+  const [last] = useState(() => lastAvailableDay());
+
+  const [currentMonth, setCurrentMonth] = useState(first.month);
+  const [currentYear, setCurrentYear] = useState(first.year);
 
   const daysInMonth = getDaysInMonth(currentYear, currentMonth);
   const firstDayOfMonth = getFirstDayOfMonth(currentYear, currentMonth);
+  const shown = { year: currentYear, month: currentMonth };
 
-  const monthNames = [
-    'January', 'February', 'March', 'April', 'May', 'June',
-    'July', 'August', 'September', 'October', 'November', 'December'
-  ];
-
-  const dayNames = ['SU', 'MO', 'TU', 'WE', 'TH', 'FR', 'SA'];
+  const canGoPrev = monthIndex(shown) > monthIndex(first);
+  const canGoNext = monthIndex(shown) < monthIndex(last);
 
   const prevMonth = () => {
     if (currentMonth === 0) {
@@ -63,50 +69,42 @@ function DeliveryCalendar({ selectedDate, onSelectDate }) {
     }
   };
 
-  const isDateDisabled = (day) => {
-    const date = new Date(currentYear, currentMonth, day);
-    return date < minDate;
-  };
+  const isDateDisabled = (day) => !isDayAvailable({ year: currentYear, month: currentMonth, day });
 
   const isDateSelected = (day) => {
     if (!selectedDate) return false;
-    const date = new Date(currentYear, currentMonth, day);
-    const selected = new Date(selectedDate);
-    return (
-      date.getDate() === selected.getDate() &&
-      date.getMonth() === selected.getMonth() &&
-      date.getFullYear() === selected.getFullYear()
-    );
+    const selected = bookingDay(selectedDate);
+    return selected.day === day && selected.month === currentMonth && selected.year === currentYear;
   };
 
   const handleDateClick = (day) => {
     if (isDateDisabled(day)) return;
-    const date = new Date(currentYear, currentMonth, day);
-    onSelectDate(date.toISOString());
+    onSelectDate(toBookingDate(currentYear, currentMonth, day));
   };
-
-  // Can't go before current month
-  const canGoPrev = currentYear > minDate.getFullYear() ||
-    (currentYear === minDate.getFullYear() && currentMonth > minDate.getMonth());
 
   return (
     <div className="bg-white rounded-xl border border-dark/10 p-4">
       {/* Month Navigation */}
       <div className="flex items-center justify-between mb-4">
-        <span className="text-sm font-medium text-dark">
-          {monthNames[currentMonth]} {currentYear}
+        <span className="text-sm font-medium text-dark" aria-live="polite">
+          {MONTH_NAMES[currentMonth]} {currentYear}
         </span>
         <div className="flex items-center gap-1">
           <button
+            type="button"
             onClick={prevMonth}
             disabled={!canGoPrev}
+            aria-label="Previous month"
             className="p-1.5 rounded-lg hover:bg-dark/5 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
           >
             <ChevronLeft size={16} className="text-dark/60" />
           </button>
           <button
+            type="button"
             onClick={nextMonth}
-            className="p-1.5 rounded-lg hover:bg-dark/5 transition-colors"
+            disabled={!canGoNext}
+            aria-label="Next month"
+            className="p-1.5 rounded-lg hover:bg-dark/5 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
           >
             <ChevronRight size={16} className="text-dark/60" />
           </button>
@@ -115,7 +113,7 @@ function DeliveryCalendar({ selectedDate, onSelectDate }) {
 
       {/* Day Headers */}
       <div className="grid grid-cols-7 gap-1 mb-2">
-        {dayNames.map((day) => (
+        {DAY_NAMES.map((day) => (
           <div key={day} className="text-center text-xs text-dark/40 py-1">
             {day}
           </div>
@@ -138,8 +136,11 @@ function DeliveryCalendar({ selectedDate, onSelectDate }) {
           return (
             <button
               key={day}
+              type="button"
               onClick={() => handleDateClick(day)}
               disabled={disabled}
+              aria-label={`${day} ${MONTH_NAMES[currentMonth]} ${currentYear}`}
+              aria-pressed={selected}
               className={`h-9 rounded-lg text-sm font-medium transition-colors ${
                 selected
                   ? 'bg-accent text-white'
@@ -182,8 +183,24 @@ export default function ShippingStep({ onNext, errors = {} }) {
     setShippingData({ [name]: type === 'checkbox' ? checked : value });
   };
 
+  // A saved date or time can go out of date (the customer comes back days
+  // later), and a slot may not be bookable on the day just picked.
+  const bookedDay = shippingData.deliveryDate ? bookingDay(shippingData.deliveryDate) : null;
+  const slotOpen = (slot) => !bookedDay || isSlotAvailable(bookedDay, slot);
+
+  useEffect(() => {
+    const { deliveryDate, deliveryTime } = shippingData;
+    if (deliveryDate && !isDayAvailable(bookingDay(deliveryDate))) {
+      setShippingData({ deliveryDate: null, deliveryTime: '' });
+    } else if (deliveryDate && deliveryTime && !isSlotAvailable(bookingDay(deliveryDate), deliveryTime)) {
+      setShippingData({ deliveryTime: '' });
+    }
+  }, [shippingData, setShippingData]);
+
   const handleDateSelect = (date) => {
-    setShippingData({ deliveryDate: date });
+    const keepTime =
+      shippingData.deliveryTime && isSlotAvailable(bookingDay(date), shippingData.deliveryTime);
+    setShippingData({ deliveryDate: date, deliveryTime: keepTime ? shippingData.deliveryTime : '' });
   };
 
   const handleTimeSelect = (time) => {
@@ -270,10 +287,15 @@ export default function ShippingStep({ onNext, errors = {} }) {
               {TIME_SLOTS.map((slot) => (
                 <button
                   key={slot}
+                  type="button"
                   onClick={() => handleTimeSelect(slot)}
+                  disabled={!slotOpen(slot)}
+                  aria-pressed={shippingData.deliveryTime === slot}
                   className={`w-full px-4 py-3 rounded-xl text-sm font-medium text-left transition-colors ${
                     shippingData.deliveryTime === slot
                       ? 'bg-dark text-white'
+                      : !slotOpen(slot)
+                      ? 'bg-cream/30 text-dark/25 cursor-not-allowed line-through'
                       : 'bg-cream/30 text-dark hover:bg-cream'
                   }`}
                 >

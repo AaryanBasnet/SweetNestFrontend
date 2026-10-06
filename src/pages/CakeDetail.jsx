@@ -264,8 +264,12 @@ export default function CakeDetail() {
             }
           }}
           onMarkHelpful={async (reviewId) => {
+            if (!isLoggedIn) {
+              toast.info("Log in to mark a review as helpful.");
+              return undefined;
+            }
             try {
-              await markHelpful.mutateAsync(reviewId);
+              return await markHelpful.mutateAsync(reviewId);
             } catch (error) {
               toast.error(
                 error.response?.data?.message || "Failed to mark as helpful"

@@ -41,15 +41,16 @@ export default function Cart() {
     setDeliveryType,
     applyPromo,
     removePromo,
-    fetchCart,
+    syncWithServer,
   } = useCartStore();
 
-  // Fetch cart from server on mount if logged in
+  // Load the server cart on mount if logged in (this also uploads anything
+  // added as a guest, so it is not lost)
   useEffect(() => {
     if (isLoggedIn) {
-      fetchCart();
+      syncWithServer();
     }
-  }, [isLoggedIn, fetchCart]);
+  }, [isLoggedIn, syncWithServer]);
 
   // Handlers
   const handleUpdateQuantity = async (itemId, quantity) => {

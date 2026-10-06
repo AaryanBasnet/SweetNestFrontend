@@ -1,5 +1,5 @@
 import React from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useFormik } from "formik";
 import { toast } from "react-toastify";
 import { Mail, KeyRound } from "lucide-react"; // Icons
@@ -12,9 +12,11 @@ import { AuthButton } from "../../components/ui/AuthButton"; // Reusable UI
 import rightsideImage from "../../assets/auth_img.webp"; // Your image
 import DemoLoginPanel from "../../components/auth/DemoLoginPanel";
 import Logo from "../../components/common/Logo";
+import { getSafeRedirect } from "../../utils/redirect";
 export default function Login() {
   const { login } = useAuth();
   const navigate = useNavigate();
+  const { search } = useLocation();
 
   const formik = useFormik({
     initialValues: { email: "", password: "" },
@@ -29,7 +31,7 @@ export default function Login() {
           if (result.user?.role === "admin") {
             navigate("/admin");
           } else {
-            navigate("/");
+            navigate(getSafeRedirect(search));
           }
         } else {
           toast.error(result.message || "Login failed. Please check your credentials.");
@@ -99,7 +101,7 @@ export default function Login() {
           <p className="text-sm sm:text-base text-center text-gray-700 mt-4 sm:mt-6">
             Don't have an account?{" "}
             <Link
-              to="/register"
+              to={`/register${search}`}
               className="text-accent hover:underline font-medium"
             >
               Signup

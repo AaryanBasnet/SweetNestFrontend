@@ -1,8 +1,9 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { LayoutDashboard, Loader2, ShoppingBag } from "lucide-react";
 import { useAuth } from "../../hooks/user/useAuth";
+import { getSafeRedirect } from "../../utils/redirect";
 
 // Shown only where the backend has demo accounts turned on
 export const DEMO_LOGIN_ENABLED = import.meta.env.VITE_ENABLE_DEMO_LOGIN === "true";
@@ -31,6 +32,7 @@ const DEMOS = [
 export default function DemoLoginPanel() {
   const { demoLogin } = useAuth();
   const navigate = useNavigate();
+  const { search } = useLocation();
   const [pending, setPending] = useState(null);
 
   if (!DEMO_LOGIN_ENABLED) return null;
@@ -43,7 +45,8 @@ export default function DemoLoginPanel() {
 
     if (result.success) {
       toast.success(`Signed in to the ${label.toLowerCase()}`);
-      navigate(to);
+      // The customer demo returns to where the visitor was heading (say, checkout)
+      navigate(role === "customer" ? getSafeRedirect(search, to) : to);
     } else {
       toast.error(result.message || "Demo sign-in is unavailable right now.");
     }
