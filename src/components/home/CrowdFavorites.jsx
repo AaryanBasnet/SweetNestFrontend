@@ -1,100 +1,56 @@
-import { Heart, ArrowRight } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 import { useCakes } from "../../hooks/cake";
+import useAuthStore from "../../stores/authStore";
+import useCartStore from "../../stores/cartStore";
+import useWishlistStore from "../../stores/wishlistStore";
+import ProductCard from "../menu/ProductCard";
+import ProductCardSkeleton from "../menu/ProductCardSkeleton";
 
-const FALLBACK_FAVORITES = [
-  {
-    id: 1,
-    name: "Wild Berry Bliss",
-    description: "Sponge cake, cream, fresh berries",
-    basePrice: 555,
-    images: ["https://images.unsplash.com/photo-1535141192574-5d4897c12636?q=80&w=800&auto=format&fit=crop"],
-    coverImage: "https://images.unsplash.com/photo-1535141192574-5d4897c12636?q=80&w=800&auto=format&fit=crop",
-    badge: null,
-    slug: "wild-berry-bliss",
-  },
-  {
-    id: 2,
-    name: "Midnight Truffle",
-    description: "85% Dark Chocolate, Gold flakes",
-    basePrice: 620,
-    images: ["https://images.unsplash.com/photo-1578985545062-69928b1d9587?q=80&w=800&auto=format&fit=crop"],
-    coverImage: "https://images.unsplash.com/photo-1578985545062-69928b1d9587?q=80&w=800&auto=format&fit=crop",
-    badge: "Best Seller",
-    slug: "midnight-truffle",
-  },
-  {
-    id: 3,
-    name: "Citrus Cloud",
-    description: "Lemon zest, poppy seeds, glaze",
-    basePrice: 480,
-    images: ["https://images.unsplash.com/photo-1621303837174-89787a7d4729?q=80&w=800&auto=format&fit=crop"],
-    coverImage: "https://images.unsplash.com/photo-1621303837174-89787a7d4729?q=80&w=800&auto=format&fit=crop",
-    badge: null,
-    slug: "citrus-cloud",
-  },
-];
+const HOW_MANY = 3;
 
-function ProductCard({ cake, offsetClass, onClick }) {
-  // Get image URL - handle both object and string formats
-  const image = cake.images?.[0]?.url || cake.images?.[0] || cake.coverImage;
-  const description = cake.flavorTags?.join(', ') || cake.description || 'Delicious handmade cake';
-
-  return (
-    <div
-      onClick={onClick}
-      className={`group cursor-pointer hover:-translate-y-2 transition-transform duration-500 ${offsetClass}`}
-    >
-      <div className="relative aspect-[4/5] rounded-[3rem] overflow-hidden mb-6">
-        {cake.badge && (
-          <span className="absolute top-6 left-6 bg-white px-4 py-1.5 text-[10px] font-bold tracking-widest uppercase rounded-full z-10 shadow-sm text-primary">
-            {cake.badge}
-          </span>
-        )}
-        <img
-          src={image}
-          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-          alt={cake.name}
-        />
-        <div className="absolute top-4 right-4 w-12 h-12 bg-white/90 backdrop-blur rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 hover:text-red-500">
-          <Heart size={20} className="text-primary" />
-        </div>
-      </div>
-      <div className="flex justify-between items-start px-2">
-        <div>
-          <h3 className="text-2xl font-medium group-hover:text-accent transition-colors font-serif text-primary">
-            {cake.name}
-          </h3>
-          <p className="text-sm text-primary/50 mt-1 font-sans">{description}</p>
-        </div>
-        <span className="text-xl font-bold font-serif text-primary">Rs. {cake.basePrice}</span>
-      </div>
-    </div>
-  );
-}
-
+/**
+ * The top-rated cakes, shown with the same card as the Menu so the two pages
+ * look and behave alike (add to cart, wishlist, ratings).
+ */
 export default function CrowdFavorites() {
   const navigate = useNavigate();
+  const isLoggedIn = useAuthStore((state) => Boolean(state.user));
+  const addToCart = useCartStore((state) => state.addToCart);
+  const { toggleWishlist, isInWishlist } = useWishlistStore();
 
-  // Fetch top-rated cakes (sorted by rating)
-  const { data: cakesData } = useCakes({
-    sort: '-ratingsAverage',
-    limit: 3
-  });
-  const apiCakes = cakesData?.data || [];
+  const { data, isLoading } = useCakes({ sort: "-ratingsAverage", limit: HOW_MANY });
+  const cakes = data?.data || [];
 
-  // Use API data if available, otherwise fallback
-  const favorites = apiCakes.length >= 3 ? apiCakes : FALLBACK_FAVORITES;
+  // Nothing to show once loading is done: leave the section out rather than
+  // invent cakes that do not exist in the shop.
+  if (!isLoading && cakes.length === 0) return null;
 
-  // Add offset classes for staggered layout
-  const offsetClasses = ['', 'lg:mt-12', ''];
+  const handleAddToCart = async (cake) => {
+    const defaultWeight =
+      cake.weightOptions?.find((w) => w.isDefault) || cake.weightOptions?.[0];
 
-  const handleShopNow = () => {
-    navigate("/menu");
+    if (!defaultWeight) {
+      navigate(`/cake/${cake.slug}`);
+      return;
+    }
+
+    const result = await addToCart(
+      { cakeId: cake._id, cake, quantity: 1, selectedWeight: defaultWeight },
+      isLoggedIn
+    );
+
+    if (result.success) toast.success(`${cake.name} added to cart!`);
+    else toast.error(result.message || "Failed to add to cart");
   };
 
-  const handleProductClick = (cake) => {
-    navigate(`/cake/${cake.slug}`);
+  const handleWishlist = async (cake) => {
+    const result = await toggleWishlist(cake._id, isLoggedIn);
+    if (!result.success) return;
+
+    if (result.action === "added") toast.success(`${cake.name} added to wishlist!`);
+    else toast.info(`${cake.name} removed from wishlist.`);
   };
 
   return (
@@ -104,30 +60,43 @@ export default function CrowdFavorites() {
           <h2 className="text-5xl md:text-6xl italic mb-4 font-serif text-primary">
             Crowd <span className="text-accent">Favorites</span>
           </h2>
-          <p className="text-primary/60 font-sans">Our best-selling delights, loved by thousands.</p>
+          <p className="text-primary/60 font-sans">
+            Our highest-rated cakes, straight from customer reviews.
+          </p>
         </div>
         <button
-          onClick={handleShopNow}
+          onClick={() => navigate("/menu")}
           className="hidden md:flex items-center gap-2 text-sm font-bold tracking-wide border-b border-primary pb-1 hover:text-accent hover:border-accent transition-colors mt-6 md:mt-0 group"
         >
-          VIEW ALL PRODUCTS <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
+          VIEW ALL PRODUCTS{" "}
+          <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
         </button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {favorites.map((cake, index) => (
-          <ProductCard
-            key={cake._id || cake.id}
-            cake={cake}
-            offsetClass={offsetClasses[index] || ''}
-            onClick={() => handleProductClick(cake)}
-          />
-        ))}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+        {isLoading
+          ? Array.from({ length: HOW_MANY }).map((_, i) => <ProductCardSkeleton key={i} />)
+          : cakes.map((cake, index) => (
+              <ProductCard
+                key={cake._id}
+                name={cake.name}
+                description={cake.description}
+                basePrice={cake.basePrice}
+                images={cake.images}
+                ratingsAverage={cake.ratingsAverage}
+                ratingsCount={cake.ratingsCount}
+                badge={`#${index + 1} Top rated`}
+                isWishlisted={isInWishlist(cake._id)}
+                onClick={() => navigate(`/cake/${cake.slug}`)}
+                onAddToCart={() => handleAddToCart(cake)}
+                onWishlist={() => handleWishlist(cake)}
+              />
+            ))}
       </div>
 
       <div className="mt-8 text-center md:hidden">
         <button
-          onClick={handleShopNow}
+          onClick={() => navigate("/menu")}
           className="inline-flex items-center gap-2 text-sm font-bold tracking-wide border-b border-primary pb-1"
         >
           VIEW ALL PRODUCTS <ArrowRight size={16} />

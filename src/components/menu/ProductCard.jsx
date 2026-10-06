@@ -12,6 +12,7 @@ export default function ProductCard({
   images = [],
   ratingsAverage = 0,
   ratingsCount = 0,
+  badge, // optional small label on the image, e.g. "#1 Top rated"
   onAddToCart,
   onWishlist,
   onClick,
@@ -41,6 +42,11 @@ export default function ProductCard({
           alt={name}
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
         />
+        {badge && (
+          <span className="absolute top-3 left-3 bg-white px-3 py-1 text-[11px] font-semibold tracking-wide rounded-full shadow-sm text-dark">
+            {badge}
+          </span>
+        )}
       </div>
 
       {/* Content Section */}
