@@ -8,6 +8,7 @@ import { Mail, ArrowLeft } from "lucide-react";
 import { forgotPasswordApi } from "../../api/user/authApi";
 import { Input } from "../../components/ui/Input";
 import { AuthButton } from "../../components/ui/AuthButton";
+import Logo from "../../components/common/Logo";
 
 const forgotPasswordSchema = Yup.object({
   email: Yup.string()
@@ -42,9 +43,7 @@ export default function ForgotPassword() {
     <div className="w-screen min-h-screen bg-white font-body">
       {/* Logo */}
       <div className="absolute top-6 left-10">
-        <h1 className="font-heading text-2xl text-dark">
-          SweetNest<span className="text-accent"> .</span>
-        </h1>
+        <Logo linked />
       </div>
 
       {/* Centered Card */}

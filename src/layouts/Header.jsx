@@ -17,6 +17,7 @@ import { useAuth } from "../hooks/user/useAuth";
 import useCartStore from "../stores/cartStore";
 import ProfileDropdown from "../components/common/ProfileDropdown";
 import { useUnreadCount } from "../hooks/notification/useNotifications";
+import Logo from "../components/common/Logo";
 
 export default function Header({ wide = false }) {
   const { user, isAuthenticated, logout } = useAuth();
@@ -87,11 +88,7 @@ export default function Header({ wide = false }) {
       >
         <nav className="flex items-center justify-between">
           {/* Left: Logo */}
-          <Link to="/" className="shrink-0">
-            <h1 className="font-heading text-xl sm:text-2xl text-dark font-semibold tracking-tight">
-              SweetNest<span className="text-accent">.</span>
-            </h1>
-          </Link>
+          <Logo linked />
 
           {/* Center: Desktop Links */}
           <div className="hidden lg:flex items-center justify-center space-x-8 xl:space-x-10 text-dark font-body text-sm  tracking-wide uppercase">
@@ -109,10 +106,27 @@ export default function Header({ wide = false }) {
 
           {/* Right: Actions */}
           <div className="flex items-center gap-2 sm:gap-3 md:gap-4">
-            {/* Profile Dropdown - Desktop */}
-            <div className="hidden sm:block">
-              <ProfileDropdown />
-            </div>
+            {/* Account - Desktop: the menu when signed in, plain sign-in links when not */}
+            {isAuthenticated ? (
+              <div className="hidden sm:block">
+                <ProfileDropdown />
+              </div>
+            ) : (
+              <div className="hidden sm:flex items-center gap-1">
+                <Link
+                  to="/login"
+                  className="px-3 py-2 text-sm font-medium text-dark hover:text-accent transition-colors"
+                >
+                  Log in
+                </Link>
+                <Link
+                  to="/register"
+                  className="px-4 py-2 text-sm font-medium bg-accent text-white rounded-full hover:bg-dark transition-colors"
+                >
+                  Sign up
+                </Link>
+              </div>
+            )}
 
             {/* Notification Bell - Desktop (only for authenticated users) */}
             {isAuthenticated && (
@@ -292,22 +306,22 @@ export default function Header({ wide = false }) {
                     </Link>
                   </>
                 ) : (
-                  <>
-                    <Link
-                      to="/login"
-                      onClick={closeMobileMenu}
-                      className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-cream text-dark transition-colors"
-                    >
-                      <User size={18} /> Login
-                    </Link>
+                  <div className="space-y-2">
                     <Link
                       to="/register"
                       onClick={closeMobileMenu}
-                      className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-cream text-dark transition-colors"
+                      className="flex items-center justify-center px-4 py-3 rounded-xl bg-accent text-white font-medium hover:bg-dark transition-colors"
                     >
-                      <User size={18} /> Register
+                      Sign up
                     </Link>
-                  </>
+                    <Link
+                      to="/login"
+                      onClick={closeMobileMenu}
+                      className="flex items-center justify-center px-4 py-3 rounded-xl border border-dark/15 text-dark font-medium hover:border-accent hover:text-accent transition-colors"
+                    >
+                      Log in
+                    </Link>
+                  </div>
                 )}
               </nav>
             </div>

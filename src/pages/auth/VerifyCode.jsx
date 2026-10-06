@@ -5,6 +5,7 @@ import { ArrowLeft } from "lucide-react";
 
 import { verifyResetCodeApi, forgotPasswordApi } from "../../api/user/authApi";
 import { AuthButton } from "../../components/ui/AuthButton";
+import Logo from "../../components/common/Logo";
 
 export default function VerifyCode() {
   const navigate = useNavigate();
@@ -107,9 +108,7 @@ export default function VerifyCode() {
     <div className="w-screen min-h-screen bg-white font-body">
       {/* Logo */}
       <div className="absolute top-6 left-10">
-        <h1 className="font-heading text-2xl text-dark">
-          SweetNest<span className="text-accent"> .</span>
-        </h1>
+        <Logo linked />
       </div>
 
       {/* Centered Card */}

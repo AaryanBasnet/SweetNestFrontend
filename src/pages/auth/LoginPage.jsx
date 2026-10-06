@@ -10,6 +10,7 @@ import { loginSchema } from "../../schemas/authSchema"; // Validation (Yup)
 import { Input } from "../../components/ui/Input"; // Reusable UI
 import { AuthButton } from "../../components/ui/AuthButton"; // Reusable UI
 import rightsideImage from "../../assets/auth_img.webp"; // Your image
+import Logo from "../../components/common/Logo";
 export default function Login() {
   const { login } = useAuth();
   const navigate = useNavigate();
@@ -40,9 +41,7 @@ export default function Login() {
 
       {/* Logo */}
       <div className="absolute top-6 left-10 z-20">
-        <h1 className="font-heading text-h1 text-dark">
-          SweetNest<span className="text-accent"> .</span>
-        </h1>
+        <Logo linked />
       </div>
 
       {/* Left Section */}

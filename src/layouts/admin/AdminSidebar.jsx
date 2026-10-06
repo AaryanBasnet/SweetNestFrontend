@@ -22,6 +22,7 @@ import {
   MessageSquare,
 } from "lucide-react";
 import useAuthStore from "../../stores/authStore";
+import Logo from "../../components/common/Logo";
 
 const NAV_ITEMS = [
   { path: "/admin", icon: LayoutDashboard, label: "Dashboard", end: true },
@@ -57,9 +58,7 @@ export default function AdminSidebar({ isMobileOpen = false, onMobileClose }) {
     <>
       {/* Logo */}
       <div className="px-4 sm:px-6 py-4 sm:py-6 flex items-center justify-between">
-        <h1 className="text-xl sm:text-2xl font-serif text-dark">
-          SweetNest<span className="text-accent">.</span>
-        </h1>
+        <Logo />
         {/* Close button - mobile only */}
         <button
           onClick={onMobileClose}
