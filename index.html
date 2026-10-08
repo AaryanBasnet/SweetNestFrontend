@@ -11,6 +11,37 @@
     <link rel="preconnect" href="https://api-sweetnest.aaryanbasnet.com.np" crossorigin />
     <link rel="preconnect" href="https://res.cloudinary.com" />
     <link rel="preconnect" href="https://images.unsplash.com" />
+
+    <!-- The home page's hero cakes, requested now instead of after the app has
+         downloaded and started: the hero photo is the biggest thing on the page
+         and its address is in this answer. The app picks the pending answer up
+         from window.__earlyFeatured (src/lib/earlyFeatured.js). A plain GET with
+         no custom headers, so the browser needs no CORS pre-check first. -->
+    <script>
+      (function () {
+        var base = '%VITE_API_BASE_URL%';
+        if (base.indexOf('http') !== 0) return;
+        try {
+          var promise = fetch(base + '/cakes/featured?limit=2')
+            .then(function (response) {
+              if (!response.ok) throw new Error('featured ' + response.status);
+              return response.json();
+            })
+            .then(function (body) {
+              // Begin loading the first hero photo as soon as its address is known
+              var cake = body && body.data && body.data[0];
+              var image = cake && cake.images && cake.images[0];
+              var src = image && (image.url || image);
+              if (src) new Image().src = src;
+              return body;
+            });
+          promise.catch(function () {});
+          window.__earlyFeatured = { limit: 2, promise: promise };
+        } catch (error) {
+          /* the app asks again in the usual way */
+        }
+      })();
+    </script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>SweetNest | Handmade Cakes, Designed by You</title>
     <meta name="description" content="Handmade cakes from SweetNest. Browse the menu, design your own cake in 3D, and order online for delivery." />
