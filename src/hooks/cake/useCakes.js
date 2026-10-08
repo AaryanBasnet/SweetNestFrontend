@@ -6,6 +6,7 @@
 
 import { useQuery, useInfiniteQuery } from '@tanstack/react-query';
 import * as cakeService from '../../services/cake/cakeService';
+import { takeEarlyFeatured } from '../../lib/earlyFeatured';
 
 // Query keys for cache management
 export const cakeKeys = {
@@ -54,7 +55,12 @@ export const useInfiniteCakes = (filters = {}, options = {}) => {
 export const useFeaturedCakes = (limit = 8, options = {}) => {
   return useQuery({
     queryKey: cakeKeys.featured(),
-    queryFn: () => cakeService.fetchFeaturedCakes(limit),
+    queryFn: () => {
+      // The home page asked for these in index.html, before the app loaded
+      const early = takeEarlyFeatured(limit);
+      const fetchNow = () => cakeService.fetchFeaturedCakes(limit);
+      return early ? early.catch(fetchNow) : fetchNow();
+    },
     staleTime: 1000 * 60 * 10, // 10 minutes
     ...options,
   });
