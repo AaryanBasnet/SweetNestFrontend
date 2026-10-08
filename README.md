@@ -1,9 +1,9 @@
 # 🍰 SweetNest Frontend
 
 [![CI](https://github.com/AaryanBasnet/SweetNestFrontend/actions/workflows/ci.yml/badge.svg)](https://github.com/AaryanBasnet/SweetNestFrontend/actions/workflows/ci.yml)
-![Lighthouse performance](https://img.shields.io/badge/performance-98-brightgreen)
-![Lighthouse accessibility](https://img.shields.io/badge/accessibility-89%E2%80%9396-green)
-![Lighthouse best practices](https://img.shields.io/badge/best%20practices-96-brightgreen)
+![Lighthouse performance](https://img.shields.io/badge/performance-68%E2%80%9393-yellowgreen)
+![Lighthouse accessibility](https://img.shields.io/badge/accessibility-94-brightgreen)
+![Lighthouse best practices](https://img.shields.io/badge/best%20practices-100-brightgreen)
 ![Lighthouse SEO](https://img.shields.io/badge/SEO-100-brightgreen)
 
 A custom-cake bakery storefront where customers browse cakes, **design their own cake in a live 3D preview**, pay with eSewa and track delivery, backed by a full admin dashboard.
@@ -34,12 +34,19 @@ A custom-cake bakery storefront where customers browse cakes, **design their own
 
 ### Lighthouse
 
-Measured on the production build of the home page (October 2026):
+Measured on the live home page, median of three runs, 8 October 2026
+(Lighthouse 12, its default mobile throttling):
 
-| | Performance | Accessibility | Best practices | SEO |
-|---|---|---|---|---|
-| Desktop | 98 | 89 | 96 | 100 |
-| Mobile | 72 | 96 | 96 | 100 |
+| | Performance | Accessibility | Best practices | SEO | First paint | Largest paint |
+|---|---|---|---|---|---|---|
+| Desktop | 93 | 94 | 100 | 100 | 0.7 s | 1.6 s |
+| Mobile | 68 | 94 | 100 | 100 | 2.5 s | 5.5 s |
+
+Mobile is the weaker score. The hero photo comes from the API, so it can only
+start loading once the featured cakes have arrived; the rest of the page paints
+well before that. Earlier work on this (fonts bundled with the app, lazy images,
+split chunks, and moving two 900 KB and 340 KB third-party PNGs to a resized
+WebP on Cloudinary) took first paint on a phone from 3.5 s to 2.5 s.
 
 This repository contains **only the frontend codebase**. The backend lives in a separate repository and communicates via REST APIs.
 
