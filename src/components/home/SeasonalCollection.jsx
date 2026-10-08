@@ -109,7 +109,7 @@ export default function SeasonalCollection() {
                       : "opacity-0 scale-105 z-0"
                   }`}
                 >
-                  <img
+                  <img loading="lazy" decoding="async"
                     src={img.url}
                     alt={img.alt}
                     className="w-full h-full object-cover"

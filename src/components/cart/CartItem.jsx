@@ -32,7 +32,7 @@ export default function CartItem({ item, onUpdateQuantity, onRemove, isLoading }
       {isCustomCake ? (
         <div className="shrink-0">
           <div className="relative overflow-hidden rounded-xl">
-            <img
+            <img loading="lazy" decoding="async"
               src={imageUrl}
               alt={cakeData.name}
               className="w-20 h-20 sm:w-24 sm:h-24 object-cover"
@@ -42,7 +42,7 @@ export default function CartItem({ item, onUpdateQuantity, onRemove, isLoading }
       ) : (
         <Link to={`/cake/${cakeData.slug}`} className="shrink-0">
           <div className="relative overflow-hidden rounded-xl">
-            <img
+            <img loading="lazy" decoding="async"
               src={imageUrl}
               alt={cakeData.name}
               className={`w-20 h-20 sm:w-24 sm:h-24 object-cover transition-transform duration-300 ${isLoading ? '' : 'group-hover:scale-105'}`}

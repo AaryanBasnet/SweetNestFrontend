@@ -5,11 +5,12 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
-    <!-- Fonts load from the page head (not a CSS @import, which made the
-         browser wait for the stylesheet before it could even ask for them) -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500&family=DM+Sans:wght@400;500&display=swap" />
+    <!-- Fonts are bundled with the app (see src/main.jsx). Open the connections
+         the home page needs anyway before the script has run: the API for the
+         featured cakes, and the hosts the cake photos come from. -->
+    <link rel="preconnect" href="https://api-sweetnest.aaryanbasnet.com.np" crossorigin />
+    <link rel="preconnect" href="https://res.cloudinary.com" />
+    <link rel="preconnect" href="https://images.unsplash.com" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>SweetNest | Handmade Cakes, Designed by You</title>
     <meta name="description" content="Handmade cakes from SweetNest. Browse the menu, design your own cake in 3D, and order online for delivery." />

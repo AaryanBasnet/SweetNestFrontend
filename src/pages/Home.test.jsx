@@ -14,12 +14,7 @@ import { MemoryRouter } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 // Everything below the hero is irrelevant here and pulls in a lot of code.
-vi.mock('../components/home', () => ({
-  FeaturesGrid: () => null,
-  OurPhilosophy: () => null,
-  CrowdFavorites: () => null,
-  SeasonalCollection: () => null,
-}));
+vi.mock('../components/home/HomeSections', () => ({ default: () => null }));
 
 const useFeaturedCakes = vi.fn();
 vi.mock('../hooks/cake', () => ({

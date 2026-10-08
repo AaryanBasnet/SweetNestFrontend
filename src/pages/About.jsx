@@ -41,7 +41,7 @@ export default function About() {
             {/* Image Collage */}
             <div className="relative h-[600px] w-full">
               <div className="absolute top-0 left-0 w-3/4 h-3/4 rounded-[40px] overflow-hidden shadow-2xl z-10">
-                <img
+                <img loading="lazy" decoding="async"
                   src={img1}
                   className="w-full h-full object-cover"
                   alt="Baker mixing dough"
@@ -49,7 +49,7 @@ export default function About() {
               </div>
 
               <div className="absolute bottom-0 right-0 w-2/3 h-2/3 rounded-[40px] overflow-hidden shadow-2xl border-8 border-white z-20">
-                <img
+                <img loading="lazy" decoding="async"
                   src="https://images.unsplash.com/photo-1612203985729-70726954388c?auto=format&fit=crop&q=80&w=600"
                   className="w-full h-full object-cover"
                   alt="Cake detail"

@@ -41,6 +41,8 @@ export default function HeroCarousel({ images, currentIndex }) {
           key={currentIndex}
           src={images[currentIndex]}
           alt="Featured cake"
+          fetchPriority="high"
+          decoding="async"
           className="absolute inset-0 w-full h-full object-contain"
           style={{ transformStyle: "preserve-3d" }}
           variants={variants}
