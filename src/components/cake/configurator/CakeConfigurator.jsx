@@ -1,7 +1,7 @@
-import React, { useState, useRef, useCallback, useEffect, Suspense, Component } from "react";
+import React, { useState, useRef, useCallback, useEffect, useMemo, Suspense, Component } from "react";
 import PropTypes from "prop-types";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { OrbitControls, Environment, ContactShadows } from "@react-three/drei";
+import { OrbitControls, Environment, ContactShadows, Lightformer, PerformanceMonitor } from "@react-three/drei";
 import * as THREE from "three";
 import * as LucideIcons from "lucide-react";
 import {
@@ -19,6 +19,7 @@ import {
 import { toast } from "react-toastify";
 import useCartStore from "../../../stores/cartStore";
 import { PhotorealisticCakeModel } from "./PhotorealisticCakeModel";
+import { QualityContext, detectLite } from "./quality";
 import { ConfigSummary, PriceBreakdown } from "./PriceBreakdown";
 import { BaseStep, FlavorStep, FrostingStep, DecorateStep, PersonalizeStep } from "./ConfigSteps";
 import {
@@ -112,20 +113,22 @@ const VIEW_FOR_STEP = {
  * user's manual orbiting or the idle turntable.
  */
 function CameraRig({ view, nonce, tierCount }) {
-  const { camera } = useThree();
+  const { camera, invalidate } = useThree();
   const target = useRef(new THREE.Vector3(...cameraViewFor("hero", 1)));
   const remaining = useRef(0);
 
   useEffect(() => {
     target.current.set(...cameraViewFor(view, tierCount));
     remaining.current = 1.6;
-  }, [view, nonce, tierCount]);
+    invalidate();
+  }, [view, nonce, tierCount, invalidate]);
 
   useFrame((_, delta) => {
     if (remaining.current <= 0) return;
     remaining.current -= delta;
     camera.position.lerp(target.current, Math.min(1, 3.5 * delta));
     camera.lookAt(...CAMERA_TARGET);
+    invalidate();
   });
 
   return null;
@@ -140,19 +143,37 @@ CameraRig.propTypes = {
 // SCENE
 // ============================================
 
-function Scene({ config, sliced, cameraView, viewNonce }) {
-  const tierCount = TIER_OPTIONS[config.tiers]?.count || 1;
+/**
+ * Soft studio light for reflections, built from a few light panels instead of downloading an HDR photo (the old
+ * "apartment" preset was a 1.4 MB request to a third-party server, which is slow on a phone and fails offline).
+ * It is drawn once into a small cube map.
+ */
+function StudioEnvironment({ lite }) {
   return (
-    <>
+    <Environment resolution={lite ? 128 : 256} frames={1} environmentIntensity={0.9}>
+      <color attach="background" args={["#E6D6C2"]} />
+      <Lightformer form="rect" intensity={3} color="#FFF4E0" position={[5, 6, 4]} scale={[9, 5, 1]} target={[0, 0, 0]} />
+      <Lightformer form="rect" intensity={1.2} color="#DCE9FF" position={[-6, 3, -3]} scale={[7, 4, 1]} target={[0, 0, 0]} />
+      <Lightformer form="ring" intensity={1.5} color="#FFFFFF" position={[0, 8, -4]} scale={4} target={[0, 0, 0]} />
+    </Environment>
+  );
+}
+
+function Scene({ config, sliced, cameraView, viewNonce, lite }) {
+  const tierCount = TIER_OPTIONS[config.tiers]?.count || 1;
+  // The ground shadow only depends on the cake's footprint, so it is drawn once per change instead of every frame
+  const shadowKey = `${config.shape}|${config.tiers}|${config.size}`;
+  return (
+    <QualityContext.Provider value={{ lite }}>
       <CameraRig view={cameraView} nonce={viewNonce} tierCount={tierCount} />
 
       <ambientLight intensity={0.35} />
       <hemisphereLight skyColor="#FFFAF0" groundColor="#E8D5C0" intensity={0.45} />
       <directionalLight
         position={[5, 8, 4]}
-        intensity={1.5}
+        intensity={lite ? 1.7 : 1.5}
         color="#FFF4E0"
-        castShadow
+        castShadow={!lite}
         shadow-mapSize={[2048, 2048]}
         shadow-bias={-0.0004}
         shadow-camera-near={1}
@@ -162,22 +183,24 @@ function Scene({ config, sliced, cameraView, viewNonce }) {
         shadow-camera-top={6}
         shadow-camera-bottom={-6}
       />
-      <directionalLight position={[-6, 4, -3]} intensity={0.5} color="#DCE9FF" />
-      <spotLight position={[0, 9, -6]} intensity={0.9} angle={0.5} penumbra={0.8} color="#FFFFFF" />
-      <Environment preset="apartment" environmentIntensity={0.55} />
+      {!lite && <directionalLight position={[-6, 4, -3]} intensity={0.5} color="#DCE9FF" />}
+      {!lite && <spotLight position={[0, 9, -6]} intensity={0.9} angle={0.5} penumbra={0.8} color="#FFFFFF" />}
+      <StudioEnvironment lite={lite} />
 
       <PhotorealisticCakeModel config={config} sliced={sliced} />
 
       <ContactShadows
+        key={shadowKey}
+        frames={lite ? 3 : Infinity}
         position={[0, -0.9, 0]}
         opacity={0.35}
         scale={16}
         blur={2.4}
         far={4}
-        resolution={1024}
+        resolution={lite ? 512 : 1024}
         color="#7A5C45"
       />
-    </>
+    </QualityContext.Provider>
   );
 }
 Scene.propTypes = {
@@ -185,7 +208,29 @@ Scene.propTypes = {
   sliced: PropTypes.bool.isRequired,
   cameraView: PropTypes.string.isRequired,
   viewNonce: PropTypes.number.isRequired,
+  lite: PropTypes.bool.isRequired,
 };
+
+/**
+ * Lets the screen-capture code ask the 3D scene for a frame. The canvas no longer keeps its drawing buffer (which
+ * costs memory and speed on every frame); instead we draw once on request and read that picture straight away.
+ */
+function CaptureBridge({ captureRef }) {
+  const gl = useThree((s) => s.gl);
+  const scene = useThree((s) => s.scene);
+  const camera = useThree((s) => s.camera);
+  useEffect(() => {
+    captureRef.current = () => {
+      gl.render(scene, camera);
+      return gl.domElement;
+    };
+    return () => {
+      captureRef.current = null;
+    };
+  }, [gl, scene, camera, captureRef]);
+  return null;
+}
+CaptureBridge.propTypes = { captureRef: PropTypes.object.isRequired };
 
 // ============================================
 // STEPPER
@@ -194,7 +239,7 @@ Scene.propTypes = {
 function Stepper({ steps, currentStep, onSelect }) {
   const currentIndex = steps.findIndex((s) => s.id === currentStep);
   return (
-    <nav className="px-3 pt-3 lg:px-4 lg:pt-4" aria-label="Design steps">
+    <nav className="px-3 pt-2 lg:px-4 lg:pt-4" aria-label="Design steps">
       <ol className="grid grid-cols-5 gap-1">
         {steps.map((step, i) => {
           const Icon = LucideIcons[step.icon] || LucideIcons.Circle;
@@ -206,7 +251,7 @@ function Stepper({ steps, currentStep, onSelect }) {
                 type="button"
                 onClick={() => onSelect(step.id)}
                 aria-current={active ? "step" : undefined}
-                className={`w-full flex flex-col items-center gap-1 rounded-xl px-1 py-2 text-[11px] font-medium transition-colors ${
+                className={`w-full flex flex-col items-center gap-1 rounded-xl px-1 py-1.5 lg:py-2 text-[11px] font-medium transition-colors ${
                   active
                     ? "bg-accent text-white shadow-md"
                     : done
@@ -227,7 +272,7 @@ function Stepper({ steps, currentStep, onSelect }) {
           );
         })}
       </ol>
-      <div className="mt-3 h-1 rounded-full bg-dark/5 overflow-hidden">
+      <div className="mt-2 lg:mt-3 h-1 rounded-full bg-dark/5 overflow-hidden">
         <div
           className="h-full bg-accent rounded-full transition-all duration-500"
           style={{ width: `${((currentIndex + 1) / steps.length) * 100}%` }}
@@ -246,16 +291,25 @@ Stepper.propTypes = {
 // MAIN COMPONENT
 // ============================================
 
+// Pixel density steps used when the scene cannot keep up: the picture gets a little softer instead of choppy
+const DPR_STEPS = [1, 0.8, 0.65, 0.5];
+
 export const CakeConfigurator = ({ onClose, initialConfig }) => {
+  const lite = useMemo(() => detectLite(), []);
+  const maxDpr = useMemo(() => Math.min(typeof window === "undefined" ? 1 : window.devicePixelRatio || 1, lite ? 1.5 : 2), [lite]);
+  const [dprStep, setDprStep] = useState(0);
+  const dpr = Math.max(0.75, maxDpr * DPR_STEPS[dprStep]);
+  const isTouch = useMemo(() => typeof window !== "undefined" && (window.matchMedia?.("(pointer: coarse)")?.matches ?? false), []);
   const [config, setConfig] = useState(() => ({ ...DEFAULT_CONFIG, ...(initialConfig || {}) }));
   const [currentStep, setCurrentStep] = useState(CONFIG_STEPS[0].id);
   const [peek, setPeek] = useState(false);
   const [cameraView, setCameraView] = useState("hero");
   const [viewNonce, setViewNonce] = useState(0);
-  const [autoRotate, setAutoRotate] = useState(true);
+  const [autoRotate, setAutoRotate] = useState(() => !lite);
   const [showDetails, setShowDetails] = useState(false);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
   const canvasRef = useRef(null);
+  const captureRef = useRef(null);
   const addToCart = useCartStore((state) => state.addToCart);
 
   const priceLines = buildPriceLines(config);
@@ -282,7 +336,7 @@ export const CakeConfigurator = ({ onClose, initialConfig }) => {
 
   const captureScreenshot = useCallback(() => {
     try {
-      const canvas = canvasRef.current?.querySelector("canvas");
+      const canvas = captureRef.current?.();
       if (!canvas) return null;
       const out = document.createElement("canvas");
       out.width = canvas.width;
@@ -388,14 +442,14 @@ export const CakeConfigurator = ({ onClose, initialConfig }) => {
   const specLine2 = `${config.flavor}${config.eggless ? " (eggless)" : ""} · ${config.filling}`;
 
   const overlayBtn = (active) =>
-    `h-8 w-8 rounded-lg shadow-md border border-dark/10 backdrop-blur-sm flex items-center justify-center transition-colors ${
+    `h-10 w-10 lg:h-8 lg:w-8 rounded-lg shadow-md border border-dark/10 backdrop-blur-sm flex items-center justify-center transition-colors ${
       active ? "bg-accent text-white" : "bg-white/90 text-dark/70 hover:bg-cream"
     }`;
 
   return (
     <div className="fixed inset-0 z-50 bg-[#F7EFE6] flex flex-col overflow-hidden">
       {/* HEADER */}
-      <header className="h-16 lg:h-[72px] px-4 lg:px-6 flex items-center justify-between bg-white/80 backdrop-blur border-b border-dark/10 flex-shrink-0">
+      <header className="h-14 lg:h-[72px] px-4 lg:px-6 flex items-center justify-between bg-white/80 backdrop-blur border-b border-dark/10 flex-shrink-0">
         <button
           type="button"
           onClick={onClose}
@@ -432,11 +486,11 @@ export const CakeConfigurator = ({ onClose, initialConfig }) => {
       </header>
 
       {/* MAIN */}
-      <main className="flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-5 p-4 lg:p-5 overflow-y-auto lg:overflow-hidden">
+      <main className="flex-1 min-h-0 flex flex-col max-lg:landscape:flex-row lg:grid lg:grid-cols-12 gap-3 lg:gap-5 p-3 lg:p-5 overflow-hidden">
         {/* STAGE */}
         <section
           ref={canvasRef}
-          className="lg:col-span-7 relative rounded-3xl overflow-hidden shadow-xl shadow-dark/5 border border-white/60 h-[46vh] min-h-[320px] lg:h-auto lg:min-h-0"
+          className="lg:col-span-7 relative flex-none h-[34dvh] min-h-[170px] max-h-[420px] max-lg:landscape:h-auto max-lg:landscape:max-h-none max-lg:landscape:min-h-0 max-lg:landscape:w-1/2 lg:h-auto lg:max-h-none lg:min-h-0 rounded-3xl overflow-hidden shadow-xl shadow-dark/5 border border-white/60"
           style={{
             background:
               "radial-gradient(ellipse 80% 65% at 50% 38%, #FFFFFF 0%, #FFF6EA 45%, #F3DCC2 100%)",
@@ -445,13 +499,14 @@ export const CakeConfigurator = ({ onClose, initialConfig }) => {
           <SceneErrorBoundary>
             <Suspense fallback={<LoadingFallback />}>
               <Canvas
-                shadows="soft"
-                dpr={[1, 2]}
+                shadows={lite ? false : "soft"}
+                dpr={dpr}
+                frameloop={lite && !autoRotate ? "demand" : "always"}
                 gl={{
-                  antialias: true,
+                  antialias: !lite,
                   alpha: true,
                   powerPreference: "high-performance",
-                  preserveDrawingBuffer: true,
+                  preserveDrawingBuffer: false,
                   toneMapping: THREE.ACESFilmicToneMapping,
                   toneMappingExposure: 1.3,
                   outputColorSpace: THREE.SRGBColorSpace,
@@ -459,7 +514,13 @@ export const CakeConfigurator = ({ onClose, initialConfig }) => {
                 camera={{ fov: 40, near: 0.1, far: 100, position: [0, 4.2, 8.6] }}
                 className="w-full h-full"
               >
-                <Scene config={config} sliced={sliced} cameraView={cameraView} viewNonce={viewNonce} />
+                <PerformanceMonitor
+                  flipflops={3}
+                  onDecline={() => setDprStep((s) => Math.min(s + 1, DPR_STEPS.length - 1))}
+                  onIncline={() => setDprStep((s) => Math.max(s - 1, 0))}
+                />
+                <CaptureBridge captureRef={captureRef} />
+                <Scene config={config} sliced={sliced} cameraView={cameraView} viewNonce={viewNonce} lite={lite} />
                 <OrbitControls
                   enablePan={false}
                   target={CAMERA_TARGET}
@@ -488,7 +549,7 @@ export const CakeConfigurator = ({ onClose, initialConfig }) => {
           </div>
 
           {/* View presets + tools */}
-          <div className="absolute top-4 right-4 flex flex-col items-end gap-2">
+          <div className="absolute top-3 right-3 lg:top-4 lg:right-4 flex flex-col items-end gap-2">
             <div className="flex rounded-lg overflow-hidden shadow-md border border-dark/10 bg-white/90 backdrop-blur-sm">
               {[
                 ["hero", "Front"],
@@ -500,7 +561,7 @@ export const CakeConfigurator = ({ onClose, initialConfig }) => {
                   key={view}
                   type="button"
                   onClick={() => goToView(view)}
-                  className={`px-3 py-1.5 text-xs font-medium transition-colors ${
+                  className={`px-3 py-2 lg:py-1.5 min-h-10 lg:min-h-0 text-xs font-medium transition-colors ${
                     cameraView === view ? "bg-accent text-white" : "text-dark/70 hover:bg-cream"
                   }`}
                 >
@@ -540,15 +601,15 @@ export const CakeConfigurator = ({ onClose, initialConfig }) => {
           </div>
 
           <div className="absolute bottom-4 left-1/2 -translate-x-1/2 whitespace-nowrap bg-white/85 backdrop-blur-sm px-3 py-1.5 rounded-full text-[11px] text-dark/60 pointer-events-none shadow border border-dark/5">
-            Drag to rotate · Scroll to zoom
+            {isTouch ? "Drag to rotate · Pinch to zoom" : "Drag to rotate · Scroll to zoom"}
           </div>
         </section>
 
         {/* PANEL */}
-        <aside className="lg:col-span-5 flex flex-col lg:min-h-0 bg-white rounded-3xl shadow-xl shadow-dark/5 border border-dark/5 overflow-hidden">
+        <aside className="lg:col-span-5 flex flex-col flex-1 min-h-0 max-lg:landscape:w-1/2 bg-white rounded-3xl shadow-xl shadow-dark/5 border border-dark/5 overflow-hidden">
           <Stepper steps={CONFIG_STEPS} currentStep={currentStep} onSelect={setCurrentStep} />
 
-          <div className="lg:flex-1 lg:min-h-0 lg:overflow-y-auto px-4 py-5 lg:px-6">
+          <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-4 py-4 lg:px-6 lg:py-5">
             <div key={currentStep} className="animate-fadeIn space-y-5">
               <div>
                 <p className="text-[11px] uppercase tracking-wider text-dark/40 font-medium">
@@ -570,7 +631,7 @@ export const CakeConfigurator = ({ onClose, initialConfig }) => {
             </div>
           </div>
 
-          <footer className="border-t border-dark/10 bg-white px-4 py-3 lg:px-5 space-y-3">
+          <footer className="flex-none border-t border-dark/10 bg-white px-4 pt-2 lg:py-3 lg:px-5 space-y-2 lg:space-y-3 pb-[max(0.5rem,env(safe-area-inset-bottom))]">
             <button
               type="button"
               onClick={() => setShowDetails((s) => !s)}
@@ -587,7 +648,7 @@ export const CakeConfigurator = ({ onClose, initialConfig }) => {
               </span>
             </button>
             {showDetails && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 rounded-xl bg-cream/60 p-4 animate-fadeIn">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 rounded-xl bg-cream/60 p-4 animate-fadeIn max-h-[40dvh] overflow-y-auto">
                 <PriceBreakdown lines={priceLines} total={totalPrice} />
                 <ConfigSummary config={config} />
               </div>
