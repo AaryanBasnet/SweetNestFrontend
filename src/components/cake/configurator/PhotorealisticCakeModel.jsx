@@ -24,6 +24,7 @@ import {
   FrenchMacaron,
   BirthdayCandle,
 } from "./cakeParts";
+import { useQuality } from "./quality";
 
 // ============================================
 // DETERMINISTIC RANDOMNESS
@@ -287,6 +288,12 @@ function Tier({
 
   const pipingColor = useMemo(() => adjustColorForAppeal(frostingColor), [frostingColor]);
   const sponge = useMemo(() => createDarkerShade(spongeColor, 0.05), [spongeColor]);
+  const { lite } = useQuality();
+  const pipingMaterial = lite ? (
+    <meshStandardMaterial color={pipingColor} roughness={0.35} />
+  ) : (
+    <meshPhysicalMaterial color={pipingColor} roughness={0.3} clearcoat={0.5} sheen={0.2} />
+  );
 
   return (
     <group position={[0, yPosition - height / 2, 0]}>
@@ -299,7 +306,11 @@ function Tier({
       {geos.layers.map((l, i) => (
         <mesh key={i} geometry={l.geo} rotation={FLAT} position={[0, l.y, 0]} castShadow>
           {l.filling ? (
-            <meshPhysicalMaterial color={fillingColor} roughness={0.3} clearcoat={0.6} clearcoatRoughness={0.25} />
+            lite ? (
+              <meshStandardMaterial color={fillingColor} roughness={0.35} />
+            ) : (
+              <meshPhysicalMaterial color={fillingColor} roughness={0.3} clearcoat={0.6} clearcoatRoughness={0.25} />
+            )
           ) : (
             <meshStandardMaterial color={sponge} roughness={0.95} />
           )}
@@ -307,11 +318,11 @@ function Tier({
       ))}
       <Instanced items={piping.top}>
         <sphereGeometry args={[1, 10, 10]} />
-        <meshPhysicalMaterial color={pipingColor} roughness={0.3} clearcoat={0.5} sheen={0.2} />
+        {pipingMaterial}
       </Instanced>
       <Instanced items={piping.bottom}>
         <sphereGeometry args={[1, 10, 10]} />
-        <meshPhysicalMaterial color={pipingColor} roughness={0.3} clearcoat={0.5} sheen={0.2} />
+        {pipingMaterial}
       </Instanced>
     </group>
   );
@@ -826,8 +837,10 @@ CakeStand.propTypes = { radius: PropTypes.number.isRequired };
 
 export function PhotorealisticCakeModel({ config, sliced = false }) {
   const groupRef = useRef();
+  const { lite } = useQuality();
   useFrame((state) => {
-    if (groupRef.current) {
+    // A gentle float. Skipped on weak devices, where it would keep the scene redrawing for nothing.
+    if (!lite && groupRef.current) {
       groupRef.current.position.y = Math.sin(state.clock.elapsedTime * 0.8) * 0.015;
     }
   });

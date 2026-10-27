@@ -1,4 +1,5 @@
 /* eslint-disable react-refresh/only-export-components -- this file also exports hooks and constants next to its components; that only costs a full reload instead of hot reload in dev */
+import { useQuality } from "./quality";
 import React, { useMemo, useRef } from "react";
 import PropTypes from "prop-types";
 import * as THREE from "three";
@@ -74,6 +75,21 @@ const getBumpTexture = () => {
 export function FrostingMaterial({ color, isTopSurface = false }) {
   const bump = useMemo(() => getBumpTexture(), []);
   const tint = useMemo(() => adjustColorForAppeal(color), [color]);
+  const { lite } = useQuality();
+  // The frosting covers most of the cake, so its shader is the biggest cost. On weak devices it drops the clearcoat and
+  // sheen layers (the soft bump stays), which is barely visible but far cheaper per pixel.
+  if (lite) {
+    return (
+      <meshStandardMaterial
+        color={tint}
+        roughness={isTopSurface ? 0.42 : 0.5}
+        metalness={0}
+        bumpMap={bump || undefined}
+        bumpScale={isTopSurface ? 0.004 : 0.008}
+        envMapIntensity={0.7}
+      />
+    );
+  }
   return (
     <meshPhysicalMaterial
       color={tint}

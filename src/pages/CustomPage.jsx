@@ -1,6 +1,11 @@
-import React, { useState } from "react";
-import { CakeConfigurator } from "../components/cake/configurator";
+import React, { Suspense, lazy, useState } from "react";
+import { Loader2 } from "lucide-react";
 import { Sparkles, ArrowRight, Check } from "lucide-react";
+
+// The 3D designer (three.js and its helpers) is about half a megabyte compressed, so it is only downloaded when someone
+// opens it, and it starts downloading as soon as they reach for the button.
+const loadConfigurator = () => import("../components/cake/configurator/CakeConfigurator");
+const CakeConfigurator = lazy(loadConfigurator);
 
 /**
  * CustomPage - Dedicated page for 3D cake customization
@@ -12,9 +17,16 @@ export default function CustomPage() {
   // If configurator is open, show it full screen
   if (showConfigurator) {
     return (
-      <CakeConfigurator
-        onClose={() => setShowConfigurator(false)}
-      />
+      <Suspense
+        fallback={
+          <div className="fixed inset-0 z-50 bg-[#F7EFE6] flex flex-col items-center justify-center" role="status">
+            <Loader2 className="w-10 h-10 animate-spin text-accent" />
+            <p className="mt-3 text-sm font-medium text-dark">Loading the 3D designer…</p>
+          </div>
+        }
+      >
+        <CakeConfigurator onClose={() => setShowConfigurator(false)} />
+      </Suspense>
     );
   }
 
@@ -78,6 +90,9 @@ export default function CustomPage() {
           <div className="text-center">
             <button
               onClick={() => setShowConfigurator(true)}
+              onPointerEnter={loadConfigurator}
+              onFocus={loadConfigurator}
+              onTouchStart={loadConfigurator}
               className="inline-flex items-center gap-3 bg-accent text-white px-8 py-4 rounded-lg text-lg font-medium hover:bg-accent/90 transition-all shadow-lg hover:shadow-xl hover:scale-105"
             >
               Start Designing Now
