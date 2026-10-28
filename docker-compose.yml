@@ -4,7 +4,8 @@
 #   docker compose up --build
 #
 # Serves the production build on http://localhost:8080.
-# The API runs from the backend repo's own compose file (api + mongo).
+# The API runs from the backend repo's own compose file (api + mongo). For the whole app
+# in one command, use docker-compose.fullstack.yml in the backend repository.
 #
 # VITE_API_BASE_URL is a BUILD argument, not a runtime environment variable.
 # Vite inlines it into the JavaScript bundle at build time, so changing it
@@ -14,11 +15,15 @@
 
 services:
   web:
+    # "up --build" builds this folder and tags it with this name; "pull" downloads the
+    # image CI published under the same name.
+    image: ghcr.io/aaryanbasnet/sweetnest-web:${WEB_TAG:-latest}
     build:
       context: .
       dockerfile: Dockerfile
       args:
         VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://localhost:5000/api}
+        GIT_SHA: ${GIT_SHA:-local}
     restart: unless-stopped
     ports:
-      - "${WEB_PORT:-8080}:80"
+      - "${WEB_PORT:-8080}:8080"

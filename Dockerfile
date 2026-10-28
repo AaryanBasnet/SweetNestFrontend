@@ -11,20 +11,27 @@
 # Note that VITE_ variables are baked in AT BUILD TIME, not read at runtime.
 # Anything you pass here ends up readable in the shipped JavaScript, so it
 # must never be a secret.
+#
+# Production for this app is Vercel, which builds the site itself. This image is for
+# running the whole app locally (see the backend repository's
+# docker-compose.fullstack.yml) and for anyone who prefers a container.
+#
+# The versions are written out in the FROM lines on purpose: Dependabot reads FROM
+# lines to propose base-image updates, and cannot see a version hidden in an ARG.
 # =============================================================================
-
-ARG NODE_VERSION=22.14-alpine
-ARG NGINX_VERSION=1.27-alpine
 
 
 # --- Build -------------------------------------------------------------------
-FROM node:${NODE_VERSION} AS build
+FROM node:22.23.4-alpine AS build
 
 WORKDIR /app
 
+# The files that describe the dependencies come first, so the slow install layer is
+# reused until a dependency actually changes (editing a component does not touch them).
 COPY package.json package-lock.json ./
 # Dev dependencies are required here: vite itself is one.
-RUN npm ci
+RUN --mount=type=cache,target=/root/.npm \
+    npm ci
 
 COPY . .
 
@@ -37,15 +44,24 @@ RUN npm run build
 
 
 # --- Serve -------------------------------------------------------------------
-FROM nginx:${NGINX_VERSION} AS runtime
+# The "unprivileged" nginx image runs as a normal user, not root, and listens on 8080
+# (a normal user may not bind a port below 1024). The stock nginx image runs its
+# master process as root, which is more power than serving a folder of files needs.
+FROM nginxinc/nginx-unprivileged:1.28-alpine AS runtime
 
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
 COPY --from=build /app/dist /usr/share/nginx/html
 
-EXPOSE 80
+EXPOSE 8080
+
+ARG GIT_SHA=unknown
+LABEL org.opencontainers.image.title="SweetNest Web" \
+      org.opencontainers.image.description="The SweetNest website, served by nginx" \
+      org.opencontainers.image.source="https://github.com/AaryanBasnet/SweetNestFrontend" \
+      org.opencontainers.image.revision="${GIT_SHA}"
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
-  CMD wget --quiet --tries=1 --spider http://127.0.0.1/ || exit 1
+  CMD wget --quiet --tries=1 --spider http://127.0.0.1:8080/ || exit 1
 
 CMD ["nginx", "-g", "daemon off;"]

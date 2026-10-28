@@ -257,12 +257,17 @@ thing on every pull request and keeps screenshots and traces of any failure.
 docker compose up --build
 ```
 
-Serves the production build on http://localhost:8080. The API runs from the
-backend repo's own compose file.
+Serves the production build on http://localhost:8080. For the whole app in one
+command (database, API and this website, from published images), use
+`docker-compose.fullstack.yml` in the
+[backend repository](https://github.com/AaryanBasnet/SweetNestBackend).
 
 A Vite app compiles to static files, so the shipped image is **nginx serving a
-folder, not a Node server** - about 84MB instead of ~400MB, with a whole
-runtime removed from the attack surface.
+folder, not a Node server** - about 86MB instead of ~400MB, with a whole
+runtime removed from the attack surface. It runs as a normal user (the
+"unprivileged" nginx image, port 8080), CI scans it for vulnerabilities and
+publishes it to `ghcr.io/aaryanbasnet/sweetnest-web`. The live site itself is
+built by Vercel.
 
 Two things worth knowing:
 
