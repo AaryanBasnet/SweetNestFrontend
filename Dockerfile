@@ -47,7 +47,7 @@ RUN npm run build
 # The "unprivileged" nginx image runs as a normal user, not root, and listens on 8080
 # (a normal user may not bind a port below 1024). The stock nginx image runs its
 # master process as root, which is more power than serving a folder of files needs.
-FROM nginxinc/nginx-unprivileged:1.28-alpine AS runtime
+FROM nginxinc/nginx-unprivileged:1.30-alpine AS runtime
 
 # A published base image is a snapshot: security fixes for its system packages (curl, brotli, c-ares and so on)
 # arrive in Alpine after the snapshot was taken. The vulnerability scan found 72 fixable HIGH and CRITICAL
