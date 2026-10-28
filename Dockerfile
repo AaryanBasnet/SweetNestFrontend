@@ -49,6 +49,14 @@ RUN npm run build
 # master process as root, which is more power than serving a folder of files needs.
 FROM nginxinc/nginx-unprivileged:1.28-alpine AS runtime
 
+# A published base image is a snapshot: security fixes for its system packages (curl, brotli, c-ares and so on)
+# arrive in Alpine after the snapshot was taken. The vulnerability scan found 72 fixable HIGH and CRITICAL
+# findings in that gap. "apk upgrade" installs the fixed packages when we build. It needs root, so the image
+# switches to root for this one command and straight back to the unprivileged user (uid 101) after it.
+USER root
+RUN apk upgrade --no-cache
+USER 101
+
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
 COPY --from=build /app/dist /usr/share/nginx/html
